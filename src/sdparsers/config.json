@@ -1,0 +1,15 @@
+{
+    "parsers": {
+        "InvokeAIParser": {
+            "fields": {
+                "size": {
+                    "values": [
+                        "width",
+                        "height"
+                    ],
+                    "format": "{}x{}"
+                }
+            }
+        }
+    }
+}
