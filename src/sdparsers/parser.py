@@ -1,6 +1,6 @@
 '''logic for getting prompts data out of different image formats'''
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, Iterable
+from typing import Optional, Tuple, Iterable, Any
 from PIL import Image
 
 from . import PromptInfo
@@ -22,20 +22,17 @@ class Parser(ABC):
     @property
     def custom_fields(self) -> dict:
         '''field value translation dictionary'''
-        if self._config is None:
-            return {}
         try:
             return self._config["parsers"][type(self).__name__]["fields"]
-        except KeyError:
+        except (TypeError, KeyError):
             return {}
 
-    def process_items(self, extracted_fields: Iterable[Tuple[str, str]]):
-        if not self._process_items:
-            return list(extracted_fields)
+    def process_metadata(self, extracted_fields: Iterable[Tuple[str, Any]]):
+        if self._process_items:
+            return dict(self.update_item_values(extracted_fields))
+        return dict(extracted_fields)
 
-        return list(self.update_item_values(extracted_fields))
-
-    def update_item_values(self, extracted_fields: Iterable[Tuple[str, str]]):
+    def update_item_values(self, extracted_fields: Iterable[Tuple[str, Any]]):
         fields = dict(extracted_fields)
         for key, recipe in self.custom_fields.items():
             if isinstance(recipe, str):

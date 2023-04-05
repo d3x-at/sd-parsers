@@ -12,17 +12,16 @@ from PIL import Image
 from .parser import Parser
 from .prompt_info import PromptInfo
 
+DEFAULT_CONFIG = str(Path(__file__).resolve().parent / "config.json")
+
 
 class ParserManager:
     '''keeps all available parsers ready for use'''
     parsers: List[Parser]
 
-    def __init__(self, config_file: str = None, process_items: bool = True):
+    def __init__(self, config_file: str = DEFAULT_CONFIG, process_items: bool = True):
         config = None
-        if process_items:
-            if config_file is None:
-                config_file = Path(__file__).resolve().parent / "config.json"
-
+        if config_file:
             with open(config_file, "r", encoding="utf-8") as file:
                 config = json.load(file)
 

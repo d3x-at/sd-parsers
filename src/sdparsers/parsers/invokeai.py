@@ -9,15 +9,11 @@ GENERATOR_ID = "InvokeAI"
 
 
 class InvokeAIParser(Parser):
-    re_prompt = re.compile(r'^(.*?)(?:\[([^\[]*)\])?$')
+    re_prompt_negatives = re.compile('\[([^\[]*)\]')
 
     def parse(self, image):
         params_metadata = image.info.get('sd-metadata')
         if not params_metadata:
-            return None
-
-        prompts, processing_info = self.extract_prompts(params_metadata)
-        if not prompts:
             return None
 
         raw_params = {'sd-metadata': params_metadata}
@@ -25,29 +21,20 @@ class InvokeAIParser(Parser):
         if params_dream:
             raw_params['Dream'] = params_dream
 
-        return PromptInfo(GENERATOR_ID,
-                          prompts,
-                          processing_info,
-                          raw_params)
+        prompts, metadata = self._prepare_metadata(params_metadata)
+        return PromptInfo(GENERATOR_ID, prompts, metadata, raw_params)
 
-    def extract_prompts(self, params_metadata):
+    def _prepare_metadata(self, params_metadata):
         metadata = json.loads(params_metadata)
 
-        # prompts
-        prompts = []
-        for item in metadata['image']['prompt']:
-            match = self.re_prompt.fullmatch(item['prompt'])
-            if match:
-                prompt = negative_prompt = ""
-                if match[1] != "":
-                    prompt = Prompt(match[1].strip())
-                if match[2] != "":
-                    negative_prompt = Prompt(match[2])
-                prompts.append((prompt, negative_prompt))
+        def split_prompt(prompt: str, weight: float):
+            negatives = map(str.strip, self.re_prompt_negatives.findall(prompt))
+            positive = self.re_prompt_negatives.sub('', prompt).strip()
+            return (Prompt(positive), Prompt(', '.join(negatives)), weight)
 
-        # processing-infos
-        processing_info = self.process_items(chain(
+        prompts = [split_prompt(prompt["prompt"], float(prompt["weight"]))
+                   for prompt in metadata['image']['prompt']]
+
+        return prompts, self.process_metadata(chain(
             ((k, v) for k, v in metadata.items() if k != 'image'),
             ((k, v) for k, v in metadata['image'].items() if k != "prompt")))
-
-        return prompts, processing_info

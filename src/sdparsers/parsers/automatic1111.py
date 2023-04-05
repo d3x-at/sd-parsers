@@ -1,5 +1,5 @@
 import re
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from ..parser import Parser
 from ..prompt_info import Prompt, PromptInfo
@@ -17,11 +17,25 @@ class AUTOMATIC1111Parser(Parser):
         if parameters is None:
             return None
 
-        lines, processing_info = self._prepare_processing_info(
-            parameters.split("\n"))
-        if not processing_info:
+        lines, metadata = self._prepare_metadata(parameters.split("\n"))
+        if not metadata:
             return None
 
+        prompt = self._get_prompt(lines)
+        return PromptInfo(GENERATOR_ID, [prompt], metadata,
+                          {"parameters": parameters})
+
+    def _prepare_metadata(self, lines: List[str]) -> Tuple[List[str], Dict[str, str]]:
+        '''attempt to read metadata tags from the parametes lines'''
+        parts = self.re_param.findall(lines[-1].strip())
+        if len(parts) < 3:
+            return lines, []
+
+        metadata = self.process_metadata((k, v.strip("\"")) for k, v in parts)
+        return lines[:-1], metadata
+
+    @staticmethod
+    def _get_prompt(lines: List[str]):
         prompt, negative_prompt = [], []
         i = 0
 
@@ -38,19 +52,4 @@ class AUTOMATIC1111Parser(Parser):
         for line in lines[i:]:
             negative_prompt.append(line.strip())
 
-        return PromptInfo(GENERATOR_ID, [(
-            Prompt("\n".join(prompt)),
-            Prompt("\n".join(negative_prompt)))],
-            processing_info,
-            {"parameters": parameters})
-
-    def _prepare_processing_info(self, lines: List[str]) -> Tuple[List[str], List[Tuple[str, str]]]:
-        '''attempt to read processing info tags from the parametes lines'''
-        parts = self.re_param.findall(lines[-1].strip())
-        if len(parts) < 3:
-            return lines, []
-
-        processing_info = self.process_items(
-            (k, v.strip("\"")) for k, v in parts)
-
-        return lines[:-1], processing_info
+        return Prompt("\n".join(prompt)), Prompt("\n".join(negative_prompt))
