@@ -10,6 +10,7 @@ from . import PromptInfo
 
 class Parser(ABC):
     '''parser base class'''
+    PRIORITY = 0
 
     def __init__(self, config: Optional[dict] = None, process_items: bool = True):
         self._config = config

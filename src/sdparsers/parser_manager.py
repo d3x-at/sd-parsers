@@ -26,8 +26,9 @@ class ParserManager:
                 config = json.load(file)
 
         # initialize parsers
-        self.parsers = [parser(config, process_items)
-                        for parser in Parser.__subclasses__()]
+        self.parsers = sorted((parser(config, process_items)
+                               for parser in Parser.__subclasses__()),
+                              key=lambda p: p.PRIORITY, reverse=True)
 
     def parse(self, image: str | bytes | Path | SupportsRead[bytes] | Image.Image) -> Optional[PromptInfo]:
         if isinstance(image, Image.Image):
