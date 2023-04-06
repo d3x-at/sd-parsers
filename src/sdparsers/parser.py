@@ -21,10 +21,10 @@ class Parser(ABC):
         '''parse'''
 
     @property
-    def custom_fields(self) -> dict:
-        '''field value translation dictionary'''
+    def config(self) -> dict:
+        '''parser-specific configuration data'''
         try:
-            return self._config["parsers"][type(self).__name__]["fields"]
+            return self._config["parsers"][type(self).__name__]
         except (TypeError, KeyError):
             return {}
 
@@ -35,16 +35,17 @@ class Parser(ABC):
 
     def update_item_values(self, extracted_fields: Iterable[Tuple[str, Any]]):
         fields = dict(extracted_fields)
-        for key, recipe in self.custom_fields.items():
-            if isinstance(recipe, str):
-                value = fields.pop(key, None)
-                if value is not None:
-                    yield (recipe, value)
+        if "fields" in self.config:
+            for key, recipe in self.config["fields"].items():
+                if isinstance(recipe, str):
+                    value = fields.pop(key, None)
+                    if value is not None:
+                        yield (recipe, value)
 
-            elif isinstance(recipe, dict):
-                format_values = (fields.pop(x, None) for x in recipe['values'])
-                value = recipe['format'].format(*format_values)
-                yield (key, value)
+                elif isinstance(recipe, dict):
+                    format_values = (fields.pop(x, None) for x in recipe['values'])
+                    value = recipe['format'].format(*format_values)
+                    yield (key, value)
 
         # remaining (unchanged) items
         for key, value in fields.items():
