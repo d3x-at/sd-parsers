@@ -6,7 +6,6 @@ from ..prompt_info import Prompt, PromptInfo
 
 GENERATOR_ID = "ComfyUI"
 SAMPLER_TYPES = ("KSampler", "KSamplerAdvanced")
-TEXT_TYPES = ("CLIPTextEncode")
 
 
 class ComfyUIParser(Parser):
@@ -37,11 +36,10 @@ class ComfyUIParser(Parser):
         def get_prompt(node_id) -> Optional[str]:
             if node_id is None:
                 return None
-
-            node = prompt_data[node_id]
-            if node['class_type'] in TEXT_TYPES:
-                return Prompt(node['inputs']['text'].strip())
-            return None
+            try:
+                return Prompt(prompt_data[node_id]['inputs']['text'].strip())
+            except KeyError:
+                return None
 
         # check all sampler types for inputs
         prompt_ids = []
