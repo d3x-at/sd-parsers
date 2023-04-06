@@ -1,5 +1,8 @@
 {
     "parsers": {
+        "ComfyUIParser": {
+            "sampler_types": ["KSampler", "KSamplerAdvanced"]
+        },
         "InvokeAIParser": {
             "fields": {
                 "size": {

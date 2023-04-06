@@ -5,10 +5,15 @@ from ..parser import Parser
 from ..prompt_info import Prompt, PromptInfo
 
 GENERATOR_ID = "ComfyUI"
-SAMPLER_TYPES = ("KSampler", "KSamplerAdvanced")
+SAMPLER_TYPES_DEFAULT = ("KSampler", "KSamplerAdvanced")
 
 
 class ComfyUIParser(Parser):
+
+    def __init__(self, config, process_items):
+        super().__init__(config, process_items)
+
+        self.sampler_types = self.config.get("sampler_types", SAMPLER_TYPES_DEFAULT)
 
     def parse(self, image):
         params_prompt = image.info.get('prompt')
@@ -44,7 +49,7 @@ class ComfyUIParser(Parser):
         # check all sampler types for inputs
         prompt_ids = []
         for node in prompt_data.values():
-            if node['class_type'] not in SAMPLER_TYPES:
+            if node['class_type'] not in self.sampler_types:
                 continue
 
             prompt_ids.append((get_input_id(node, "positive"),
