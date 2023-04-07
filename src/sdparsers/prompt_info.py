@@ -4,6 +4,8 @@ class Prompt(NamedTuple):
     '''Represents an image generation prompt.'''
     value: str
     '''The value of the prompt.'''
+    parts: Optional[List[str]] = None
+    '''Contains all parts making up a prompt. (Specific to ComfyUI parser for now)'''
 
 class PromptInfo(NamedTuple):
     '''Holds prompt information.'''
