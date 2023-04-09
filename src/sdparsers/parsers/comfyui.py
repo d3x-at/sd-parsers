@@ -7,7 +7,7 @@ from ..prompt_info import Prompt, PromptInfo
 
 GENERATOR_ID = "ComfyUI"
 SAMPLER_TYPES_DEFAULT = ["KSampler", "KSamplerAdvanced"]
-TEXT_TYPES_DEFAULT = ["CLIPTextEncode"]
+TEXT_TYPES_DEFAULT = []  # by default, don't filter text nodes by class_type
 TRAVERSE_TYPES_DEFAULT = ["CONDITIONING"]
 TRAVERSE_LIMIT_DEFAULT = 100
 
@@ -49,16 +49,16 @@ class ComfyUIParser(Parser):
             '''recursively search for a text prompt, starting from the given node id'''
             if input_id is None or \
                     (self.traverse_limit != -1 and depth >= self.traverse_limit):
-                return None
+                return
             try:
                 node = prompt_data[str(input_id)]
-                if node['class_type'] in self.text_types:
+                if node['class_type'] in self.text_types or \
+                        (not self.text_types and "text" in node['inputs']):
                     yield node['inputs']['text'].strip()
-
                 for output_id in links[input_id]:
                     yield from get_prompts(output_id, depth + 1)
             except (TypeError, KeyError):
-                return None
+                return
 
         # check all sampler types for inputs
         prompt_ids = []
