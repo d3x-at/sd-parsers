@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Type
 
 if TYPE_CHECKING:
     from _typeshed import SupportsRead
@@ -25,8 +25,13 @@ class ParserManager:
             with open(config_file, "r", encoding="utf-8") as file:
                 config = json.load(file)
 
+        def get_config(parser: Type[Parser]) -> Optional[dict]:
+            if config and "parsers" in config:
+                return config["parsers"].get(parser.__name__)
+            return None
+
         # initialize parsers
-        self.parsers = sorted((parser(config, process_items)
+        self.parsers = sorted((parser(get_config(parser), process_items)
                                for parser in Parser.__subclasses__()),
                               key=lambda p: p.PRIORITY, reverse=True)
 

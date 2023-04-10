@@ -13,20 +13,12 @@ class Parser(ABC):
     PRIORITY = 0
 
     def __init__(self, config: Optional[dict] = None, process_items: bool = True):
-        self._config = config
+        self.config = {} if config is None else config
         self._process_items = process_items
 
     @abstractmethod
     def parse(self, image: Image.Image) -> Optional[PromptInfo]:
         '''parse'''
-
-    @property
-    def config(self) -> dict:
-        '''parser-specific configuration data'''
-        try:
-            return self._config["parsers"][type(self).__name__]
-        except (TypeError, KeyError):
-            return {}
 
     def process_metadata(self, extracted_fields: Iterable[Tuple[str, Any]]):
         if self._process_items:
