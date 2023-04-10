@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Type
+from typing import TYPE_CHECKING, List, Optional, Type, Union
 
 if TYPE_CHECKING:
     from _typeshed import SupportsRead
@@ -35,7 +35,7 @@ class ParserManager:
                                for parser in Parser.__subclasses__()),
                               key=lambda p: p.PRIORITY, reverse=True)
 
-    def parse(self, image: str | bytes | Path | SupportsRead[bytes] | Image.Image) -> Optional[PromptInfo]:
+    def parse(self, image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image]) -> Optional[PromptInfo]:
         if isinstance(image, Image.Image):
             return self._parse(image)
         else:
