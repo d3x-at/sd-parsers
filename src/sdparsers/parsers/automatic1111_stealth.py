@@ -1,11 +1,10 @@
-from ..parser import Parser
 from ..prompt_info import PromptInfo
 from .automatic1111 import AUTOMATIC1111Parser
 
 GENERATOR_ID = "AUTOMATICStealth"
 
 
-class AUTOMATICStealthParser(Parser):
+class AUTOMATICStealthParser(AUTOMATIC1111Parser):
     PRIORITY = -1
 
     def parse(self, image):
@@ -16,12 +15,11 @@ class AUTOMATICStealthParser(Parser):
         if not geninfo:
             return None
 
-        prompt, metadata = AUTOMATIC1111Parser._prepare_metadata(geninfo)
+        prompt, model, sampler, metadata = self._prepare_metadata(geninfo)
         if not metadata:
             return None
 
-        return PromptInfo(GENERATOR_ID, [prompt],
-                          self.process_metadata(metadata),
+        return PromptInfo(GENERATOR_ID, [prompt], [sampler], [model], metadata,
                           {"parameters": geninfo})
 
     @staticmethod

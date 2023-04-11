@@ -7,12 +7,24 @@ class Prompt(NamedTuple):
     parts: Optional[List[str]] = None
     '''Contains all parts making up a prompt. (Specific to ComfyUI parser for now)'''
 
+class Sampler(NamedTuple):
+    name: str
+    parameters: Dict[str, Any]
+
+class Model(NamedTuple):
+    name: Optional[str] = None
+    model_hash: Optional[str] = None
+
 class PromptInfo(NamedTuple):
     '''Holds prompt information.'''
     generator: str
     '''Name of the parser module which provided this information.'''
     prompts: List[Tuple[Prompt, Prompt, Optional[float]]]
     '''List of found generation prompts as tuples of (Prompt, Negative Prompt, Weight).'''
+    samplers: List[Sampler]
+    '''Unordered list of used samplers'''
+    models: List[Model]
+    '''Unordered list of used models'''
     metadata: Dict[str, Any]
     '''
     Contains additional parameters which are found in the image metadata.

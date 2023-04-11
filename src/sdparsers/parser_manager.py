@@ -15,6 +15,12 @@ from .prompt_info import PromptInfo
 DEFAULT_CONFIG = str(Path(__file__).resolve().parent / "config.json")
 
 
+def _get_parsers(parser: Type[Parser] = Parser):
+    for child in parser.__subclasses__():
+        yield child
+        yield from _get_parsers(child)
+
+
 class ParserManager:
     '''keeps all available parsers ready for use'''
     parsers: List[Parser]
@@ -32,7 +38,7 @@ class ParserManager:
 
         # initialize parsers
         self.parsers = sorted((parser(get_config(parser), process_items)
-                               for parser in Parser.__subclasses__()),
+                               for parser in _get_parsers()),
                               key=lambda p: p.PRIORITY, reverse=True)
 
     def parse(self, image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image]) -> Optional[PromptInfo]:

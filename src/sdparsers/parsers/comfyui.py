@@ -3,7 +3,7 @@ import typing
 from collections import defaultdict
 
 from ..parser import Parser
-from ..prompt_info import Prompt, PromptInfo
+from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
 GENERATOR_ID = "ComfyUI"
 SAMPLER_TYPES_DEFAULT = ["KSampler", "KSamplerAdvanced"]
@@ -28,10 +28,9 @@ class ComfyUIParser(Parser):
         if not params_prompt or not params_workflow:
             return None
 
-        prompts, metadata = self._prepare_metadata(
-            params_prompt, params_workflow)
+        prompts, samplers, models = self._prepare_metadata(params_prompt, params_workflow)
 
-        return PromptInfo(GENERATOR_ID, prompts, metadata, {
+        return PromptInfo(GENERATOR_ID, prompts, samplers, models, {}, {
             "prompt": params_prompt,
             "workflow": params_workflow
         })
@@ -57,19 +56,33 @@ class ComfyUIParser(Parser):
                     yield node['inputs']['text'].strip()
                 for output_id in links[input_id]:
                     yield from get_prompts(output_id, depth + 1)
-            except (TypeError, KeyError):
+            except KeyError:
                 return
 
-        # check all sampler types for inputs
+        # check all sampler types
+        samplers = []
+        models = []
         prompt_ids = []
         for node in prompt_data.values():
             if node['class_type'] not in self.sampler_types:
                 continue
+            inputs = node['inputs']
 
-            positive_id = int(node['inputs']["positive"][0]) \
-                if node['inputs']["positive"] else None
-            negative_id = int(node['inputs']["negative"][0]) \
-                if node['inputs']["negative"] else None
+            sampler = Sampler(
+                name=inputs.get('sampler_name'),
+                parameters={key: value for key, value in inputs.items()
+                            if key not in ('sampler_name', 'model', 'positive', 'negative', 'latent_image')})
+            samplers.append(sampler)
+
+            if inputs['model']:
+                model_node = prompt_data[inputs['model'][0]]
+                model = Model(name=model_node['inputs'].get('ckpt_name'))
+                models.append(model)
+
+            positive_id = int(inputs["positive"][0]) \
+                if inputs["positive"] else None
+            negative_id = int(inputs["negative"][0]) \
+                if inputs["negative"] else None
 
             prompt_ids.append((positive_id, negative_id))
 
@@ -86,7 +99,4 @@ class ComfyUIParser(Parser):
                     if negative_prompts else None
                 ))
 
-        return prompts, {
-            "prompt": prompt_data,
-            "workflow": workflow_data
-        }
+        return prompts, samplers, models

@@ -1,10 +1,10 @@
 import re
-from typing import Dict, List, Tuple
 
 from ..parser import Parser
-from ..prompt_info import Prompt, PromptInfo
+from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
 GENERATOR_ID = "AUTOMATIC1111"
+SAMPLER_PARAMS_DEFAULT = ['CFG scale', 'Seed', 'Steps', 'ENSD']
 
 
 class AUTOMATIC1111Parser(Parser):
@@ -12,28 +12,30 @@ class AUTOMATIC1111Parser(Parser):
     RE_PARAM = re.compile(
         r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)')
 
+    def __init__(self, config=None, process_items=True):
+        super().__init__(config, process_items)
+        self.sampler_params = self.config.get("sampler_params", SAMPLER_PARAMS_DEFAULT)
+
     def parse(self, image):
         parameters = image.info.get('parameters')
         if parameters is None:
             return None
 
-        prompt, metadata = AUTOMATIC1111Parser._prepare_metadata(parameters)
+        prompt, model, sampler, metadata = self._prepare_metadata(parameters)
         if not metadata:
             return None
 
-        return PromptInfo(GENERATOR_ID, [prompt],
-                          self.process_metadata(metadata),
-                          {"parameters": parameters})
+        return PromptInfo(GENERATOR_ID, [prompt], [sampler], [model], metadata,
+                         {"parameters": parameters})
 
-    @classmethod
-    def _prepare_metadata(cls, parameters: str) -> Tuple[Tuple[Prompt, Prompt], List[Tuple[str, str]]]:
+    def _prepare_metadata(self, parameters: str):
 
         def get_metadata(parameters):
             lines = parameters.split("\n")
-            metadata = cls.RE_PARAM.findall(lines[-1].strip())
+            metadata = self.RE_PARAM.findall(lines[-1].strip())
             if len(metadata) < 3:
-                return lines, []
-            return lines[:-1], metadata
+                return lines, None
+            return lines[:-1], dict(metadata)
 
         lines, metadata = get_metadata(parameters)
         prompt, negative_prompt = [], []
@@ -52,4 +54,23 @@ class AUTOMATIC1111Parser(Parser):
         for line in lines[i:]:
             negative_prompt.append(line.strip())
 
-        return (Prompt("\n".join(prompt)), Prompt("\n".join(negative_prompt))), metadata
+        prompt = (
+            Prompt("\n".join(prompt)),
+            Prompt("\n".join(negative_prompt)))
+
+        model = Model(
+            name=metadata.pop('Model', None),
+            model_hash=metadata.pop('Model hash', None)
+        )
+
+        sampler = Sampler(
+            name=metadata.pop('Sampler'),
+            parameters=self._process_metadata(
+                (key, value) for key, value in metadata.items()
+                if key in self.sampler_params)
+        )
+
+        return prompt, model, sampler, self._process_metadata(
+            (key, value) for key, value in metadata.items()
+            if key not in self.sampler_params)
+        

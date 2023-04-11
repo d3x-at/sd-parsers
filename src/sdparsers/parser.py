@@ -1,6 +1,7 @@
 '''logic for getting prompts data out of different image formats'''
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, Iterable, Any
+from typing import Iterable, Optional, Tuple, Union
+
 from PIL import Image
 
 from . import PromptInfo
@@ -20,12 +21,12 @@ class Parser(ABC):
     def parse(self, image: Image.Image) -> Optional[PromptInfo]:
         '''parse'''
 
-    def process_metadata(self, extracted_fields: Iterable[Tuple[str, Any]]):
+    def _process_metadata(self, extracted_fields: Union[dict, Iterable[Tuple]]):
         if self._process_items:
-            return dict(self.update_item_values(extracted_fields))
+            return dict(self._update_item_values(extracted_fields))
         return dict(extracted_fields)
 
-    def update_item_values(self, extracted_fields: Iterable[Tuple[str, Any]]):
+    def _update_item_values(self, extracted_fields: Union[dict, Iterable[Tuple]]):
         fields = dict(extracted_fields)
         if "fields" in self.config:
             for key, recipe in self.config["fields"].items():

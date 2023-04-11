@@ -1,15 +1,19 @@
 import json
 import re
-from itertools import chain
 
 from ..parser import Parser
-from ..prompt_info import Prompt, PromptInfo
+from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
 GENERATOR_ID = "InvokeAI"
+SAMPLER_PARAMS_DEFAULT = ['cfg_scale', 'perlin', 'seed', 'steps', 'threshold']
 
 
 class InvokeAIParser(Parser):
     re_prompt_negatives = re.compile('\[([^\[]*)\]')
+
+    def __init__(self, config=None, process_items=True):
+        super().__init__(config, process_items)
+        self.sampler_params = self.config.get("sampler_params", SAMPLER_PARAMS_DEFAULT)
 
     def parse(self, image):
         params_metadata = image.info.get('sd-metadata')
@@ -21,8 +25,12 @@ class InvokeAIParser(Parser):
         if params_dream:
             raw_params['Dream'] = params_dream
 
-        prompts, metadata = self._prepare_metadata(params_metadata)
-        return PromptInfo(GENERATOR_ID, prompts, metadata, raw_params)
+        try:
+            prompts, sampler, model, metadata = self._prepare_metadata(params_metadata)
+        except KeyError:
+            return None
+
+        return PromptInfo(GENERATOR_ID, prompts, sampler, model, metadata, raw_params)
 
     def _prepare_metadata(self, params_metadata):
         metadata = json.loads(params_metadata)
@@ -32,9 +40,22 @@ class InvokeAIParser(Parser):
             positive = self.re_prompt_negatives.sub('', prompt).strip()
             return (Prompt(positive), Prompt(', '.join(negatives)), weight)
 
+        metadata_image = dict(metadata.pop('image'))
         prompts = [split_prompt(prompt["prompt"], float(prompt["weight"]))
-                   for prompt in metadata['image']['prompt']]
+                   for prompt in metadata_image.pop('prompt')]
 
-        return prompts, self.process_metadata(chain(
-            ((k, v) for k, v in metadata.items() if k != 'image'),
-            ((k, v) for k, v in metadata['image'].items() if k != "prompt")))
+        sampler = Sampler(
+            name=metadata_image.pop('sampler'),
+            parameters={key: metadata_image.pop(key) for key in list(metadata_image.keys())
+                        if key in self.sampler_params}
+        )
+
+        model = Model(
+            name=metadata.pop('model_weights'),
+            model_hash=metadata.pop('model_hash', None)
+        )
+
+        return prompts, [sampler], [model], self._process_metadata({
+            **metadata,
+            **metadata_image
+        })
