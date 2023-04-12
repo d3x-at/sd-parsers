@@ -2,11 +2,24 @@
 from abc import ABC, abstractmethod
 from typing import Iterable, Optional, Tuple, Union
 
+import PIL.ExifTags
 from PIL import Image
 
 from . import PromptInfo
 
 # pylint: disable=too-few-public-methods
+
+_EXIF_TAGS = {v: k for k, v in PIL.ExifTags.TAGS.items()}
+
+
+def get_exif_value(image, key, prefix_length: int = 8, encoding: str = 'utf_16_be'):
+    try:
+        exif_value = image.getexif().get_ifd(0x8769)[_EXIF_TAGS[key]]
+        if len(exif_value) > prefix_length:
+            return exif_value[prefix_length:].decode(encoding, errors='replace')
+    except KeyError:
+        pass
+    return None
 
 
 class Parser(ABC):

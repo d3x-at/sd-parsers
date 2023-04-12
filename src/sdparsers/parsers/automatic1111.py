@@ -1,6 +1,6 @@
 import re
 
-from ..parser import Parser
+from ..parser import Parser, get_exif_value
 from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
 GENERATOR_ID = "AUTOMATIC1111"
@@ -17,7 +17,7 @@ class AUTOMATIC1111Parser(Parser):
         self.sampler_params = self.config.get("sampler_params", SAMPLER_PARAMS_DEFAULT)
 
     def parse(self, image):
-        parameters = image.info.get('parameters')
+        parameters = self._get_parameters(image)
         if parameters is None:
             return None
 
@@ -27,6 +27,14 @@ class AUTOMATIC1111Parser(Parser):
 
         return PromptInfo(GENERATOR_ID, [prompt], [sampler], [model], metadata,
                          {"parameters": parameters})
+
+    @staticmethod
+    def _get_parameters(image):
+        if image.format == "PNG":
+            return image.info.get('parameters')
+        elif image.format in ("JPEG", "WEBP"):
+            return get_exif_value(image, 'UserComment')
+        return None
 
     def _prepare_metadata(self, parameters: str):
 
