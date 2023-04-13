@@ -21,11 +21,9 @@ The ```parse()``` method returns a ```PromptInfo``` type with the following prop
 
   ("AUTOMATIC1111" | "AUTOMATICStealth" | "ComfyUI" | "InvokeAI")
 
-* ```prompts```: A list of prompts as found in the parsed metadata.
+* ```prompts```: A list of tuples of prompts as found in the parsed metadata.
 
-  In the form of ```(prompt, negative_prompt, weight)```.
-
-  Weight is currently only parsed from InvokeAI metadata. As such, it's presence should not be relied on. (may be moved inside the Prompt type in the future)
+  In the form of ```(prompt, negative_prompt)```.
 
 * `samplers`: An unordered list of found samplers (and parameters)
 
@@ -55,8 +53,11 @@ from sdparsers import ParserManager
 parser_manager = ParserManager()
 prompt_data = parser_manager.parse('image.png')
 
-for prompt in prompt_data.prompts:
-    print("Prompt: {}\nNegative Prompt: {}".format(*prompt))
+for prompt, negative_prompt in prompt_data.prompts:
+    if prompt:
+        print(f"Prompt: {prompt.value}")
+    if negative_prompt:
+        print(f"Negative Prompt: {negative_prompt.value}")
 ```
 
 Read prompt information from an already opened image:

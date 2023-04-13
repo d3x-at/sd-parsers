@@ -1,11 +1,10 @@
 from ..prompt_info import PromptInfo
 from .automatic1111 import AUTOMATIC1111Parser
 
-GENERATOR_ID = "AUTOMATICStealth"
-
 
 class AUTOMATICStealthParser(AUTOMATIC1111Parser):
     PRIORITY = -1
+    GENERATOR_ID = "AUTOMATICStealth"
 
     def parse(self, image):
         if image.mode != 'RGBA' or image.format != 'PNG':
@@ -15,16 +14,17 @@ class AUTOMATICStealthParser(AUTOMATIC1111Parser):
         if not geninfo:
             return None
 
-        prompt, model, sampler, metadata = self._prepare_metadata(geninfo)
-        if not metadata:
+        metadata = self._prepare_metadata(geninfo)
+        if metadata is None:
             return None
 
-        return PromptInfo(GENERATOR_ID, [prompt], [sampler], [model], metadata,
-                          {"parameters": geninfo})
+        return PromptInfo(self.GENERATOR_ID, *metadata, {"parameters": geninfo})
 
     @staticmethod
     def _read_info_from_image_stealth(image):
-        # trying to read stealth pnginfo
+        # read_info_from_image_stealth method (image.mode check is done in parse()) from:
+        # https://github.com/ashen-sensored/sd_webui_stealth_pnginfo/blob/main/scripts/stealth_pnginfo.py
+
         width, height = image.size
         pixels = image.load()
 

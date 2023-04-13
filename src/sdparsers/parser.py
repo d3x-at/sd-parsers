@@ -34,7 +34,7 @@ class Parser(ABC):
     def parse(self, image: Image.Image) -> Optional[PromptInfo]:
         '''parse'''
 
-    def _process_metadata(self, extracted_fields: Union[dict, Iterable[Tuple]]):
+    def _process_metadata(self, extracted_fields: Union[dict, Iterable[Tuple]]) -> dict:
         if self._process_items:
             return dict(self._update_item_values(extracted_fields))
         return dict(extracted_fields)

@@ -4,12 +4,13 @@ import re
 from ..parser import Parser
 from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
-GENERATOR_ID = "InvokeAI"
 SAMPLER_PARAMS_DEFAULT = ['cfg_scale', 'perlin', 'seed', 'steps', 'threshold']
+
+_RE_PROMPT_NEGATIVES = re.compile(r'\[([^\[]*)\]')
 
 
 class InvokeAIParser(Parser):
-    re_prompt_negatives = re.compile('\[([^\[]*)\]')
+    GENERATOR_ID = "InvokeAI"
 
     def __init__(self, config=None, process_items=True):
         super().__init__(config, process_items)
@@ -30,15 +31,18 @@ class InvokeAIParser(Parser):
         except KeyError:
             return None
 
-        return PromptInfo(GENERATOR_ID, prompts, sampler, model, metadata, raw_params)
+        return PromptInfo(self.GENERATOR_ID, prompts, sampler, model, metadata, raw_params)
 
     def _prepare_metadata(self, params_metadata):
         metadata = json.loads(params_metadata)
 
         def split_prompt(prompt: str, weight: float):
-            negatives = map(str.strip, self.re_prompt_negatives.findall(prompt))
-            positive = self.re_prompt_negatives.sub('', prompt).strip()
-            return (Prompt(positive), Prompt(', '.join(negatives)), weight)
+            negatives = list(map(str.strip, _RE_PROMPT_NEGATIVES.findall(prompt)))
+            positive = _RE_PROMPT_NEGATIVES.sub('', prompt).strip()
+            return (
+                Prompt(value=positive, weight=weight) if positive else None,
+                Prompt(value=', '.join(negatives), weight=weight) if negatives else None
+            )
 
         metadata_image = dict(metadata.pop('image'))
         prompts = [split_prompt(prompt["prompt"], float(prompt["weight"]))

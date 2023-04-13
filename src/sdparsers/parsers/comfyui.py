@@ -5,7 +5,6 @@ from collections import defaultdict
 from ..parser import Parser
 from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
-GENERATOR_ID = "ComfyUI"
 SAMPLER_TYPES_DEFAULT = ["KSampler", "KSamplerAdvanced"]
 TEXT_TYPES_DEFAULT = []  # by default, don't filter text nodes by class_type
 TRAVERSE_TYPES_DEFAULT = ["CONDITIONING"]
@@ -13,6 +12,7 @@ TRAVERSE_LIMIT_DEFAULT = 100
 
 
 class ComfyUIParser(Parser):
+    GENERATOR_ID = "ComfyUI"
 
     def __init__(self, config=None, process_items=True):
         super().__init__(config, process_items)
@@ -30,7 +30,7 @@ class ComfyUIParser(Parser):
 
         prompts, samplers, models = self._prepare_metadata(params_prompt, params_workflow)
 
-        return PromptInfo(GENERATOR_ID, prompts, samplers, models, {}, {
+        return PromptInfo(self.GENERATOR_ID, prompts, samplers, models, {}, {
             "prompt": params_prompt,
             "workflow": params_workflow
         })
