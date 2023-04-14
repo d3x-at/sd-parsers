@@ -5,6 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sd-parsers"
 description = "SD Parsers - read metadata from images created by Stable Diffusion"
+readme = "README.md"
+requires-python = ">=3.7"
 dependencies = [
    'Pillow>=8.3.1',
 ]
