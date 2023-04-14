@@ -1,15 +1,9 @@
-import re
 from typing import Tuple
 
 from ..parser import Parser, get_exif_value
 from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
 SAMPLER_PARAMS_DEFAULT = ['CFG scale', 'Seed', 'Steps', 'ENSD']
-
-# Source: re_param_code in
-# https://github.com/AUTOMATIC1111/stable-diffusion-webui/blob/master/modules/generation_parameters_copypaste.py
-_RE_PARAM = re.compile(
-    r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)')
 
 
 class AUTOMATIC1111Parser(Parser):
@@ -75,12 +69,16 @@ class AUTOMATIC1111Parser(Parser):
 def split_parameters(parameters: str) -> Tuple[str, str, dict]:
     '''split an A1111 parameters string into prompt, negative prompt and metadata'''
     lines = parameters.split("\n")
-    metadata = _RE_PARAM.findall(lines[-1].strip())
-    if len(metadata) < 3:
+    if not lines:
+        return None, None, None
+
+    metadata_raw = lines[-1].split(',')
+    if len(metadata_raw) < 3:
         # actually a bit stricter than in the webui itself
         # grants some protection against "non-a1111" parameters
         return None, None, None
 
+    metadata = (map(str.strip, item.split(':')) for item in metadata_raw)
     prompt_lines = lines[:-1]
 
     # prompt
