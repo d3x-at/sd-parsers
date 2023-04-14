@@ -45,6 +45,9 @@ The ```parse()``` method returns a ```PromptInfo``` type with the following prop
 
 
 ## Examples
+See [examples](https://github.com/d3x-at/sd-parsers/tree/master/examples) directory.
+
+### Basic usage:
 
 Read prompt information from a given filename:
 ```python
