@@ -41,7 +41,10 @@ class ParserManager:
                                for parser in _get_parsers()),
                               key=lambda p: p.PRIORITY, reverse=True)
 
-    def parse(self, image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image]) -> Optional[PromptInfo]:
+    def parse(self, image: Union[str, bytes, Path,
+                                 SupportsRead[bytes],
+                                 Image.Image]) -> Optional[PromptInfo]:
+        '''try available parsers to get image information'''
         if isinstance(image, Image.Image):
             return self._parse(image)
         else:
