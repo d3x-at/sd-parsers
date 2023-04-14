@@ -49,9 +49,16 @@ class Parser(ABC):
                         yield (recipe, value)
 
                 elif isinstance(recipe, dict):
-                    format_values = (fields.pop(x, None) for x in recipe['values'])
-                    value = recipe['format'].format(*format_values)
-                    yield (key, value)
+                    # require all values to be present
+                    format_values = {}
+                    try:
+                        for x in recipe['values']:
+                            format_values[x] = fields.pop(x)
+                        value = recipe['format'].format(**format_values)
+                        yield (key, value)
+                    except KeyError:
+                        # put back popped keys if the replacement failed
+                        fields.update(format_values)
 
         # remaining (unchanged) items
         for key, value in fields.items():
