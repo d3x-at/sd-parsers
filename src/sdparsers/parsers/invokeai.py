@@ -48,10 +48,13 @@ class InvokeAIParser(Parser):
         prompts = [split_prompt(prompt["prompt"], float(prompt["weight"]))
                    for prompt in metadata_image.pop('prompt')]
 
+        sampler_params = ((key, metadata_image.pop(key))
+                          for key in list(metadata_image.keys())
+                          if key in self.sampler_params)
+
         sampler = Sampler(
             name=metadata_image.pop('sampler'),
-            parameters={key: metadata_image.pop(key) for key in list(metadata_image.keys())
-                        if key in self.sampler_params}
+            parameters=self._process_metadata(sampler_params)
         )
 
         model = Model(

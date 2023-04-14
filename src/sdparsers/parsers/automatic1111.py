@@ -59,10 +59,9 @@ class AUTOMATIC1111Parser(Parser):
 
         samplers = []
         if 'Sampler' in metadata:
-            sampler_params = []
-            for key in list(metadata.keys()):
-                if key in self.sampler_params:
-                    sampler_params.append((key, metadata.pop(key)))
+            sampler_params = ((key, metadata.pop(key))
+                              for key in list(metadata.keys())
+                              if key in self.sampler_params)
 
             sampler = Sampler(
                 name=metadata.pop('Sampler'),

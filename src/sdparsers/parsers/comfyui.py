@@ -10,6 +10,8 @@ TEXT_TYPES_DEFAULT = []  # by default, don't filter text nodes by class_type
 TRAVERSE_TYPES_DEFAULT = ["CONDITIONING"]
 TRAVERSE_LIMIT_DEFAULT = 100
 
+_SAMPLER_EXCLUDES = ['sampler_name', 'model', 'positive', 'negative', 'latent_image']
+
 
 class ComfyUIParser(Parser):
     GENERATOR_ID = "ComfyUI"
@@ -68,10 +70,11 @@ class ComfyUIParser(Parser):
                 continue
             inputs = node['inputs']
 
+            sampler_params = ((key, value) for key, value in inputs.items()
+                              if key not in _SAMPLER_EXCLUDES)
             sampler = Sampler(
                 name=inputs.get('sampler_name'),
-                parameters={key: value for key, value in inputs.items()
-                            if key not in ('sampler_name', 'model', 'positive', 'negative', 'latent_image')})
+                parameters=self._process_metadata(sampler_params))
             samplers.append(sampler)
 
             if inputs['model']:
