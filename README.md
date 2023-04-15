@@ -18,7 +18,7 @@ For a simple query, import ```ParserManager``` from ```sdparsers``` and use its 
 
 The ```ParserManager()``` constructor takes two arguments:
 * `config_file`: If you want to provide alternate processing instructions. (absolute path to config file)
-* `process_items`: If the parser should try to make the output across the different
+* `process_items`: If the parser should try to normalize the output across the different image sources. (defaults to `True`)
 
 ### Basic usage:
 
@@ -60,32 +60,34 @@ with Image.open("image.png") as image:
     prompt_info = parser.parse(image)
 ```
 
-Directly using a specific parser, the configuration file is not read automatically. (see ```ParserManager.__init__()```)
+Directly using a specific parser, the configuration file is not read automatically. (see `ParserManager.__init__()`)
 
-Also, when not called via ```ParserManager```, the ```parse()``` method now requires a Pillow Image object as argument. (see ```ParserManager.parse()```)
+Also, when not called via `ParserManager`, the `parse()` method now requires a Pillow Image object as argument. (see `ParserManager.parse()`)
 
 
 ### Output
-The ```parse()``` method returns a ```PromptInfo``` type with the following properties (or ```None``` if no metadata was found):
-* ```generator```: A simple string, specifying the parsing module that was used.
+The `parse()` method returns a `PromptInfo` type with the following properties (or `None` if no metadata was found):
+* `generator`: A simple string, specifying the parsing module that was used.
 
   ("AUTOMATIC1111" | "AUTOMATICStealth" | "ComfyUI" | "InvokeAI")
 
-* ```prompts```: A list of tuples of prompts as found in the parsed metadata.
+* `prompts`: A list of tuples of prompts as found in the parsed metadata.
 
-  In the form of ```(prompt, negative_prompt)```.
+  In the form of `(prompt, negative_prompt)`.
 
-* `samplers`: An unordered list of found samplers (and parameters)
+* `samplers`: An unordered list of found samplers (and parameters).
 
-* `models`: An unordered list of models used in the generation process
+  The key values of the parameters dictionary will be normalized to be more consistent across image generators if `ParserManager` is used with `process_items` set to `True`.
 
-* ```metadata```: A dictionary of metadata besides the prompt information.
+* `models`: An unordered list of models used in the generation process.
+
+* `metadata`: A dictionary of metadata besides the prompt information.
 
   Contains additional parameters which are found in the image metadata.
 
   Highly dependent on the provided data structure of the respective image generator.
 
-  The key values of this dictionary will be normalized to be more consistent across image generators if ```ParserManager``` is used with ```process_items``` set to ```True``` (the default).
+  The key values of this dictionary will be normalized to be more consistent across image generators if ```ParserManager``` is used with ```process_items``` set to ```True```.
  
 * ```raw_params```: A dictionary of the unmodified metadata entries found in the parsed image (if present).
 
