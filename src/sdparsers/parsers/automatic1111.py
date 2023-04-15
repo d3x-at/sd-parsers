@@ -72,13 +72,21 @@ def split_parameters(parameters: str) -> Tuple[str, str, dict]:
     if not lines:
         return None, None, None
 
-    metadata_raw = lines[-1].split(',')
-    if len(metadata_raw) < 3:
+    def split_meta(item: str):
+        key, value = map(str.strip, item.split(':'))
+        return key, value
+
+    metadata = None
+    try:
+        metadata = [split_meta(item) for item in lines[-1].split(',')]
+    except ValueError:
+        pass
+
+    if not metadata or len(metadata) < 3:
         # actually a bit stricter than in the webui itself
         # grants some protection against "non-a1111" parameters
         return None, None, None
 
-    metadata = (map(str.strip, item.split(':')) for item in metadata_raw)
     prompt_lines = lines[:-1]
 
     # prompt
@@ -93,9 +101,7 @@ def split_parameters(parameters: str) -> Tuple[str, str, dict]:
         i += 1
 
     # negative prompt
-    negative_prompt = []
-    for line in prompt_lines[i:]:
-        negative_prompt.append(line.strip())
+    negative_prompt = [line.strip() for line in prompt_lines[i:]]
 
     return (
         "\n".join(prompt),
