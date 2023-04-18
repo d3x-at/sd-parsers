@@ -44,7 +44,15 @@ class ParserManager:
     def parse(self, image: Union[str, bytes, Path,
                                  SupportsRead[bytes],
                                  Image.Image]) -> Optional[PromptInfo]:
-        '''try available parsers to get image information'''
+        '''try available parsers to get image information
+
+        The following exceptions can be thrown by the underlying `Image.open()`
+        function:
+        :exception FileNotFoundError: If the file cannot be found.
+        :exception PIL.UnidentifiedImageError: If the image cannot be opened
+        and identified.
+        :exception ValueError: If a StringIO instance is used for fp.
+        '''
         if isinstance(image, Image.Image):
             return self._parse(image)
         else:
