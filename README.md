@@ -102,3 +102,6 @@ Idea and motivation using AUTOMATIC1111's stable diffusion webui
 
 Stealth PNGInfo code adopted from ashen-sensored's sd webui extension
 - https://github.com/ashen-sensored/sd_webui_stealth_pnginfo
+
+Example workflows for testing the ComfyUI parser
+- https://github.com/comfyanonymous/ComfyUI_examples
