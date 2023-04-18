@@ -5,6 +5,7 @@ Supports reading metadata from images generated with:
 * Automatic1111's Stable Diffusion web UI
 * ComfyUI
 * Invoke AI
+* NovelAI
 
 Provides a list of prompts used in the generation of the image, as well as generator-specific metadata.
 
