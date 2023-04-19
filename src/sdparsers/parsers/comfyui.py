@@ -7,6 +7,8 @@ from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
 SAMPLER_TYPES_DEFAULT = ["KSampler", "KSamplerAdvanced"]
 TEXT_TYPES_DEFAULT = []  # by default, don't filter text nodes by class_type
+TEXT_POSITIVE_KEYS_DEFAULT = ['text']
+TEXT_NEGATIVE_KEYS_DEFAULT = ['text']
 TRAVERSE_TYPES_DEFAULT = ["CONDITIONING"]
 TRAVERSE_LIMIT_DEFAULT = 100
 
@@ -20,9 +22,14 @@ class ComfyUIParser(Parser):
         super().__init__(config, process_items)
 
         self.sampler_types = self.config.get("sampler_types", SAMPLER_TYPES_DEFAULT)
-        self.text_types = self.config.get("text_types", TEXT_TYPES_DEFAULT)
         self.traverse_types = self.config.get("traverse_types", TRAVERSE_TYPES_DEFAULT)
         self.traverse_limit = self.config.get("traverse_limit", TRAVERSE_LIMIT_DEFAULT)
+
+        self.text_types = self.config.get("text_types", TEXT_TYPES_DEFAULT)
+        self.text_positive_keys = set(self.config.get("text_positive_keys",
+                                                      TEXT_POSITIVE_KEYS_DEFAULT))
+        self.text_negative_keys = set(self.config.get("text_negative_keys",
+                                                      TEXT_NEGATIVE_KEYS_DEFAULT))
 
     def parse(self, image):
         params_prompt = image.info.get('prompt')
@@ -42,22 +49,28 @@ class ComfyUIParser(Parser):
         workflow_data = json.loads(params_workflow)
 
         links = defaultdict(list)
-        for _, output_id, _, input_id, _, link_type in workflow_data["links"]:
-            if link_type in self.traverse_types:
-                links[input_id].append(output_id)
+        try:
+            for _, output_id, _, input_id, _, link_type in workflow_data["links"]:
+                if link_type in self.traverse_types:
+                    links[input_id].append(output_id)
+        except ValueError:
+            pass
 
-        def get_prompts(input_id: typing.Optional[int], depth: int = 0) -> typing.Iterable[str]:
+        def get_prompts(node_id: int, text_tags: typing.Set[str], depth: int = 0) -> typing.Iterable[str]:
             '''recursively search for a text prompt, starting from the given node id'''
-            if input_id is None or \
+            if node_id is None or \
                     (self.traverse_limit != -1 and depth >= self.traverse_limit):
                 return
             try:
-                node = prompt_data[str(input_id)]
-                if node['class_type'] in self.text_types or \
-                        (not self.text_types and "text" in node['inputs']):
-                    yield node['inputs']['text'].strip()
-                for output_id in links[input_id]:
-                    yield from get_prompts(output_id, depth + 1)
+                # test if the current node has prompt text
+                node = prompt_data[str(node_id)]
+                if not self.text_types or node['class_type'] in self.text_types:
+                    for text_key in text_tags & set(node['inputs'].keys()):
+                        yield node['inputs'][text_key].strip()
+
+                # explore other inputs fed into this node
+                for output_id in links[node_id]:
+                    yield from get_prompts(output_id, text_tags, depth + 1)
             except KeyError:
                 return
 
@@ -92,8 +105,8 @@ class ComfyUIParser(Parser):
         # ignore multiple uses
         prompts = []
         for positive_id, negative_id in set(prompt_ids):
-            positive_prompts = list(get_prompts(positive_id))
-            negative_prompts = list(get_prompts(negative_id))
+            positive_prompts = list(get_prompts(positive_id, self.text_positive_keys))
+            negative_prompts = list(get_prompts(negative_id, self.text_negative_keys))
             if negative_prompts or positive_prompts:
                 prompts.append((
                     Prompt(value=",\n".join(positive_prompts), parts=positive_prompts)
