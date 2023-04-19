@@ -1,7 +1,7 @@
 {
     "parsers": {
         "ComfyUIParser": {
-            "sampler_types": ["KSampler", "KSamplerAdvanced", "TSC_KSampler"],
+            "sampler_types": [],
             "text_positive_keys" : ["text", "positive"],
             "text_negative_keys" : ["text", "negative"],
             "fields": {

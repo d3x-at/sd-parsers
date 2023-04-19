@@ -58,8 +58,7 @@ class ComfyUIParser(Parser):
 
         def get_prompts(node_id: int, text_tags: typing.Set[str], depth: int = 0) -> typing.Iterable[str]:
             '''recursively search for a text prompt, starting from the given node id'''
-            if node_id is None or \
-                    (self.traverse_limit != -1 and depth >= self.traverse_limit):
+            if self.traverse_limit != -1 and depth >= self.traverse_limit:
                 return
             try:
                 # test if the current node has prompt text
@@ -78,35 +77,20 @@ class ComfyUIParser(Parser):
         samplers = []
         models = []
         prompt_ids = []
-        for node in prompt_data.values():
-            if node['class_type'] not in self.sampler_types:
-                continue
-            inputs = node['inputs']
-
-            sampler_params = ((key, value) for key, value in inputs.items()
-                              if key not in _SAMPLER_EXCLUDES)
-            sampler = Sampler(
-                name=inputs.get('sampler_name'),
-                parameters=self._process_metadata(sampler_params))
+        for sampler, positive_id, negative_id, model in self._get_samplers(prompt_data):
             samplers.append(sampler)
-
-            if inputs['model']:
-                model_node = prompt_data[inputs['model'][0]]
-                model = Model(name=model_node['inputs'].get('ckpt_name'))
+            if model:
                 models.append(model)
-
-            positive_id = int(inputs["positive"][0]) \
-                if inputs["positive"] else None
-            negative_id = int(inputs["negative"][0]) \
-                if inputs["negative"] else None
-
             prompt_ids.append((positive_id, negative_id))
 
         # ignore multiple uses
         prompts = []
         for positive_id, negative_id in set(prompt_ids):
-            positive_prompts = list(get_prompts(positive_id, self.text_positive_keys))
-            negative_prompts = list(get_prompts(negative_id, self.text_negative_keys))
+            positive_prompts = list(get_prompts(positive_id, self.text_positive_keys)) \
+                if positive_id else None
+            negative_prompts = list(get_prompts(negative_id, self.text_negative_keys)) \
+                if negative_id else None
+
             if negative_prompts or positive_prompts:
                 prompts.append((
                     Prompt(value=",\n".join(positive_prompts), parts=positive_prompts)
@@ -116,3 +100,41 @@ class ComfyUIParser(Parser):
                 ))
 
         return prompts, samplers, models
+
+    def _get_samplers(self, prompt_data):
+        def might_be_sampler(node):
+            try:
+                if self.sampler_types:
+                    return node['class_type'] in self.sampler_types
+                return all(key in node['inputs'].keys() for key in _SAMPLER_EXCLUDES)
+            except KeyError:
+                return False
+
+        for node in prompt_data.values():
+            if not might_be_sampler(node):
+                continue
+
+            inputs = node.get('inputs')
+            if not inputs:
+                continue
+
+            sampler_params = ((key, value) for key, value in inputs.items()
+                              if key not in _SAMPLER_EXCLUDES)
+
+            sampler = Sampler(
+                name=inputs.get('sampler_name'),
+                parameters=self._process_metadata(sampler_params))
+
+            positive_input = inputs.get("positive")
+            positive_id = int(positive_input[0]) if positive_input else None
+
+            negative_input = inputs.get("negative")
+            negative_id = int(negative_input[0]) if negative_input else None
+
+            try:
+                model_node = prompt_data[inputs['model'][0]]
+                model = Model(name=model_node['inputs']['ckpt_name'])
+            except (KeyError, ValueError):
+                model = None
+
+            yield sampler, positive_id, negative_id, model
