@@ -4,7 +4,6 @@ from .automatic1111 import AUTOMATIC1111Parser
 
 class AUTOMATICStealthParser(AUTOMATIC1111Parser):
     PRIORITY = -1
-    GENERATOR_ID = "AUTOMATICStealth"
 
     def parse(self, image):
         if image.mode != 'RGBA' or image.format != 'PNG':
