@@ -40,8 +40,8 @@ class AUTOMATIC1111Parser(Parser):
             return None
 
         prompts = [(
-            Prompt(prompt) if prompt else None,
-            Prompt(negative_prompt) if negative_prompt else None
+            Prompt(prompt, parts=[prompt]) if prompt else None,
+            Prompt(negative_prompt, parts=[negative_prompt]) if negative_prompt else None
         )]
 
         models = []

@@ -40,8 +40,14 @@ class InvokeAIParser(Parser):
             negatives = list(map(str.strip, _RE_PROMPT_NEGATIVES.findall(prompt)))
             positive = _RE_PROMPT_NEGATIVES.sub('', prompt).strip()
             return (
-                Prompt(value=positive, weight=weight) if positive else None,
-                Prompt(value=', '.join(negatives), weight=weight) if negatives else None
+                Prompt(
+                    value=positive,
+                    parts=[positive],
+                    weight=weight) if positive else None,
+                Prompt(
+                    value=', '.join(negatives),
+                    parts=negatives,
+                    weight=weight) if negatives else None
             )
 
         metadata_image = dict(metadata.pop('image'))

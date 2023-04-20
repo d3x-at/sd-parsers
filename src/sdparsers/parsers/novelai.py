@@ -42,10 +42,12 @@ class NovelAIParser(Parser):
         metadata = json.loads(params_comment)
 
         # prompt
-        negative_prompt_value = metadata.pop("uc", None)
+        positive_prompt = params_description.strip()
+        negative_prompt = metadata.pop("uc", None)
         prompt = (
-            Prompt(params_description.strip()),
-            Prompt(negative_prompt_value) if negative_prompt_value else None
+            Prompt(positive_prompt, parts=[positive_prompt]),
+            Prompt(negative_prompt, parts=[negative_prompt])
+            if negative_prompt else None
         )
 
         # model
