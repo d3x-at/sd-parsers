@@ -17,12 +17,15 @@ class InvokeAIParser(Parser):
         self.sampler_params = self.config.get("sampler_params", SAMPLER_PARAMS_DEFAULT)
 
     def parse(self, image):
-        params_metadata = image.info.get('sd-metadata')
+        if image.format != "PNG":
+            return None
+
+        params_metadata = image.text.get('sd-metadata')
         if not params_metadata:
             return None
 
         raw_params = {'sd-metadata': params_metadata}
-        params_dream = image.info.get('Dream')
+        params_dream = image.text.get('Dream')
         if params_dream:
             raw_params['Dream'] = params_dream
 

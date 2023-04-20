@@ -17,7 +17,7 @@ class AUTOMATIC1111Parser(Parser):
     @staticmethod
     def _get_parameters(image):
         if image.format == "PNG":
-            return image.info.get('parameters')
+            return image.text.get('parameters')
         elif image.format in ("JPEG", "WEBP"):
             return get_exif_value(image, 'UserComment')
         return None

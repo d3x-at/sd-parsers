@@ -32,8 +32,11 @@ class ComfyUIParser(Parser):
                                                       TEXT_NEGATIVE_KEYS_DEFAULT))
 
     def parse(self, image):
-        params_prompt = image.info.get('prompt')
-        params_workflow = image.info.get('workflow')
+        if image.format != "PNG":
+            return None
+
+        params_prompt = image.text.get('prompt')
+        params_workflow = image.text.get('workflow')
         if not params_prompt or not params_workflow:
             return None
 

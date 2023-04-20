@@ -16,10 +16,13 @@ class NovelAIParser(Parser):
         self.sampler_params = self.config.get("sampler_params", SAMPLER_PARAMS_DEFAULT)
 
     def parse(self, image):
-        params_comment = image.info.get('Comment')
-        params_description = image.info.get('Description')
-        params_software = image.info.get('Software')
-        params_source = image.info.get('Source')
+        if image.format != "PNG":
+            return None
+
+        params_comment = image.text.get('Comment')
+        params_description = image.text.get('Description')
+        params_software = image.text.get('Software')
+        params_source = image.text.get('Source')
 
         if params_software != "NovelAI" \
                 or params_comment is None \
