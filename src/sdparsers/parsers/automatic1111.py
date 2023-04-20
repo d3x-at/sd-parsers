@@ -34,8 +34,9 @@ class AUTOMATIC1111Parser(Parser):
         return PromptInfo(self.GENERATOR_ID, *metadata, {"parameters": parameters})
 
     def _prepare_metadata(self, parameters: str):
-        prompt, negative_prompt, metadata = split_parameters(parameters)
-        if metadata is None:
+        try:
+            prompt, negative_prompt, metadata = split_parameters(parameters)
+        except ValueError:
             return None
 
         prompts = [(
@@ -67,25 +68,29 @@ class AUTOMATIC1111Parser(Parser):
 
 
 def split_parameters(parameters: str) -> Tuple[str, str, dict]:
-    '''split an A1111 parameters string into prompt, negative prompt and metadata'''
-    lines = parameters.split("\n")
-    if not lines:
-        return None, None, None
+    '''
+    split an A1111 parameters string into prompt, negative prompt and metadata
+    :exception ValueError: If the metadata does not conform to the expected format.
+    '''
 
-    def split_meta(item: str):
-        key, value = map(str.strip, item.split(':'))
+    def split_meta(item: str) -> Tuple[str, str]:
+        '''
+        split metadata item into key:value pair
+        :exception ValueError: If the item has more or less than two components.
+        '''
+        components = item.split(':')
+        if len(components) != 2:
+            raise ValueError("metadata malformed")
+        key, value = map(str.strip, components)
         return key, value
 
-    metadata = None
-    try:
-        metadata = [split_meta(item) for item in lines[-1].split(',')]
-    except ValueError:
-        pass
+    lines = parameters.split('\n')
+    metadata = dict(split_meta(item) for item in lines[-1].split(','))
 
-    if not metadata or len(metadata) < 3:
+    if len(metadata) < 3:
         # actually a bit stricter than in the webui itself
         # grants some protection against "non-a1111" parameters
-        return None, None, None
+        raise ValueError("metadata too short")
 
     prompt_lines = lines[:-1]
 
@@ -106,5 +111,5 @@ def split_parameters(parameters: str) -> Tuple[str, str, dict]:
     return (
         "\n".join(prompt),
         "\n".join(negative_prompt),
-        dict(metadata)
+        metadata
     )

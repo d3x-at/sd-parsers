@@ -66,12 +66,12 @@ class ComfyUIParser(Parser):
                 if not self.text_types or node['class_type'] in self.text_types:
                     for text_key in text_tags & set(node['inputs'].keys()):
                         yield node['inputs'][text_key].strip()
-
-                # explore other inputs fed into this node
-                for output_id in links[node_id]:
-                    yield from get_prompts(output_id, text_tags, depth + 1)
             except KeyError:
-                return
+                pass
+
+            # explore other inputs fed into this node
+            for output_id in links.get(node_id, []):
+                yield from get_prompts(output_id, text_tags, depth + 1)
 
         # check all sampler types
         samplers = []
