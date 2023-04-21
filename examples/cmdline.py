@@ -22,7 +22,7 @@ def display_info(prompt_info: parser.PromptInfo):
     # Models
     print(f"{len(prompt_info.models)} Model(s) used:")
     for model in prompt_info.models:
-        print(f"Model: {model.name}\nModel Hash:{model.model_hash}")
+        print(f"Model: {model.name}\nModel Hash: {model.model_hash}")
 
     # Samplers
     print(f"\n{len(prompt_info.samplers)} Sampler(s) used:")
@@ -44,10 +44,8 @@ def display_info(prompt_info: parser.PromptInfo):
     for k, v in prompt_info.metadata.items():
         print(f"{k}: {v}")
 
-    # Raw parameters
-    if prompt_info.generator in (
-            parser.AUTOMATIC1111Parser.GENERATOR_ID,
-            parser.AUTOMATICStealthParser.GENERATOR_ID):
+    # Some (not all) raw parameters
+    if prompt_info.generator == parser.AUTOMATIC1111Parser.GENERATOR_ID:
         print(f"\nRaw Parameters: {prompt_info.raw_params.get('parameters')}")
 
     elif prompt_info.generator == parser.InvokeAIParser.GENERATOR_ID:
@@ -56,6 +54,8 @@ def display_info(prompt_info: parser.PromptInfo):
     elif prompt_info.generator == parser.ComfyUIParser.GENERATOR_ID:
         print(f"\nRaw Parameters: {prompt_info.raw_params.get('prompt')}")
 
+    elif prompt_info.generator == parser.NovelAIParser.GENERATOR_ID:
+        print(f"\nRaw Parameters: {prompt_info.raw_params.get('Comment')}")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
