@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, Type, Union
@@ -42,7 +40,7 @@ class ParserManager:
                               key=lambda p: p.PRIORITY, reverse=True)
 
     def parse(self, image: Union[str, bytes, Path,
-                                 SupportsRead[bytes],
+                                 'SupportsRead[bytes]',
                                  Image.Image]) -> Optional[PromptInfo]:
         '''try available parsers to get image information
 
