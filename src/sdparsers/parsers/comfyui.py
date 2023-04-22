@@ -47,6 +47,8 @@ class ComfyUIParser(Parser):
             'inputs_cache': {'uniq': set()}
         }
 
+        # build list of links of the allowed traverse types
+        # (start at a sampler, go backwards to reach all available model and text nodes)
         try:
             for _, output_id, _, input_id, _, link_type in image_data['workflow']["links"]:
                 if link_type in self.traverse_types:
@@ -121,11 +123,17 @@ class ComfyUIParser(Parser):
             if not input:
                 return None, None
             source_id = input[0]
+            # get cached prompt
             prompt = inputs_cache.get(source_id)
-            if not prompt:
-                parts = list(self._get_parts(image_data, source_id, text_keys))
-                prompt = Prompt(value=",\n".join(parts), parts=parts)
-                inputs_cache[source_id] = prompt
+            if prompt:
+                return source_id, prompt
+            # collect reachable prompt parts
+            parts = list(self._get_parts(image_data, source_id, text_keys))
+            if not parts:
+                return None, None
+            # assemble prompt
+            prompt = Prompt(value=",\n".join(parts), parts=parts)
+            inputs_cache[source_id] = prompt
             return source_id, prompt
 
         positive_id, positive_prompt = get_prompt(
