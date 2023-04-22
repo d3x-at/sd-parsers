@@ -19,7 +19,7 @@ class AUTOMATICStealthParser(AUTOMATIC1111Parser):
 
         return PromptInfo(self.GENERATOR_ID, *metadata, {"parameters": geninfo})
 
-    @staticmethod
+    @staticmethod  # noqa: C901
     def _read_info_from_image_stealth(image):
         # read_info_from_image_stealth method (image.mode check is done in parse()) from:
         # https://github.com/ashen-sensored/sd_webui_stealth_pnginfo/blob/main/scripts/stealth_pnginfo.py
