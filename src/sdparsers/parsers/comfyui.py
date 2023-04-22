@@ -1,6 +1,6 @@
 import json
-import typing
 from collections import defaultdict
+from typing import Any, Iterable, Optional, Set, Tuple
 
 from ..parser import Parser
 from ..prompt_info import Model, Prompt, PromptInfo, Sampler
@@ -40,71 +40,29 @@ class ComfyUIParser(Parser):
         if not params_prompt or not params_workflow:
             return None
 
-        prompts, samplers, models = self._prepare_metadata(params_prompt, params_workflow)
+        image_data = {
+            'prompt': json.loads(params_prompt),
+            'workflow': json.loads(params_workflow),
+            'links': defaultdict(list),
+            'inputs_cache': {'uniq': set()}
+        }
 
-        return PromptInfo(self.GENERATOR_ID, prompts, samplers, models, {}, {
+        try:
+            for _, output_id, _, input_id, _, link_type in image_data['workflow']["links"]:
+                if link_type in self.traverse_types:
+                    image_data['links'][input_id].append(output_id)
+        except ValueError:
+            pass
+
+        metadata = self._prepare_metadata(image_data)
+
+        return PromptInfo(self.GENERATOR_ID, **metadata, raw_params={
             "prompt": params_prompt,
             "workflow": params_workflow
         })
 
-    def _prepare_metadata(self, params_prompt: str, params_workflow: str):
-        prompt_data = json.loads(params_prompt)
-        workflow_data = json.loads(params_workflow)
+    def _prepare_metadata(self, image_data: dict):
 
-        links = defaultdict(list)
-        try:
-            for _, output_id, _, input_id, _, link_type in workflow_data["links"]:
-                if link_type in self.traverse_types:
-                    links[input_id].append(output_id)
-        except ValueError:
-            pass
-
-        def get_prompts(node_id: int, text_tags: typing.Set[str], depth: int = 0) -> typing.Iterable[str]:
-            '''recursively search for a text prompt, starting from the given node id'''
-            if self.traverse_limit != -1 and depth >= self.traverse_limit:
-                return
-            try:
-                # test if the current node has prompt text
-                node = prompt_data[str(node_id)]
-                if not self.text_types or node['class_type'] in self.text_types:
-                    for text_key in text_tags & set(node['inputs'].keys()):
-                        yield node['inputs'][text_key].strip()
-            except KeyError:
-                pass
-
-            # explore other inputs fed into this node
-            for output_id in links.get(node_id, []):
-                yield from get_prompts(output_id, text_tags, depth + 1)
-
-        # check all sampler types
-        samplers = []
-        models = []
-        prompt_ids = []
-        for sampler, positive_id, negative_id, model in self._get_samplers(prompt_data):
-            samplers.append(sampler)
-            if model:
-                models.append(model)
-            prompt_ids.append((positive_id, negative_id))
-
-        # ignore multiple uses
-        prompts = []
-        for positive_id, negative_id in set(prompt_ids):
-            positive_prompts = list(get_prompts(positive_id, self.text_positive_keys)) \
-                if positive_id else None
-            negative_prompts = list(get_prompts(negative_id, self.text_negative_keys)) \
-                if negative_id else None
-
-            if negative_prompts or positive_prompts:
-                prompts.append((
-                    Prompt(value=",\n".join(positive_prompts), parts=positive_prompts)
-                    if positive_prompts else None,
-                    Prompt(value=",\n".join(negative_prompts), parts=negative_prompts)
-                    if negative_prompts else None
-                ))
-
-        return prompts, samplers, models
-
-    def _get_samplers(self, prompt_data):
         def might_be_sampler(node):
             try:
                 if self.sampler_types:
@@ -113,7 +71,8 @@ class ComfyUIParser(Parser):
             except KeyError:
                 return False
 
-        for node in prompt_data.values():
+        samplers, models, prompts = [], [], []
+        for node in image_data['prompt'].values():
             if not might_be_sampler(node):
                 continue
 
@@ -121,23 +80,82 @@ class ComfyUIParser(Parser):
             if not inputs:
                 continue
 
-            sampler_params = ((key, value) for key, value in inputs.items()
-                              if key not in _SAMPLER_EXCLUDES)
+            sampler, model, prompt = self._get_sampler_data(image_data, inputs)
+            samplers.append(sampler)
+            if model:
+                models.append(model)
+            if prompt:
+                prompts.append(prompt)
 
-            sampler = Sampler(
-                name=inputs.get('sampler_name'),
-                parameters=self._process_metadata(sampler_params))
+        return {
+            'samplers': samplers,
+            'models': models,
+            'prompts': prompts,
+            'metadata': {}
+        }
 
-            positive_input = inputs.get("positive")
-            positive_id = int(positive_input[0]) if positive_input else None
+    def _get_sampler_data(self, image_data: dict, inputs: dict):
+        # sampler
+        sampler_params = ((key, value) for key, value in inputs.items()
+                          if key not in _SAMPLER_EXCLUDES)
+        sampler = Sampler(
+            name=inputs.get('sampler_name'),
+            parameters=self._process_metadata(sampler_params))
 
-            negative_input = inputs.get("negative")
-            negative_id = int(negative_input[0]) if negative_input else None
+        # model
+        try:
+            model_node = image_data['prompt'][inputs['model'][0]]
+            model = Model(name=model_node['inputs']['ckpt_name'])
+        except (KeyError, ValueError):
+            model = None
 
-            try:
-                model_node = prompt_data[inputs['model'][0]]
-                model = Model(name=model_node['inputs']['ckpt_name'])
-            except (KeyError, ValueError):
-                model = None
+        # prompt
+        prompt = self._get_prompt(image_data, inputs)
 
-            yield sampler, positive_id, negative_id, model
+        return sampler, model, prompt
+
+    def _get_prompt(self, image_data: dict, inputs: dict):
+        inputs_cache = image_data['inputs_cache']
+
+        def get_prompt(input, text_keys) -> Tuple[Optional[Any], Optional[Prompt]]:
+            if not input:
+                return None, None
+            source_id = input[0]
+            prompt = inputs_cache.get(source_id)
+            if not prompt:
+                parts = list(self._get_parts(image_data, source_id, text_keys))
+                prompt = Prompt(value=",\n".join(parts), parts=parts)
+                inputs_cache[source_id] = prompt
+            return source_id, prompt
+
+        positive_id, positive_prompt = get_prompt(
+            inputs.get("positive"), self.text_positive_keys)
+        negative_id, negative_prompt = get_prompt(
+            inputs.get("negative"), self.text_negative_keys)
+
+        if positive_id is None and negative_id is None:
+            return None
+
+        if (positive_id, negative_id) not in inputs_cache['uniq']:
+            inputs_cache['uniq'].add((positive_id, negative_id))
+            return positive_prompt, negative_prompt
+
+        return None
+
+    def _get_parts(self, image_data: dict, node_id, text_tags: Set[str], depth: int = 0
+                   ) -> Iterable[str]:
+        '''recursively search for all parts of a text prompt, starting from the given node id'''
+        if self.traverse_limit != -1 and depth >= self.traverse_limit:
+            return
+        try:
+            # test if the current node has prompt text
+            node = image_data['prompt'][node_id]
+            if not self.text_types or node['class_type'] in self.text_types:
+                for text_key in text_tags & set(node['inputs'].keys()):
+                    yield node['inputs'][text_key].strip()
+        except KeyError:
+            pass
+
+        # explore other inputs fed into this node
+        for output_id in image_data['links'].get(node_id, []):
+            yield from self._get_parts(output_id, text_tags, depth + 1)
