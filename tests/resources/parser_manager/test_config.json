@@ -1,0 +1,7 @@
+{
+    "parsers": {
+        "ComfyUIParser": {
+            "test_config": "test_value"
+        }
+    }
+}
