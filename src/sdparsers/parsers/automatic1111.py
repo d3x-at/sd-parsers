@@ -1,9 +1,13 @@
-from typing import Tuple
+import json
+import re
+from typing import Optional, Tuple, Iterable
 
 from ..parser import Parser, get_exif_value
 from ..prompt_info import Model, Prompt, PromptInfo, Sampler
 
 SAMPLER_PARAMS_DEFAULT = ['CFG scale', 'Seed', 'Steps', 'ENSD']
+
+_RE_CIVITAI_HASHES = re.compile(r'(?:,\s*)?Hashes:\s*(\{[^\}]*\})\s*')
 
 
 class AUTOMATIC1111Parser(Parser):
@@ -72,44 +76,42 @@ def split_parameters(parameters: str) -> Tuple[str, str, dict]:
     split an A1111 parameters string into prompt, negative prompt and metadata
     :exception ValueError: If the metadata does not conform to the expected format.
     '''
+    def split_meta(last_line: str) -> Iterable[Tuple[str, str]]:
+        for item in last_line.split(','):
+            try:
+                key, value = map(str.strip, item.split(':'))
+                yield key, value
+            except ValueError:
+                pass
 
-    def split_meta(item: str) -> Tuple[str, str]:
-        '''
-        split metadata item into key:value pair
-        :exception ValueError: If the item has more or less than two components.
-        '''
-        components = item.split(':')
-        if len(components) != 2:
-            raise ValueError("metadata malformed")
-        key, value = map(str.strip, components)
-        return key, value
+    last_newline = parameters.rfind("\n")
+    if last_newline == -1:
+        raise ValueError("malformed parameters")
 
-    lines = parameters.split('\n')
-    metadata = dict(split_meta(item) for item in lines[-1].split(','))
-
+    last_line, hashes = get_civitai_hashes(parameters[last_newline:])
+    metadata = dict(split_meta(last_line))
     if len(metadata) < 3:
         # actually a bit stricter than in the webui itself
         # grants some protection against "non-a1111" parameters
         raise ValueError("metadata too short")
 
-    prompt_lines = lines[:-1]
-
-    # prompt
-    prompt = []
-    i = 0
-    for line in prompt_lines:
-        line = line.strip()
-        if line.startswith("Negative prompt:"):
-            prompt_lines[i] = line[16:]
-            break
-        prompt.append(line)
-        i += 1
-
-    # negative prompt
-    negative_prompt = [line.strip() for line in prompt_lines[i:]]
+    prompts = parameters[:last_newline].split('Negative prompt:')
+    prompt, negative_prompt = prompts + ['']*(2-len(prompts))
+    if hashes:
+        metadata["hashes"] = hashes
 
     return (
-        "\n".join(prompt),
-        "\n".join(negative_prompt),
+        prompt.strip("\n "),
+        negative_prompt.strip("\n "),
         metadata
     )
+
+
+def get_civitai_hashes(line: str) -> Tuple[str, Optional[dict]]:
+    hashes = None
+    match = _RE_CIVITAI_HASHES.search(line)
+    if match:
+        hashes = json.loads(match.group(1))
+        start, end = match.span(0)
+        line = line[:start] + line[end:]
+    return line, hashes

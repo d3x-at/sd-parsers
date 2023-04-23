@@ -1,11 +1,11 @@
 import unittest
 
 from PIL import Image
+from tools import RESOURCE_PATH
 
 from sdparsers import Model, Prompt, PromptInfo, Sampler
-from sdparsers.parsers import AUTOMATIC1111Parser, AUTOMATICStealthParser
-
-from tools import RESOURCE_PATH
+from sdparsers.parsers import (AUTOMATIC1111Parser, AUTOMATICStealthParser,
+                               automatic1111)
 
 IMAGES_FOLDER = RESOURCE_PATH / "automatic1111"
 OUTPUT = PromptInfo(
@@ -57,3 +57,19 @@ class Automatic1111Tester(unittest.TestCase):
     def test_parse_stealth(self):
         prompt_info = self.parse_stealth_image("automatic1111_stealth.png")
         self.assertEqual(prompt_info, OUTPUT)
+
+    def test_civitai_hashes(self):
+        parameters = OUTPUT.raw_params['parameters'] \
+            + ', Hashes: {"vae": "c6a580b13a", "model": "c0d1994c73"}'
+
+        prompt, negative_prompt, metadata = automatic1111.split_parameters(parameters)
+        self.assertEqual(prompt, "photo of a duck")
+        self.assertEqual(negative_prompt, "monochrome")
+        self.assertEqual(metadata, {'CFG scale': '5',
+                                    'Model': 'realistic_realisticVisionV20_v20',
+                                    'Model hash': 'c0d1994c73',
+                                    'Sampler': 'UniPC',
+                                    'Seed': '235284042',
+                                    'Size': '512x400',
+                                    'Steps': '15',
+                                    'hashes': {'model': 'c0d1994c73', 'vae': 'c6a580b13a'}})
