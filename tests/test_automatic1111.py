@@ -4,8 +4,7 @@ from PIL import Image
 from tools import RESOURCE_PATH
 
 from sdparsers import Model, Prompt, PromptInfo, Sampler
-from sdparsers.parsers import (AUTOMATIC1111Parser, AUTOMATICStealthParser,
-                               automatic1111)
+from sdparsers.parsers import AUTOMATIC1111Parser, automatic1111
 
 IMAGES_FOLDER = RESOURCE_PATH / "automatic1111"
 OUTPUT = PromptInfo(
@@ -41,21 +40,12 @@ class Automatic1111Tester(unittest.TestCase):
         with Image.open(IMAGES_FOLDER / filename) as image:
             return parser.parse(image)
 
-    def parse_stealth_image(self, filename: str, config=None):
-        parser = AUTOMATICStealthParser(config)
-        with Image.open(IMAGES_FOLDER / filename) as image:
-            return parser.parse(image)
-
     def test_parse_png(self):
         prompt_info = self.parse_image("automatic1111_cropped.png")
         self.assertEqual(prompt_info, OUTPUT)
 
     def test_parse_jpg(self):
         prompt_info = self.parse_image("automatic1111_cropped.jpg")
-        self.assertEqual(prompt_info, OUTPUT)
-
-    def test_parse_stealth(self):
-        prompt_info = self.parse_stealth_image("automatic1111_stealth.png")
         self.assertEqual(prompt_info, OUTPUT)
 
     def test_civitai_hashes(self):
