@@ -76,20 +76,11 @@ def split_parameters(parameters: str) -> Tuple[str, str, dict]:
     split an A1111 parameters string into prompt, negative prompt and metadata
     :exception ValueError: If the metadata does not conform to the expected format.
     '''
-    def split_meta(last_line: str) -> Iterable[Tuple[str, str]]:
-        for item in last_line.split(','):
-            try:
-                key, value = map(str.strip, item.split(':'))
-                yield key, value
-            except ValueError:
-                pass
-
     last_newline = parameters.rfind("\n")
     if last_newline == -1:
         raise ValueError("malformed parameters")
 
-    last_line, hashes = get_civitai_hashes(parameters[last_newline:])
-    metadata = dict(split_meta(last_line))
+    metadata = dict(split_meta(parameters[last_newline:]))
     if len(metadata) < 3:
         # actually a bit stricter than in the webui itself
         # grants some protection against "non-a1111" parameters
@@ -97,14 +88,26 @@ def split_parameters(parameters: str) -> Tuple[str, str, dict]:
 
     prompts = parameters[:last_newline].split('Negative prompt:')
     prompt, negative_prompt = prompts + ['']*(2-len(prompts))
-    if hashes:
-        metadata["hashes"] = hashes
 
     return (
         prompt.strip("\n "),
         negative_prompt.strip("\n "),
         metadata
     )
+
+
+def split_meta(last_line: str) -> Iterable[Tuple[str, str]]:
+    # extract civitai hashes
+    last_line, hashes = get_civitai_hashes(last_line)
+    if hashes:
+        yield 'hashes', hashes
+
+    for item in last_line.split(','):
+        try:
+            key, value = map(str.strip, item.split(':'))
+            yield key, value
+        except ValueError:
+            pass
 
 
 def get_civitai_hashes(line: str) -> Tuple[str, Optional[dict]]:
