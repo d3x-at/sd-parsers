@@ -160,7 +160,9 @@ class ComfyUIParser(Parser):
             node = image_data['prompt'][node_id]
             if not self.text_types or node['class_type'] in self.text_types:
                 for text_key in text_tags & set(node['inputs'].keys()):
-                    yield node['inputs'][text_key].strip()
+                    item = node['inputs'][text_key]
+                    if isinstance(item, str):
+                        yield item.strip()
         except KeyError:
             pass
 
