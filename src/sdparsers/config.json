@@ -1,0 +1,23 @@
+{
+    "parsers": {
+        "ComfyUIParser": {
+            "sampler_types": [],
+            "text_positive_keys" : ["text", "positive"],
+            "text_negative_keys" : ["text", "negative"],
+            "fields": {
+                "cfg": "cfg_scale"
+            }
+        },
+        "InvokeAIParser": {
+            "fields": {
+                "size": {
+                    "values": [
+                        "width",
+                        "height"
+                    ],
+                    "format": "{width}x{height}"
+                }
+            }
+        }
+    }
+}
