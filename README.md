@@ -1,3 +1,9 @@
+> [!IMPORTANT]  
+> A release candidate featuring a revisited API and extended ComfyUI parsing logic is available.
+> 
+> See [release notes](https://github.com/d3x-at/sd-parsers/releases/tag/v0.3rc1) for changes.
+>
+> Install with: ```pip install --upgrade --pre sd-parsers```
 
 ## Features
 
