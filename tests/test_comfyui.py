@@ -1,114 +1,37 @@
 # example image sources:
 # https://github.com/comfyanonymous/ComfyUI_examples
-import unittest
-from collections import namedtuple
-from typing import List, Tuple
 
+import pytest
 from PIL import Image
+from sd_parsers.parsers import ComfyUIParser
 
-from sdparsers import ComfyUIParser, Model, Prompt, Sampler
+from tests.resources.parsers.ComfyUI import img2img_cropped, night_evening_day_morning_cropped
+from tests.tools import RESOURCE_PATH
 
-from tools import RESOURCE_PATH
-
-IMAGES_FOLDER = RESOURCE_PATH / "comfyui"
-ExpectedResult = namedtuple(
-    'ExpectedResult', ['num_prompts',
-                       'num_models',
-                       'num_unique_models',
-                       'num_samplers',
-                       'num_unique_samplers'])
-
-COMPLEX_WORKFLOWS: List[Tuple[str, ExpectedResult]] = [
-    (
-        "night_evening_day_morning_cropped.png",
-        ExpectedResult(num_prompts=2,
-                       num_models=2,
-                       num_unique_models=2,
-                       num_samplers=2,
-                       num_unique_samplers=2)
-    ),
-    (
-        "noisy_latents_3_subjects_cropped.png",
-        ExpectedResult(num_prompts=6,
-                       num_models=6,
-                       num_unique_models=1,
-                       num_samplers=6,
-                       num_unique_samplers=2)
-    ),
-    (
-        "unclip_2pass_cropped.png",
-        ExpectedResult(num_prompts=2,
-                       num_models=2,
-                       num_unique_models=2,
-                       num_samplers=2,
-                       num_unique_samplers=2)
-    )
+testdata = [
+    img2img_cropped.PARAM,
+    night_evening_day_morning_cropped.PARAM,
 ]
 
 
-class ComfyUITester(unittest.TestCase):
+@pytest.mark.parametrize("filename, expected", testdata)
+def test_parse(filename: str, expected):
+    (
+        expected_samplers,
+        expected_models,
+        expected_prompts,
+        expected_negative_prompts,
+        expected_metadata,
+    ) = expected
 
-    def parse_image(self, filename: str, config=None):
-        parser = ComfyUIParser(config)
-        with Image.open(IMAGES_FOLDER / filename) as image:
-            return parser.parse(image)
+    parser = ComfyUIParser()
+    with Image.open(RESOURCE_PATH / "parsers/ComfyUI" / filename) as image:
+        image_data, error = parser.read_parameters(image)
 
-    def test_parse(self):
-        prompt_info = self.parse_image("img2img_cropped.png")
-
-        self.assertEqual(prompt_info.prompts, [(
-            Prompt(
-                value="photograph of victorian woman with wings, sky clouds, meadow grass",
-                parts=["photograph of victorian woman with wings, sky clouds, meadow grass"],
-                weight=None),
-            Prompt(
-                value="watermark, text",
-                parts=["watermark, text"],
-                weight=None))])
-
-        self.assertEqual(prompt_info.models, [
-            Model(name='v1-5-pruned-emaonly.ckpt', model_hash=None)])
-
-        self.assertEqual(prompt_info.samplers, [
-            Sampler(name='sample_dpmpp_2m',
-                    parameters={
-                        'seed': 280823642470253,
-                        'random_seed_after_every_gen': True,
-                        'steps': 20,
-                        'cfg': 8.0,
-                        'scheduler': 'normal',
-                        'denoise': 0.8700000000000001})])
-
-    def test_parse_with_config(self):
-        config = {
-            "sampler_types": [],
-            "text_positive_keys": ["text", "positive"],
-            "text_negative_keys": ["text", "negative"],
-            "fields": {
-                "cfg": "cfg_scale"
-            }
-        }
-
-        prompt_info = self.parse_image("img2img_cropped.png", config)
-
-        self.assertEqual(prompt_info.samplers, [
-            Sampler(name='sample_dpmpp_2m',
-                    parameters={
-                        'seed': 280823642470253,
-                        'random_seed_after_every_gen': True,
-                        'steps': 20,
-                        'cfg_scale': 8.0,
-                        'scheduler': 'normal',
-                        'denoise': 0.8700000000000001})])
-
-    def test_parse_complex(self):
-        for image, expected in COMPLEX_WORKFLOWS:
-            with self.subTest(image=image):
-                data = self.parse_image(image)
-
-                unique_samplers = {sampler.name for sampler in data.samplers}
-                self.assertEqual(len(data.prompts), expected.num_prompts)
-                self.assertEqual(len(data.models), expected.num_models)
-                self.assertEqual(len(set(data.models)), expected.num_unique_models)
-                self.assertEqual(len(data.samplers), expected.num_samplers)
-                self.assertEqual(len(unique_samplers), expected.num_unique_samplers)
+    assert image_data is not None
+    assert error is None
+    assert image_data.samplers == expected_samplers
+    assert image_data.prompts == expected_prompts
+    assert image_data.negative_prompts == expected_negative_prompts
+    assert image_data.models == expected_models
+    assert image_data.metadata == expected_metadata

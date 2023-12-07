@@ -1,21 +1,40 @@
 [build-system]
-requires = ["setuptools>=61", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=61", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "sd-parsers"
-description = "SD Parsers - read metadata from images created by Stable Diffusion"
+description = "a library to read metadata from images created by Stable Diffusion"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 dependencies = [
-   'Pillow>=8.3.1',
+    'Pillow>=8.3.1',
 ]
 dynamic = ["version"]
 license = {file = "LICENSE.txt"}
-
-[tool.setuptools_scm]
-[tool.setuptools]
-include-package-data = true
+authors = [
+    {name = "d3x-at"},
+]
 
 [project.urls]
 repository = "https://github.com/d3x-at/sd-parsers"
+
+[tool]
+[tool.setuptools_scm]
+[tool.setuptools]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pdm]
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=7.4.2",
+    "ruff>=0.0.292",
+    "types-Pillow>=10.0.0.3",
+]
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "DEBUG"
+log_format = "%(levelname)s %(filename)s %(message)s"

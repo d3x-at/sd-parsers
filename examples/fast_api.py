@@ -1,21 +1,23 @@
 """
 return metadata provided by sdparsers.
 usage: uvicorn fast_api:app
-test: curl -X "POST" http://127.0.0.1:8000/api/parse -F "file=@/path/to/image.png"
+test: curl -X "POST" http://127.0.0.1:8000/api/parse -F "image=@/path/to/image.png"
 """
-import io
-import sdparsers as parser
-import simplejson as json
-from fastapi import FastAPI, File, UploadFile, Response
+from fastapi import FastAPI, UploadFile
+from sd_parsers import ParserManager
 
 app = FastAPI()
-parser_manager = parser.ParserManager()
+parser_manager = ParserManager()
 
 
 @app.post("/api/parse")
-def parse(image: UploadFile = File(...)):
-    with io.BytesIO(image.file.read()) as fp:
-        res = parser_manager.parse(fp)
-    if res:
-        return Response(content=json.dumps(res), media_type="application/json")
+def parse(image: UploadFile):
+    # use lazy read to skip detailed metadata extraction
+    # warning: `parameters` can contain "garbage" information
+    # as some metadata checks are skipped with lazy_read
+    image_data = parser_manager.parse(image.file, lazy_read=True)
+
+    if image_data:
+        return {"success": True, "parameters": image_data.parameters}
+
     return {"success": False}

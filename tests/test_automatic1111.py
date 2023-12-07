@@ -1,65 +1,94 @@
-import unittest
-
+import pytest
 from PIL import Image
-from tools import RESOURCE_PATH
+from sd_parsers import Model, Prompt, Sampler
+from sd_parsers.parsers import AUTOMATIC1111Parser, _automatic1111
 
-from sdparsers import Model, Prompt, PromptInfo, Sampler
-from sdparsers.parsers import AUTOMATIC1111Parser, automatic1111
+from tests.tools import RESOURCE_PATH
 
-IMAGES_FOLDER = RESOURCE_PATH / "automatic1111"
-OUTPUT = PromptInfo(
-    generator='AUTOMATIC1111',
-    prompts=[(
-        Prompt(value='photo of a duck',
-               parts=['photo of a duck'],
-               weight=None),
-        Prompt(value='monochrome',
-               parts=['monochrome'],
-               weight=None)
-    )],
-    samplers=[
-        Sampler(name='UniPC',
-                parameters={'steps': '15', 'cfg_scale': '5', 'seed': '235284042'})
-    ],
-    models=[
-        Model(name='realistic_realisticVisionV20_v20',
-              model_hash='c0d1994c73')
-    ],
-    metadata={'size': '512x400'},
-    raw_params={'parameters': (
-        "photo of a duck\nNegative prompt: monochrome\n"
-        "Steps: 15, Sampler: UniPC, CFG scale: 5, Seed: 235284042, Size: 512x400, "
-        "Model hash: c0d1994c73, Model: realistic_realisticVisionV20_v20"
-    )})
+PARAMETERS = (
+    "photo of a duck\nNegative prompt: monochrome\n"
+    "Steps: 15, Sampler: UniPC, CFG scale: 5, Seed: 235284042, Size: 512x400, "
+    "Model hash: c0d1994c73, Model: realistic_realisticVisionV20_v20"
+)
+
+MODEL = Model(name="realistic_realisticVisionV20_v20", model_hash="c0d1994c73")
+PROMPTS = [Prompt(value="photo of a duck")]
+NEGATIVE_PROMPTS = [Prompt(value="monochrome")]
+
+SAMPLER = Sampler(
+    name="UniPC",
+    parameters={"steps": "15", "cfg_scale": "5", "seed": "235284042"},
+    model=MODEL,
+    prompts=PROMPTS,
+    negative_prompts=NEGATIVE_PROMPTS,
+)
+
+testdata = [
+    pytest.param(
+        "automatic1111_cropped.png",
+        (
+            SAMPLER,
+            set([MODEL]),
+            set(PROMPTS),
+            set(NEGATIVE_PROMPTS),
+            {"size": "512x400"},
+        ),
+        id="automatic1111_cropped.png",
+    ),
+    pytest.param(
+        "automatic1111_cropped.jpg",
+        (
+            SAMPLER,
+            set([MODEL]),
+            set(PROMPTS),
+            set(NEGATIVE_PROMPTS),
+            {"size": "512x400"},
+        ),
+        id="automatic1111_cropped.jpg",
+    ),
+]
 
 
-class Automatic1111Tester(unittest.TestCase):
+@pytest.mark.parametrize("filename, expected", testdata)
+def test_parse(filename: str, expected):
+    (
+        expected_sampler,
+        expected_models,
+        expected_prompts,
+        expected_negative_prompts,
+        expected_metadata,
+    ) = expected
 
-    def parse_image(self, filename: str, config=None):
-        parser = AUTOMATIC1111Parser(config)
-        with Image.open(IMAGES_FOLDER / filename) as image:
-            return parser.parse(image)
+    parser = AUTOMATIC1111Parser()
+    with Image.open(RESOURCE_PATH / "parsers/AUTOMATIC1111" / filename) as image:
+        image_data, error = parser.read_parameters(image)
 
-    def test_parse_png(self):
-        prompt_info = self.parse_image("automatic1111_cropped.png")
-        self.assertEqual(prompt_info, OUTPUT)
+    assert image_data is not None
+    assert error is None
+    assert image_data.samplers == [expected_sampler]
+    assert image_data.prompts == expected_prompts
+    assert image_data.negative_prompts == expected_negative_prompts
+    assert image_data.models == expected_models
+    assert image_data.metadata == expected_metadata
 
-    def test_parse_jpg(self):
-        prompt_info = self.parse_image("automatic1111_cropped.jpg")
-        self.assertEqual(prompt_info, OUTPUT)
 
-    def test_civitai_hashes(self):
-        parameters = OUTPUT.raw_params['parameters'] \
-            + ', Hashes: {"vae": "c6a580b13a", "model": "c0d1994c73"}'
+def test_civitai_hashes():
+    parameters = PARAMETERS + ', Hashes: {"vae": "c6a580b13a", "model": "c0d1994c73"}'
 
-        prompt, negative_prompt, metadata = automatic1111.split_parameters(parameters)
-        self.assertEqual(prompt, "photo of a duck")
-        self.assertEqual(negative_prompt, "monochrome")
-        self.assertEqual(metadata, {'CFG scale': '5',
-                                    'Model': 'realistic_realisticVisionV20_v20',
-                                    'Model hash': 'c0d1994c73',
-                                    'Sampler': 'UniPC',
-                                    'Seed': '235284042',
-                                    'Size': '512x400',
-                                    'Steps': '15',
-                                    'hashes': {'model': 'c0d1994c73', 'vae': 'c6a580b13a'}})
+    info_index, sampler_info, metadata = _automatic1111.get_sampler_info(parameters.split("\n"))
+
+    print(sampler_info)
+    print(metadata)
+    assert info_index == 2
+    assert sampler_info == {
+        "CFG scale": "5",
+        "Sampler": "UniPC",
+        "Seed": "235284042",
+        "Steps": "15",
+    }
+    assert metadata == {
+        "Model": "realistic_realisticVisionV20_v20",
+        "Model hash": "c0d1994c73",
+        "Size": "512x400",
+        "civitai_hashes": {"model": "c0d1994c73", "vae": "c6a580b13a"},
+    }
