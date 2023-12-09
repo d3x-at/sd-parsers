@@ -8,10 +8,10 @@ from typing import Any, Dict, Generator, List, Optional, Set, Tuple
 from PIL.Image import Image
 from PIL.PngImagePlugin import PngImageFile
 
-from .._exceptions import ParserError
 from .._models import Model, Prompt, Sampler
 from .._parser import Generators, Parser, ParseResult
 from .._prompt_info import PromptInfo
+from ..exceptions import ParserError
 from ._managed_parsers import MANAGED_PARSERS
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class ComfyUIParser(Parser):
             prompt = parameters["prompt"]
             workflow = parameters["workflow"]
         except KeyError as error:
-            raise ParserError("error reading prameters") from error
+            raise ParserError("error reading parameters") from error
 
         samplers, metadata = ImageContext.extract(self, prompt, workflow)
         return samplers, metadata

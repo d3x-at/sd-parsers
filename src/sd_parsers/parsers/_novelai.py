@@ -7,10 +7,10 @@ from typing import Any, Dict
 from PIL.Image import Image
 from PIL.PngImagePlugin import PngImageFile
 
-from .._exceptions import ParserError
 from .._models import Model, Prompt, Sampler
 from .._parser import Generators, Parser, ParseResult, pop_keys
 from .._prompt_info import PromptInfo
+from ..exceptions import ParserError
 from ._managed_parsers import MANAGED_PARSERS
 
 SAMPLER_PARAMS = ["seed", "strength", "noise", "scale"]

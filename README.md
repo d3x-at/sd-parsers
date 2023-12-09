@@ -53,7 +53,7 @@ Each parser module can also be used directly, omitting the use of ```ParserManag
 
 ```python
 from PIL import Image
-from sd_parsers import ParserError
+from sd_parsers.exceptions import ParserError
 from sd_parsers.parsers import AUTOMATIC1111Parser
 
 parser = AUTOMATIC1111Parser()

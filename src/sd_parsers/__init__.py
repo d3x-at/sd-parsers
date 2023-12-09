@@ -16,7 +16,6 @@ if prompt_info is not None:
         print(prompt.value)
 
 """
-from ._exceptions import ParserError
 from ._models import Model, Prompt, Sampler
 from ._parser import Generators, Parser
 from ._parser_manager import ParserManager
@@ -26,7 +25,6 @@ __all__ = [
     "Parser",
     "Generators",
     "ParserManager",
-    "ParserError",
     "PromptInfo",
     "Model",
     "Prompt",

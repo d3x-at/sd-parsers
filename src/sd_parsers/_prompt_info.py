@@ -5,7 +5,7 @@ import itertools
 import logging
 from typing import TYPE_CHECKING, Any, Dict, List, Set
 
-from ._exceptions import ParserError
+from .exceptions import ParserError
 
 if TYPE_CHECKING:
     from ._models import Model, Prompt, Sampler
