@@ -25,7 +25,7 @@ jobs:
         pdm install -d
     - name: Lint with ruff
       run: |
-        pdm run ruff check --extend-select=D403 .
+        pdm run ruff check src
     - name: Test with pytest
       run: |
         pdm run pytest -v
