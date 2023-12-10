@@ -187,11 +187,13 @@ class ImageContext:
             else:
                 self.processed_nodes.add(node_id)
                 logger.debug("found model #%d: %s", node_id, ckpt_name)
-                return Model(
-                    name=ckpt_name,
-                    model_id=node_id,
-                    config=inputs.get("config_name", None),
-                )
+
+                model = Model(model_id=node_id, name=ckpt_name)
+
+                with suppress(KeyError):
+                    model.parameters["config_name"] = inputs["config_name"]
+
+                return model
 
         return None
 

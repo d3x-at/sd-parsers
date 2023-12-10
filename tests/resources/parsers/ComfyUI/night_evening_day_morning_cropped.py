@@ -1,11 +1,10 @@
 import pytest
 from sd_parsers import Model, Prompt, Sampler
 
-MODEL1 = Model(model_id=45, name="Anything-V3.0.ckpt", config=None, model_hash=None)
+MODEL1 = Model(model_id=45, name="Anything-V3.0.ckpt", model_hash=None)
 MODEL2 = Model(
     model_id=46,
     name="AbyssOrangeMix2_hard.safetensors",
-    config=None,
     model_hash=None,
 )
 
@@ -13,31 +12,26 @@ PROMPTS1 = [
     Prompt(
         value="(best quality) (daytime:1.2) sky (blue)",
         prompt_id=17,
-        weight=None,
     ),
     Prompt(
         value="(best quality) (night:1.3) (darkness) sky (black) (stars:1.2) "
         "(galaxy:1.2) (space) (universe)",
         prompt_id=14,
-        weight=None,
     ),
     Prompt(
         value="(best quality) (evening:1.2) (sky:1.2) (clouds) (colorful) "
         "(HDR:1.2) (sunset:1.3)",
         prompt_id=13,
-        weight=None,
     ),
     Prompt(
         value="(masterpiece) (best quality) morning sky",
         prompt_id=33,
-        weight=None,
     ),
     Prompt(
         value="(masterpiece) (best quality) beautiful landscape breathtaking "
         "amazing view nature photograph forest mountains ocean (sky) "
         "national park scenery",
         prompt_id=6,
-        weight=None,
     ),
 ]
 
@@ -53,7 +47,6 @@ NEGATIVE_PROMPTS1 = [
         "(forehead mark) (depth of field) "
         "(emotionless) (penis) (pumpkin)",
         prompt_id=7,
-        weight=None,
     )
 ]
 
@@ -65,7 +58,6 @@ PROMPTS2 = [
         "mountains ocean daytime night evening morning, "
         "(sky:1.2)",
         prompt_id=26,
-        weight=None,
     )
 ]
 
@@ -81,7 +73,6 @@ NEGATIVE_PROMPTS2 = [
         "(forehead mark) (depth of field) "
         "(emotionless) (penis) (pumpkin)",
         prompt_id=27,
-        weight=None,
     )
 ]
 

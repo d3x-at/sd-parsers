@@ -1,13 +1,17 @@
 import pytest
 from sd_parsers import Model, Prompt, Sampler
 
-MODEL = Model(name="v1-5-pruned-emaonly.ckpt", config="v1-inference.yaml", model_id=4)
+MODEL = Model(
+    name="v1-5-pruned-emaonly.ckpt", parameters={"config_name": "v1-inference.yaml"}, model_id=4
+)
+
 PROMPTS = [
     Prompt(
         value="photograph of victorian woman with wings, sky clouds, " "meadow grass",
         prompt_id=6,
     )
 ]
+
 NEGATIVE_PROMPTS = [Prompt(value="watermark, text", prompt_id=7)]
 
 PARAM = pytest.param(

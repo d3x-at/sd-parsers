@@ -67,6 +67,8 @@ class Parser(ABC):
         self,
         parameters: Union[Dict[str, Any], Iterable[Tuple[str, Any]]],
         replacement_rules: Optional[ReplacementRules] = None,
+        to_lowercase=True,
+        replace_whitespace=True,
     ) -> Dict[str, Any]:
         """
         Apply replacement rules and basic formatting to the keys of select image metadata entries.
@@ -76,7 +78,9 @@ class Parser(ABC):
         Override to alter the applied standardization logic.
         """
         if self.do_normalization_pass:
-            return _normalize_parameters(parameters, replacement_rules)
+            return _normalize_parameters(
+                parameters, replacement_rules, to_lowercase, replace_whitespace
+            )
 
         return parameters if isinstance(parameters, dict) else dict(parameters)  # type: ignore
 
@@ -84,6 +88,8 @@ class Parser(ABC):
 def _normalize_parameters(
     parameters: Union[Dict[str, Any], Iterable[Tuple[str, Any]]],
     replacement_rules: Optional[ReplacementRules] = None,
+    to_lowercase=True,
+    replace_whitespace=True,
 ) -> Dict[str, Any]:
     """
     Apply replacement rules and basic formatting to the keys of select image metadata entries.
@@ -109,9 +115,14 @@ def _normalize_parameters(
                         **{key: raw_props[key] for key in format_values}
                     )
 
-    # remaining (unchanged) items
-    for property_key, value in raw_props.items():
-        processed[property_key.lower().replace(" ", "_")] = value
+    for key, value in raw_props.items():
+        if to_lowercase:
+            key = key.lower()
+
+        if replace_whitespace:
+            key = key.replace(" ", "_")
+
+        processed[key] = value
 
     return processed
 

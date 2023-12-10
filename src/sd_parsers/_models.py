@@ -9,10 +9,12 @@ class Prompt:
 
     value: str
     """The value of the prompt."""
+
     prompt_id: Optional[int] = None
-    """prompt id"""
-    weight: Optional[float] = None
-    """Prompt weight. (Specific to InvokeAI for now)"""
+    """Prompt id"""
+
+    parameters: Dict[str, Any] = field(default_factory=dict)
+    """Additional prompt parameters"""
 
     def __hash__(self) -> int:
         return hash((self.prompt_id, self.value))
@@ -24,8 +26,10 @@ class Model:
 
     model_id: Optional[int] = None
     name: Optional[str] = None
-    config: Optional[str] = None
     model_hash: Optional[str] = None
+
+    parameters: Dict[str, Any] = field(default_factory=dict)
+    """Additional model parameters"""
 
     def __hash__(self) -> int:
         return hash((self.model_id, self.name))

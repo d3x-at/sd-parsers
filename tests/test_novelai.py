@@ -6,12 +6,7 @@ from sd_parsers.parsers import NovelAIParser
 from tests.tools import RESOURCE_PATH
 
 MODEL = Model(name="Stable Diffusion", model_hash="1D44365E")
-PROMPTS = [
-    Prompt(
-        value="masterpiece, best quality,  cat, space, icon",
-        weight=None,
-    )
-]
+PROMPTS = [Prompt(value="masterpiece, best quality,  cat, space, icon")]
 NEGATIVE_PROMPTS = [
     Prompt(
         value=(
@@ -21,8 +16,7 @@ NEGATIVE_PROMPTS = [
             "blurry, lowres, bad anatomy, bad hands, text, error, missing fingers, "
             "extra digit, fewer digits, cropped, worst quality, low quality, "
             "normal quality, jpeg artifacts, signature, watermark, username, blurry"
-        ),
-        weight=None,
+        )
     )
 ]
 
