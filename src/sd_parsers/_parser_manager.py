@@ -8,7 +8,7 @@ from PIL import Image
 from ._parser import Parser
 from ._prompt_info import PromptInfo
 from .exceptions import ParserError
-from .parsers._managed_parsers import MANAGED_PARSERS
+from .parsers import MANAGED_PARSERS
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -71,6 +71,11 @@ class ParserManager:
             for parser in self.managed_parsers:
                 prompt_info, _ = parser.read_parameters(image)
                 if prompt_info:
+                    if not lazy_read:
+                        try:
+                            prompt_info.parse()
+                        except ParserError:
+                            continue
                     return prompt_info
             return None
 
@@ -79,11 +84,5 @@ class ParserManager:
         else:
             with Image.open(image) as image_data:
                 prompt_info = read_parameters(image_data)
-
-        if prompt_info and not lazy_read:
-            try:
-                prompt_info.parse()  # pylint: disable=protected-access
-            except ParserError:
-                return None
 
         return prompt_info

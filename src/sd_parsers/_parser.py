@@ -60,7 +60,7 @@ class Parser(ABC):
         """
 
     @abstractmethod
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any], parsing_context: Any) -> ParseResult:
         """Extract image generation information from the image metadata."""
 
     def normalize_parameters(

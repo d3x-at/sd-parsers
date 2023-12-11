@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import itertools
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Set
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
 
 from .exceptions import ParserError
 
@@ -20,26 +20,38 @@ class PromptInfo:
     parameters: Dict[str, Any]
     """The original parameters as found in the image metadata."""
 
-    def __init__(self, parser: Parser, parameters: Dict[str, Any]):
+    def __init__(
+        self,
+        parser: Parser,
+        parameters: Dict[str, Any],
+        generator: Optional[Generators] = None,
+        parsing_context: Any = None,
+    ):
         """
         Initializes a PromptInfo Object
 
         Parameters:
-            Parser (sd_parsers.Parser): The parser object used to obtain the given image parameters.
+            parser (sd_parsers.Parser): The parser object used to obtain the given image parameters.
             parameters (Dict[str, Any]): A dictionary containing the image metadata.
+            generator (sd_parsers.Generators): Identifier for the inferred image generator.
+            Taken from parser.generator if `None`.
+            parsing_context (Any): Any information needed during the parsing pass.
+            Passed on to the parser's parse() method.
         """
         self._parser = parser
+        self._generator = generator
+        self._parsing_context = parsing_context
         self.parameters = parameters
 
     def parse(self):
         """Populate sampler information and metadata."""
-        self._samplers, self._metadata = self._parser.parse(self.parameters)
+        self._samplers, self._metadata = self._parser.parse(self.parameters, self._parsing_context)
         return self._samplers, self._metadata
 
     @property
     def generator(self) -> Generators:
         """Image generater which might have produced the parsed image."""
-        return self._parser.generator
+        return self._generator or self._parser.generator
 
     _samplers = None
 
@@ -48,10 +60,10 @@ class PromptInfo:
         """Samplers used in generating the parsed image."""
         if self._samplers is None:
             try:
-                self._samplers, self._metadata = self.parse()
+                self.parse()
             except ParserError:
                 self._samplers, self._metadata = [], {}
-        return self._samplers
+        return self._samplers  # type: ignore
 
     _metadata = None
 
@@ -64,10 +76,10 @@ class PromptInfo:
         """
         if self._metadata is None:
             try:
-                self._samplers, self._metadata = self.parse()
+                self.parse()
             except ParserError:
                 self._samplers, self._metadata = [], {}
-        return self._metadata
+        return self._metadata  # type: ignore
 
     _prompts = None
 

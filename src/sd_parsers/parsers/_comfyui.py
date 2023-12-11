@@ -12,7 +12,6 @@ from .._models import Model, Prompt, Sampler
 from .._parser import Generators, Parser, ParseResult
 from .._prompt_info import PromptInfo
 from ..exceptions import ParserError
-from ._managed_parsers import MANAGED_PARSERS
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class ComfyUIParser(Parser):
 
         return PromptInfo(self, {"prompt": prompt, "workflow": workflow}), None
 
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:
             prompt = parameters["prompt"]
             workflow = parameters["workflow"]
@@ -239,6 +238,3 @@ class ImageContext:
             sampler.negative_prompts = self._get_prompts(negative_prompt_id, NEGATIVE_PROMPT_KEYS)
 
         return sampler
-
-
-MANAGED_PARSERS.append(ComfyUIParser)

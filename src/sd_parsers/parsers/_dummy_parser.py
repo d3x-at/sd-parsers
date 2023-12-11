@@ -5,7 +5,6 @@ from PIL.Image import Image
 
 from .._parser import Generators, Parser, ParseResult
 from .._prompt_info import PromptInfo
-from ._managed_parsers import MANAGED_PARSERS  # noqa: F401
 
 
 class DummyParser(Parser):
@@ -26,14 +25,11 @@ class DummyParser(Parser):
         - return [`PromptInfo`, `None`] when the image data can be parsed.
         - else return [`None`, `None`]
         """
-        return PromptInfo(self, parameters={"my_data": {}}), None
+        return PromptInfo(self, parameters={"my_data": {}}, parsing_context=None), None
 
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any], parsing_context: Any) -> ParseResult:
         """
         Process the generation parameters which were read from the image with `read_parameters`.
         """
         my_data = parameters["my_data"]
         return [], my_data
-
-
-# MANAGED_PARSERS.append(DummyParser)

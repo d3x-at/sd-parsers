@@ -11,7 +11,6 @@ from .._models import Model, Prompt, Sampler
 from .._parser import Generators, Parser, ParseResult, get_exif_value, pop_keys
 from .._prompt_info import PromptInfo
 from ..exceptions import ParserError
-from ._managed_parsers import MANAGED_PARSERS
 
 SAMPLER_PARAMS = ["Sampler", "CFG scale", "Seed", "Steps", "ENSD"]
 
@@ -42,7 +41,7 @@ class AUTOMATIC1111Parser(Parser):
 
         return None, None
 
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:
             lines = parameters["parameters"].split("\n")
         except (KeyError, ValueError) as error:
@@ -110,6 +109,3 @@ def get_sampler_info(lines):
             return index, sampler_info, metadata
 
     raise ParserError("no sampler information found")
-
-
-MANAGED_PARSERS.append(AUTOMATIC1111Parser)
