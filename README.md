@@ -88,6 +88,14 @@ The output returned from `ParserManager` is a `PromptInfo` type with the followi
 * ```parameters```: A dictionary of unmodified metadata entries as found in the parsed image (if present).
 
 
+## Contributing
+As i don't have the time and resources to keep up with all the available AI-based image generators out there, the scale and features of this library is depending greatly on your help.
+
+If you find the sd-parsers library unable to read metadata from an image, feel free to open an [issue](https://github.com/d3x-at/sd-parsers/issues).
+
+See [CONTRIBUTING.md](https://github.com/d3x-at/sd-parsers/blob/master/.github/CONTRIBUTING.md), if you are willing to help with improving the library itself and/or to create/maintain an additional parser module.
+
+
 ## Credits
 Idea and motivation using AUTOMATIC1111's stable diffusion webui
 - https://github.com/AUTOMATIC1111/stable-diffusion-webui
