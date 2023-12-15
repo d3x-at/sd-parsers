@@ -22,10 +22,13 @@ class AUTOMATIC1111Parser(Parser):
     def generator(self):
         return Generators.AUTOMATIC1111
 
-    def read_parameters(self, image: Image):
+    def read_parameters(self, image: Image, use_text: bool = True):
         if isinstance(image, PngImageFile):
             try:
-                parameters = image.text["parameters"]
+                if use_text:
+                    parameters = image.text["parameters"]
+                else:
+                    parameters = image.info["parameters"]
             except KeyError as error:
                 return None, error
 

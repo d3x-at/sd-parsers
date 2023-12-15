@@ -17,10 +17,14 @@ class DummyParser(Parser):
     def generator(self):
         return Generators.UNKNOWN
 
-    def read_parameters(self, image: Image):
+    def read_parameters(self, image: Image, use_text: bool = True):
         """
         Read the relevant generation parameters from the given image.
         Keep this method as short as possible.
+
+        If image is PNG:
+        Use `image.text` as parameters source if use_text is True.
+        Use `image.info` otherwise.
 
         - return [`None`, `exception`] when an exception is encountered.
         - return [`PromptInfo`, `None`] when the image data can be parsed.

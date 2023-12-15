@@ -50,7 +50,11 @@ class Parser(ABC):
         """Identifier for the inferred image generator."""
 
     @abstractmethod
-    def read_parameters(self, image: Image) -> Tuple[Optional[PromptInfo], Optional[Exception]]:
+    def read_parameters(
+        self,
+        image: Image,
+        use_text: bool = True,
+    ) -> Tuple[Optional[PromptInfo], Optional[Exception]]:
         """
         Read generation parameters from image.
 

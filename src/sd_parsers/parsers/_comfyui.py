@@ -28,13 +28,15 @@ class ComfyUIParser(Parser):
     def generator(self):
         return Generators.COMFYUI
 
-    def read_parameters(self, image: Image):
+    def read_parameters(self, image: Image, use_text: bool = True):
         if not isinstance(image, PngImageFile):
             return None, None
 
         try:
-            prompt = json.loads(image.text["prompt"])
-            workflow = json.loads(image.text["workflow"])
+            metadata = image.text if use_text else image.info
+
+            prompt = json.loads(metadata["prompt"])
+            workflow = json.loads(metadata["workflow"])
         except (KeyError, json.JSONDecodeError, TypeError) as error:
             return None, error
 

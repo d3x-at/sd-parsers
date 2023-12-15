@@ -47,14 +47,17 @@ class InvokeAIParser(Parser):
     def generator(self):
         return Generators.INVOKEAI
 
-    def read_parameters(self, image: Image):
+    def read_parameters(self, image: Image, use_text: bool = True):
         if not isinstance(image, PngImageFile):
             return None, None
 
         try:
             for variant in InvokeVariant:
                 try:
-                    metadata = image.text[variant.value]
+                    if use_text:
+                        metadata = image.text[variant.value]
+                    else:
+                        metadata = image.info[variant.value]
                 except KeyError:
                     continue
 

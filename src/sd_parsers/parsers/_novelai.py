@@ -23,15 +23,17 @@ class NovelAIParser(Parser):
     def generator(self):
         return Generators.NOVELAI
 
-    def read_parameters(self, image: Image):
+    def read_parameters(self, image: Image, use_text: bool = True):
         if not isinstance(image, PngImageFile):
             return None, None
 
         try:
-            description = image.text["Description"]
-            software = image.text["Software"]
-            source = image.text["Source"]
-            comment = json.loads(image.text["Comment"])
+            metadata = image.text if use_text else image.info
+
+            description = metadata["Description"]
+            software = metadata["Software"]
+            source = metadata["Source"]
+            comment = json.loads(metadata["Comment"])
         except (KeyError, json.JSONDecodeError, TypeError) as error:
             return None, error
 

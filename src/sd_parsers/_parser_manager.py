@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from PIL import Image
+from PIL.PngImagePlugin import PngImageFile
 
 from ._parser import Parser
 from ._prompt_info import PromptInfo
@@ -48,6 +49,7 @@ class ParserManager:
         self,
         image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
         lazy_read: bool = False,
+        two_pass: bool = True,
     ) -> Optional[PromptInfo]:
         """
         Try to extract image generation parameters from the given image.
@@ -55,6 +57,11 @@ class ParserManager:
         Parameters:
             image (a PIL Image, filename, pathlib.Path object or a file object): The image to parse.
             lazy_read (bool): delay detailed metadata extraction until necessary.
+            two_pass (bool): in case of PNG images, use `Image.info` before using `Image.text` as metadata source.
+
+        The performance effects of two-pass parsing depends on the given image files.
+        If the image files are correctly formed and can be read with one of the supported parser modules,
+        setting `two_pass` to `True` will considerably shorten the time needed to read the image parameters.
 
         Warning: with lazy_read set to `True`, the returned image parameters may contain
         "garbage" information as some metadata checks will be delayed. Use when fast access to the
@@ -67,22 +74,30 @@ class ParserManager:
         - ValueError: If a StringIO instance is used for `image`.
         """
 
-        def read_parameters(image: Image.Image):
-            for parser in self.managed_parsers:
-                prompt_info, _ = parser.read_parameters(image)
-                if prompt_info:
+        def read_parameters(image: Image.Image, two_pass: bool):
+            prompt_info = None
+            # two_pass only makes sense with PNG images
+            two_pass = isinstance(image, PngImageFile) if two_pass else False
+
+            for use_text in [False, True] if two_pass else [True]:
+                for parser in self.managed_parsers:
+                    prompt_info, _ = parser.read_parameters(image, use_text)
+                    if prompt_info is None:
+                        continue
+
                     if not lazy_read:
                         try:
                             prompt_info.parse()
                         except ParserError:
                             continue
+
                     return prompt_info
             return None
 
         if isinstance(image, Image.Image):
-            prompt_info = read_parameters(image)
+            prompt_info = read_parameters(image, two_pass)
         else:
-            with Image.open(image) as image_data:
-                prompt_info = read_parameters(image_data)
+            with Image.open(image) as _image:
+                prompt_info = read_parameters(_image, two_pass)
 
         return prompt_info
