@@ -4,7 +4,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from PIL import Image
-from PIL.PngImagePlugin import PngImageFile
 
 from ._parser import Parser
 from ._prompt_info import PromptInfo
@@ -77,7 +76,7 @@ class ParserManager:
         def read_parameters(image: Image.Image, two_pass: bool):
             prompt_info = None
             # two_pass only makes sense with PNG images
-            two_pass = isinstance(image, PngImageFile) if two_pass else False
+            two_pass = image.format == "PNG" if two_pass else False
 
             for use_text in [False, True] if two_pass else [True]:
                 for parser in self.managed_parsers:

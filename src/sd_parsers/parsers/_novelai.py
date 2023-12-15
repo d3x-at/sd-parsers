@@ -6,7 +6,6 @@ from contextlib import suppress
 from typing import Any, Dict
 
 from PIL.Image import Image
-from PIL.PngImagePlugin import PngImageFile
 
 from .._models import Model, Prompt, Sampler
 from .._parser import Generators, Parser, ParseResult, pop_keys
@@ -24,11 +23,11 @@ class NovelAIParser(Parser):
         return Generators.NOVELAI
 
     def read_parameters(self, image: Image, use_text: bool = True):
-        if not isinstance(image, PngImageFile):
+        if image.format != "PNG":
             return None, None
 
         try:
-            metadata = image.text if use_text else image.info
+            metadata = image.text if use_text else image.info  # type: ignore
 
             description = metadata["Description"]
             software = metadata["Software"]

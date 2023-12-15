@@ -5,7 +5,6 @@ from contextlib import suppress
 from typing import Any, Dict
 
 from PIL.Image import Image
-from PIL.PngImagePlugin import PngImageFile
 
 from .._models import Model, Prompt, Sampler
 from .._parser import Generators, Parser, ParseResult, get_exif_value, pop_keys
@@ -23,10 +22,10 @@ class AUTOMATIC1111Parser(Parser):
         return Generators.AUTOMATIC1111
 
     def read_parameters(self, image: Image, use_text: bool = True):
-        if isinstance(image, PngImageFile):
+        if image.format == "PNG":
             try:
                 if use_text:
-                    parameters = image.text["parameters"]
+                    parameters = image.text["parameters"]  # type: ignore
                 else:
                     parameters = image.info["parameters"]
             except KeyError as error:

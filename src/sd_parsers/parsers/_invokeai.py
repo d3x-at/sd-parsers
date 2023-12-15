@@ -9,7 +9,6 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, NamedTuple
 
 from PIL.Image import Image
-from PIL.PngImagePlugin import PngImageFile
 
 from .._models import Model, Prompt, Sampler
 from .._parser import Generators, Parser, ParseResult, ReplacementRules, pop_keys
@@ -48,14 +47,14 @@ class InvokeAIParser(Parser):
         return Generators.INVOKEAI
 
     def read_parameters(self, image: Image, use_text: bool = True):
-        if not isinstance(image, PngImageFile):
+        if image.format != "PNG":
             return None, None
 
         try:
             for variant in InvokeVariant:
                 try:
                     if use_text:
-                        metadata = image.text[variant.value]
+                        metadata = image.text[variant.value]  # type: ignore
                     else:
                         metadata = image.info[variant.value]
                 except KeyError:
