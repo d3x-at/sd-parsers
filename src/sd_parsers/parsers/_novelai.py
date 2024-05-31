@@ -24,7 +24,7 @@ class NovelAIParser(Parser):
 
     def read_parameters(self, image: Image, use_text: bool = True):
         if image.format != "PNG":
-            return None, None
+            return None
 
         try:
             metadata = image.text if use_text else image.info  # type: ignore
@@ -34,10 +34,10 @@ class NovelAIParser(Parser):
             source = metadata["Source"]
             comment = json.loads(metadata["Comment"])
         except (KeyError, json.JSONDecodeError, TypeError) as error:
-            return None, error
+            raise ParserError("error reading metadata") from error
 
         if software != "NovelAI":
-            return None, None
+            return None
 
         return PromptInfo(
             self,
@@ -47,7 +47,7 @@ class NovelAIParser(Parser):
                 "Software": software,
                 "Source": source,
             },
-        ), None
+        )
 
     def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:

@@ -48,7 +48,7 @@ class InvokeAIParser(Parser):
 
     def read_parameters(self, image: Image, use_text: bool = True):
         if image.format != "PNG":
-            return None, None
+            return None
 
         try:
             for variant in InvokeVariant:
@@ -67,12 +67,12 @@ class InvokeAIParser(Parser):
                     self, parsing_context=variant, parameters={variant.value: metadata}
                 )
 
-                return prompt_info, None
-
-            return None, None
+                return prompt_info
 
         except (TypeError, json.JSONDecodeError) as error:
-            return None, error
+            raise ParserError("error reading metadata") from error
+
+        return None
 
     def parse(self, parameters: Dict[str, Any], parsing_context: InvokeVariant) -> ParseResult:
         try:

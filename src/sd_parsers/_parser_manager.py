@@ -85,15 +85,16 @@ class ParserManager:
 
             for use_text in [False, True] if two_pass else [True]:
                 for parser in self.managed_parsers:
-                    prompt_info, _ = parser.read_parameters(image, use_text)
-                    if prompt_info is None:
-                        continue
-
-                    if not self.lazy_read:
-                        try:
-                            prompt_info.parse()
-                        except ParserError:
+                    try:
+                        prompt_info = parser.read_parameters(image, use_text)
+                        if prompt_info is None:
                             continue
+
+                        if not self.lazy_read:
+                            prompt_info.parse()
+
+                    except ParserError:
+                        continue
 
                     return prompt_info
             return None

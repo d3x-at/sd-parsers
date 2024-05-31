@@ -26,10 +26,9 @@ def test_parse(filename: str, expected):
 
     parser = ComfyUIParser()
     with Image.open(RESOURCE_PATH / "parsers/ComfyUI" / filename) as image:
-        image_data, error = parser.read_parameters(image)
+        image_data = parser.read_parameters(image)
 
     assert image_data is not None
-    assert error is None
     assert image_data.samplers == expected_samplers
     assert image_data.prompts == expected_prompts
     assert image_data.negative_prompts == expected_negative_prompts

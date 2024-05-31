@@ -29,19 +29,19 @@ class AUTOMATIC1111Parser(Parser):
                 else:
                     parameters = image.info["parameters"]
             except KeyError as error:
-                return None, error
+                raise ParserError("error reading PNG parameters") from error
 
-            return PromptInfo(self, {"parameters": parameters}), None
+            return PromptInfo(self, {"parameters": parameters})
 
         if image.format in ("JPEG", "WEBP"):
             try:
                 parameters = get_exif_value(image, "UserComment")
             except (KeyError, ValueError) as error:
-                return None, error
+                raise ParserError("error reading UserComment") from error
 
-            return PromptInfo(self, {"parameters": parameters}), None
+            return PromptInfo(self, {"parameters": parameters})
 
-        return None, None
+        return None
 
     def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:

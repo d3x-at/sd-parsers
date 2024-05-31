@@ -53,10 +53,9 @@ def test_parse(filename: str, expected):
 
     parser = NovelAIParser()
     with Image.open(RESOURCE_PATH / "parsers/NovelAI" / filename) as image:
-        image_data, error = parser.read_parameters(image)
+        image_data = parser.read_parameters(image)
 
     assert image_data is not None
-    assert error is None
     assert image_data.samplers == [expected_sampler]
     assert image_data.prompts == expected_prompts
     assert image_data.negative_prompts == expected_negative_prompts

@@ -54,13 +54,11 @@ class Parser(ABC):
         self,
         image: Image,
         use_text: bool = True,
-    ) -> Tuple[Optional[PromptInfo], Optional[Exception]]:
+    ) -> Optional[PromptInfo]:
         """
         Read generation parameters from image.
 
-        returns a tuple of:
-        - `PromptInfo`: If suitable image metadata has been found.
-        - `Exception`: If metadata retrieval was aborted due to an exception.
+        returns `PromptInfo` if suitable image metadata has been found.
         """
 
     @abstractmethod

@@ -26,14 +26,14 @@ class DummyParser(Parser):
         Use `image.text` as parameters source if use_text is True.
         Use `image.info` otherwise.
 
-        - return [`None`, `exception`] when an exception is encountered.
-        - return [`PromptInfo`, `None`] when the image data can be parsed.
-        - else return [`None`, `None`]
+        - raise a ParserError when an exception is encountered.
+        - return `PromptInfo when the image data can be parsed.
+        - else return `None`
 
         Add a `parsing_context` to PromptInfo if you need to
         pass on processing information to the `parse()` method.
         """
-        return PromptInfo(self, parameters={"my_data": {"key": "value"}}), None
+        return PromptInfo(self, parameters={"my_data": {"key": "value"}})
 
     def parse(self, parameters: Dict[str, Any], parsing_context: Any) -> ParseResult:
         """
