@@ -29,7 +29,10 @@ class ParserManager:
 
     def __init__(
         self,
+        *,
         normalize_parameters: bool = True,
+        two_pass: bool = True,
+        lazy_read: bool = False,
         managed_parsers: Optional[List[Parser]] = None,
     ):
         """
@@ -38,25 +41,9 @@ class ParserManager:
         Optional Parameters:
             normalize_parameters (bool): Try to unify the parameter keys of the parser outputs.
             managed_parsers (list[Parser]): A list of parsers to be managed.
-        """
-        if managed_parsers is not None:
-            self.managed_parsers = managed_parsers
-        else:
-            self.managed_parsers = [parser(normalize_parameters) for parser in MANAGED_PARSERS]
-
-    def parse(
-        self,
-        image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
-        lazy_read: bool = False,
-        two_pass: bool = True,
-    ) -> Optional[PromptInfo]:
-        """
-        Try to extract image generation parameters from the given image.
-
-        Parameters:
-            image (a PIL Image, filename, pathlib.Path object or a file object): The image to parse.
+            two_pass (bool): for PNG images, use `Image.info` before using `Image.text` as metadata source.
             lazy_read (bool): delay detailed metadata extraction until necessary.
-            two_pass (bool): in case of PNG images, use `Image.info` before using `Image.text` as metadata source.
+
 
         The performance effects of two-pass parsing depends on the given image files.
         If the image files are correctly formed and can be read with one of the supported parser modules,
@@ -65,6 +52,24 @@ class ParserManager:
         Warning: with lazy_read set to `True`, the returned image parameters may contain
         "garbage" information as some metadata checks will be delayed. Use when fast access to the
         original image parameters is needed. Manual verification of parameter data is advised.
+        """
+        self.two_pass = two_pass
+        self.lazy_read = lazy_read
+
+        if managed_parsers is not None:
+            self.managed_parsers = managed_parsers
+        else:
+            self.managed_parsers = [parser(normalize_parameters) for parser in MANAGED_PARSERS]
+
+    def parse(
+        self,
+        image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
+    ) -> Optional[PromptInfo]:
+        """
+        Try to extract image generation parameters from the given image.
+
+        Parameters:
+            image (a PIL Image, filename, pathlib.Path object or a file object): The image to parse.
 
         If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
         underlying `Image.open()` function:
@@ -73,10 +78,10 @@ class ParserManager:
         - ValueError: If a StringIO instance is used for `image`.
         """
 
-        def read_parameters(image: Image.Image, two_pass: bool):
+        def read_parameters(image: Image.Image):
             prompt_info = None
             # two_pass only makes sense with PNG images
-            two_pass = image.format == "PNG" if two_pass else False
+            two_pass = image.format == "PNG" if self.two_pass else False
 
             for use_text in [False, True] if two_pass else [True]:
                 for parser in self.managed_parsers:
@@ -84,7 +89,7 @@ class ParserManager:
                     if prompt_info is None:
                         continue
 
-                    if not lazy_read:
+                    if not self.lazy_read:
                         try:
                             prompt_info.parse()
                         except ParserError:
@@ -94,9 +99,9 @@ class ParserManager:
             return None
 
         if isinstance(image, Image.Image):
-            prompt_info = read_parameters(image, two_pass)
+            prompt_info = read_parameters(image)
         else:
             with Image.open(image) as _image:
-                prompt_info = read_parameters(_image, two_pass)
+                prompt_info = read_parameters(_image)
 
         return prompt_info
