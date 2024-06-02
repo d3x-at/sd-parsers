@@ -8,16 +8,16 @@ from sd_parsers import ParserManager
 
 app = FastAPI()
 parser_manager = ParserManager(lazy_read=True)
+# lazy_read parameter available in sd-parsers >= 0.3.1rc1
+#
+# use lazy read to skip detailed metadata extraction
+# warning: `parameters` can contain "garbage" information
+# as some metadata checks are skipped with lazy_read
 
 
 @app.post("/api/parse")
 def parse(image: UploadFile):
-    # use lazy read to skip detailed metadata extraction
-    # warning: `parameters` can contain "garbage" information
-    # as some metadata checks are skipped with lazy_read
     image_data = parser_manager.parse(image.file)
-
     if image_data:
         return {"success": True, "parameters": image_data.parameters}
-
     return {"success": False}

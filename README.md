@@ -30,11 +30,13 @@ Read prompt information from a given filename:
 from sd_parsers import ParserManager
 
 parser_manager = ParserManager()
-prompt_info = parser_manager.parse("image.png")
 
-if prompt_info:
-    for prompt in prompt_info.prompts:
-        print(f"Prompt: {prompt.value}")
+def main():
+    prompt_info = parser_manager.parse("image.png")
+
+    if prompt_info:
+        for prompt in prompt_info.prompts:
+            print(f"Prompt: {prompt.value}")
 ```
 
 Read prompt information from an already opened image:
@@ -43,8 +45,10 @@ from PIL import Image
 from sd_parsers import ParserManager
 
 parser_manager = ParserManager()
-with Image.open('image.png') as image:
-    prompt_info = parser_manager.parse(image)
+
+def main():
+    with Image.open('image.png') as image:
+        prompt_info = parser_manager.parse(image)
 ```
 
 Each parser module can also be used directly, omitting the use of ```ParserManager```:
@@ -55,14 +59,17 @@ from sd_parsers.exceptions import ParserError
 from sd_parsers.parsers import AUTOMATIC1111Parser
 
 parser = AUTOMATIC1111Parser()
-with Image.open("image.png") as image:
-    prompt_info, error = parser.read_parameters(image)
-    
-    if prompt_info:
-        # the following can be omitted for an equivalent
-        # of ParserManager(lazy_read=True)
+
+def main():
+    with Image.open("image.png") as image:
         try:
-            prompt_info.parse()
+            prompt_info = parser.read_parameters(image)
+    
+            if prompt_info:
+                # the following can be omitted for an equivalent
+                # of ParserManager(lazy_read=True)
+                prompt_info.parse()
+
         except ParserError:
             ...
 ```

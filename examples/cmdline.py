@@ -7,9 +7,10 @@ import sys
 
 from sd_parsers import ParserManager, PromptInfo
 
+parser_manager = ParserManager()
+
 
 def main(files):
-    parser_manager = ParserManager()
     for filename in files:
         try:
             prompt_info = parser_manager.parse(filename)
