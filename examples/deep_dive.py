@@ -17,7 +17,6 @@ def main(files):
         try:
             prompt_info = parser_manager.parse(filename)
             if prompt_info:
-                print(f"\n{len(prompt_info.samplers)} Sampler(s) used:")
                 for i, sampler in enumerate(prompt_info.samplers):
                     show_sampler(i, sampler)
         except Exception:
