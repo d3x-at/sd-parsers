@@ -100,10 +100,10 @@ class PromptInfo:
     def __str__(self):
         return (
             f"PromptInfo(generator={self.generator}, "
-            f"prompts=[{self.prompts}], "
-            f"negative_prompts=[{self.negative_prompts}], "
-            f"samplers=[{self.samplers}], "
-            f"models=[{self.models}], "
-            f"metadata=[{self.metadata}], "
+            f"prompts={self.prompts}, "
+            f"negative_prompts={self.negative_prompts}, "
+            f"samplers={self.samplers}, "
+            f"models={self.models}, "
+            f"metadata={self.metadata}, "
             "parameters={...})"
         )

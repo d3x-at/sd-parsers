@@ -21,9 +21,13 @@ pip install sd-parsers
 ```
 
 ## Usage
-For a simple query, import ```ParserManager``` from ```sd_parsers``` and use its ```parse()``` method to parse an image. (see [examples](examples))
+
+From command line: ```python3 -m sd_parsers <filenames>```.
+
 
 ### Basic usage:
+
+For a simple query, import ```ParserManager``` from ```sd_parsers``` and use its ```parse()``` method to parse an image. (see [examples](examples))
 
 Read prompt information from a given filename:
 ```python
