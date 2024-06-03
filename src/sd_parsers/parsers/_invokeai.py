@@ -50,27 +50,20 @@ class InvokeAIParser(Parser):
         if image.format != "PNG":
             return None
 
-        try:
-            for variant in InvokeVariant:
+        image_info = image.text if use_text else image.info  # type: ignore
+        for variant in InvokeVariant:
+            try:
+                metadata = image_info[variant.value]
+            except KeyError:
+                continue
+
+            if VARIANT_PARSERS[variant].decode_json:
                 try:
-                    if use_text:
-                        metadata = image.text[variant.value]  # type: ignore
-                    else:
-                        metadata = image.info[variant.value]
-                except KeyError:
-                    continue
-
-                if VARIANT_PARSERS[variant].decode_json:
                     metadata = json.loads(metadata)
+                except (TypeError, json.JSONDecodeError) as error:
+                    raise ParserError("error reading metadata") from error
 
-                prompt_info = PromptInfo(
-                    self, parsing_context=variant, parameters={variant.value: metadata}
-                )
-
-                return prompt_info
-
-        except (TypeError, json.JSONDecodeError) as error:
-            raise ParserError("error reading metadata") from error
+            return PromptInfo(self, parsing_context=variant, parameters={variant.value: metadata})
 
         return None
 

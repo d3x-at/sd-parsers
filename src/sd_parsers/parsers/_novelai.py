@@ -26,14 +26,15 @@ class NovelAIParser(Parser):
         if image.format != "PNG":
             return None
 
+        metadata = image.text if use_text else image.info  # type: ignore
         try:
-            metadata = image.text if use_text else image.info  # type: ignore
-
             description = metadata["Description"]
             software = metadata["Software"]
             source = metadata["Source"]
             comment = json.loads(metadata["Comment"])
-        except (KeyError, json.JSONDecodeError, TypeError) as error:
+        except KeyError:
+            return None
+        except (json.JSONDecodeError, TypeError) as error:
             raise ParserError("error reading metadata") from error
 
         if software != "NovelAI":

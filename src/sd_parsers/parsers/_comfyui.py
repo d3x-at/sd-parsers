@@ -31,12 +31,13 @@ class ComfyUIParser(Parser):
         if image.format != "PNG":
             return None
 
+        metadata = image.text if use_text else image.info  # type: ignore
         try:
-            metadata = image.text if use_text else image.info  # type: ignore
-
             prompt = json.loads(metadata["prompt"])
             workflow = json.loads(metadata["workflow"])
-        except (KeyError, json.JSONDecodeError, TypeError) as error:
+        except KeyError:
+            return None
+        except (json.JSONDecodeError, TypeError) as error:
             raise ParserError("error reading metadata") from error
 
         return PromptInfo(self, {"prompt": prompt, "workflow": workflow})
