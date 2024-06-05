@@ -30,20 +30,19 @@ class ParserManager:
     def __init__(
         self,
         *,
-        normalize_parameters: bool = True,
-        two_pass: bool = True,
         lazy_read: bool = False,
+        two_pass: bool = True,
+        normalize_parameters: bool = True,
         managed_parsers: Optional[List[Parser]] = None,
     ):
         """
         Initializes a ParserManager object.
 
         Optional Parameters:
-            normalize_parameters (bool): Try to unify the parameter keys of the parser outputs.
-            managed_parsers (list[Parser]): A list of parsers to be managed.
-            two_pass (bool): for PNG images, use `Image.info` before using `Image.text` as metadata source.
-            lazy_read (bool): delay detailed metadata extraction until necessary.
-
+            lazy_read: delay detailed metadata extraction until necessary.
+            two_pass: for PNG images, use `Image.info` before using `Image.text` as metadata source.
+            normalize_parameters: Try to unify the parameter keys of the parser outputs.
+            managed_parsers: A list of parsers to be managed.
 
         The performance effects of two-pass parsing depends on the given image files.
         If the image files are correctly formed and can be read with one of the supported parser modules,
@@ -55,11 +54,9 @@ class ParserManager:
         """
         self.two_pass = two_pass
         self.lazy_read = lazy_read
-
-        if managed_parsers is not None:
-            self.managed_parsers = managed_parsers
-        else:
-            self.managed_parsers = [parser(normalize_parameters) for parser in MANAGED_PARSERS]
+        self.managed_parsers = managed_parsers or [
+            parser(normalize_parameters) for parser in MANAGED_PARSERS
+        ]
 
     def parse(
         self,
@@ -69,7 +66,7 @@ class ParserManager:
         Try to extract image generation parameters from the given image.
 
         Parameters:
-            image (a PIL Image, filename, pathlib.Path object or a file object): The image to parse.
+            image: a PIL Image, filename, pathlib.Path object or a file object.
 
         If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
         underlying `Image.open()` function:
@@ -78,31 +75,31 @@ class ParserManager:
         - ValueError: If a StringIO instance is used for `image`.
         """
 
-        def read_parameters(image: Image.Image):
-            prompt_info = None
-            # two_pass only makes sense with PNG images
-            two_pass = image.format == "PNG" if self.two_pass else False
-
-            for use_text in [False, True] if two_pass else [True]:
-                for parser in self.managed_parsers:
-                    try:
-                        prompt_info = parser.read_parameters(image, use_text)
-                        if prompt_info is None:
-                            continue
-
-                        if not self.lazy_read:
-                            prompt_info.parse()
-
-                    except ParserError:
-                        continue
-
-                    return prompt_info
-            return None
-
         if isinstance(image, Image.Image):
-            prompt_info = read_parameters(image)
+            prompt_info = self._read_parameters(image)
         else:
             with Image.open(image) as _image:
-                prompt_info = read_parameters(_image)
+                prompt_info = self._read_parameters(_image)
 
         return prompt_info
+
+    def _read_parameters(self, image: Image.Image):
+        prompt_info = None
+        # two_pass only makes sense with PNG images
+        two_pass = image.format == "PNG" if self.two_pass else False
+
+        for use_text in [False, True] if two_pass else [True]:
+            for parser in self.managed_parsers:
+                try:
+                    prompt_info = parser.read_parameters(image, use_text)
+                    if prompt_info is None:
+                        continue
+
+                    if not self.lazy_read:
+                        prompt_info.parse()
+
+                except ParserError:
+                    continue
+
+                return prompt_info
+        return None

@@ -63,7 +63,11 @@ class InvokeAIParser(Parser):
                 except (TypeError, json.JSONDecodeError) as error:
                     raise ParserError("error reading metadata") from error
 
-            return PromptInfo(self, parsing_context=variant, parameters={variant.value: metadata})
+            return PromptInfo(
+                self,
+                parameters={variant.value: metadata},
+                _parsing_context=variant,
+            )
 
         return None
 

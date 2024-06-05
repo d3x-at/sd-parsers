@@ -16,13 +16,13 @@ if TYPE_CHECKING:
 class PromptInfo:
     """Contains structured image generation parameters."""
 
-    parser: Parser
+    _parser: Parser
     """parser (sdparsers.Parser): The parser object used to obtain the given image parameters."""
 
     parameters: Dict[str, Any]
     """The original parameters as found in the image metadata."""
 
-    parsing_context: Any = None
+    _parsing_context: Any = None
     """
         Any information needed during the parsing pass.
         Passed on to the parser's parse() method.
@@ -30,13 +30,13 @@ class PromptInfo:
 
     def parse(self):
         """Populate sampler information and metadata."""
-        self._samplers, self._metadata = self.parser.parse(self.parameters, self.parsing_context)
+        self._samplers, self._metadata = self._parser.parse(self.parameters, self._parsing_context)
         return self._samplers, self._metadata
 
     @property
     def generator(self) -> Generators:
         """Image generater which might have produced the parsed image."""
-        return self.parser.generator
+        return self._parser.generator
 
     _samplers = None
 

@@ -2,8 +2,13 @@ import sys
 
 from . import ParserManager
 
-p = ParserManager()
+
+def main():
+    p = ParserManager()
+
+    for filename in sys.argv[1:]:
+        print(f"{filename}: {p.parse(filename)}\n")
+
 
 if __name__ == "__main__":
-    for filename in sys.argv[1:]:
-        print(p.parse(filename))
+    main()
