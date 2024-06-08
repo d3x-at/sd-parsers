@@ -9,22 +9,25 @@ Pull requests are accepted in the form of squash merges to the `main` branch. Pl
 * Fork the sd-parsers repository.
 * Create a development branch with a name of your liking.
 * To verify your changes, run tests and linting checks.
+* Add new tests where needed.
+* Create a pull request to merge your changes into SD-Parser's `main` branch.
 
-  With [pdm](https://github.com/pdm-project/pdm) installed (```pip install pdm```), prepare the testing environment with:
+## Preparing the dev environment
+  With [pdm](https://github.com/pdm-project/pdm) installed (```pip install pdm```), clone the forked repository and let pdm install the needed dependencies:
   ```
-  pdm install -d
+  > git clone https://github.com/<your-repo-here>/sd-parsers.git
+  > cd sd-parsers && pdm install -d
   ```
 
-  Run linting with:
+  After installing, run linting with:
   ```
-  pdm run ruff check src
+  > pdm run ruff check src
   ```
 
   Run tests with:
   ```
-  pdm run pytest
+  > pdm run pytest
   ```
-* Create a pull request to merge your changes into SD-Parser's `main` branch.
 
 ## Adding/Modifying a parser module
 See the [DummyParser](../src/sd_parsers/parsers/_dummy_parser.py) module on how to structure a basic parser module.

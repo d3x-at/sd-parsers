@@ -79,7 +79,9 @@ def main():
 ```
 
 ### Output
-The output returned from `ParserManager` is a `PromptInfo` type with the following properties (or `None` if no metadata was found):
+The output returned from `ParserManager` is a `PromptInfo` object (as can be seen when executing ```python3 -m sd_parsers <image.png>```) or `None` if no metadata was found.
+
+`PromptInfo` contains the following properties :
 * `generator`: Specifies the image generator that may have been used for creating the image.
 
 * `prompts`: Prompts as found in the parsed metadata.
