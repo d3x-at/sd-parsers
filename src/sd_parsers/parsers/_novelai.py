@@ -59,25 +59,24 @@ class NovelAIParser(Parser):
             raise ParserError("error reading parameter values") from error
 
         try:
-            sampler = Sampler(
-                name=metadata.pop("sampler"),
-                parameters=self.normalize_parameters(pop_keys(SAMPLER_PARAMS, metadata)),
-            )
+            sampler = {
+                "name": metadata.pop("sampler"),
+                "parameters": self.normalize_parameters(pop_keys(SAMPLER_PARAMS, metadata)),
+            }
         except KeyError as error:
             raise ParserError("no sampler found") from error
 
-        sampler.prompts.append(Prompt(params.strip()))
+        sampler["prompts"] = [Prompt(params.strip())]
 
         with suppress(KeyError):
-            negative_prompt = Prompt(metadata.pop("uc"))
-            sampler.negative_prompts.append(negative_prompt)
+            sampler["negative_prompts"] = [Prompt(metadata.pop("uc"))]
 
         # model
         match = re.fullmatch(r"^(.*?)\s+([A-Z0-9]+)$", source)
         if match:
             model_name, model_hash = match.groups()
-            sampler.model = Model(name=model_name, model_hash=model_hash)
+            sampler["model"] = Model(name=model_name, model_hash=model_hash)
 
         metadata = self.normalize_parameters(metadata)
 
-        return [sampler], metadata
+        return [Sampler(**sampler)], metadata

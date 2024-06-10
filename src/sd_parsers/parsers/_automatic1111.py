@@ -54,30 +54,31 @@ class AUTOMATIC1111Parser(Parser):
         prompt, negative_prompt = map(str.strip, prompts + [""] * (2 - len(prompts)))
 
         try:
-            sampler = Sampler(
-                name=sampler_info.pop("Sampler"),
-                parameters=self.normalize_parameters(sampler_info),
-            )
+            sampler = {
+                "name": sampler_info.pop("Sampler"),
+                "parameters": self.normalize_parameters(sampler_info),
+            }
         except KeyError as error:
             raise ParserError("no sampler found") from error
 
         model_name = metadata.pop("Model", None)
         model_hash = metadata.pop("Model hash", None)
+
         if model_name or model_hash:
-            sampler.model = Model(
+            sampler["model"] = Model(
                 name=model_name,
                 model_hash=model_hash,
             )
 
         if prompt:
-            sampler.prompts.append(Prompt(prompt))
+            sampler["prompts"] = [Prompt(prompt)]
 
         if negative_prompt:
-            sampler.negative_prompts.append(Prompt(negative_prompt))
+            sampler["negative_prompts"] = [Prompt(negative_prompt)]
 
         metadata = self.normalize_parameters(metadata)
 
-        return [sampler], metadata
+        return [Sampler(**sampler)], metadata
 
 
 def get_sampler_info(lines):

@@ -90,22 +90,22 @@ def _parse_invokeai_meta(parser: Parser, metadata: Dict[str, Any]):
 
     # positive prompt
     with suppress(KeyError):
-        sampler.prompts.append(Prompt(value=metadata.pop("positive_prompt")))
+        sampler["prompts"] = [Prompt(value=metadata.pop("positive_prompt"))]
 
     # negative prompt
     with suppress(KeyError):
-        sampler.negative_prompts.append(Prompt(value=metadata.pop("negative_prompt")))
+        sampler["negative_prompts"] = [Prompt(value=metadata.pop("negative_prompt"))]
 
     # model
     with suppress(KeyError):
         model_info = metadata.pop("model")
 
-        sampler.model = Model(
+        sampler["model"] = Model(
             name=model_info.pop("model_name"),
             parameters=model_info,
         )
 
-    return [sampler], parser.normalize_parameters(metadata, REPLACEMENT_RULES, False)
+    return [Sampler(**sampler)], parser.normalize_parameters(metadata, REPLACEMENT_RULES, False)
 
 
 def _parse_sd_metadata(parser: Parser, metadata: Dict[str, Any]):
@@ -135,11 +135,11 @@ def _parse_sd_metadata(parser: Parser, metadata: Dict[str, Any]):
     model_name = metadata.pop("model_weights", None)
     model_hash = metadata.pop("model_hash", None)
     if model_name or model_hash:
-        sampler.model = Model(name=model_name, model_hash=model_hash)
+        sampler["model"] = Model(name=model_name, model_hash=model_hash)
 
     metadata = parser.normalize_parameters({**metadata, **metadata_image}, REPLACEMENT_RULES)
 
-    return [sampler], metadata
+    return [Sampler(**sampler)], metadata
 
 
 def _parse_dream(parser: Parser, _metadata: str):
@@ -173,29 +173,31 @@ def _parse_dream(parser: Parser, _metadata: str):
     # prompts
     _add_prompts(sampler, prompts, {})
 
-    return [sampler], parser.normalize_parameters(metadata, REPLACEMENT_RULES, False)
+    return [Sampler(**sampler)], parser.normalize_parameters(metadata, REPLACEMENT_RULES, False)
 
 
 def _get_sampler(parser: Parser, metadata: Dict[str, Any], key: str):
     try:
-        return Sampler(
-            name=metadata.pop(key),
-            parameters=parser.normalize_parameters(
+        sampler_data = {
+            "name": metadata.pop(key),
+            "parameters": parser.normalize_parameters(
                 pop_keys(SAMPLER_PARAMS, metadata), REPLACEMENT_RULES
             ),
-        )
+        }
     except KeyError as error:
         raise ParserError("no sampler found") from error
 
+    return sampler_data
 
-def _add_prompts(sampler: Sampler, combined_prompt: str, parameters: dict):
-    for negative_prompt in RE_PROMPT_NEGATIVES.findall(combined_prompt):
-        prompt = Prompt(value=negative_prompt, parameters=parameters)
-        sampler.negative_prompts.append(prompt)
+
+def _add_prompts(sampler: dict, combined_prompt: str, parameters: dict):
+    sampler["negative_prompts"] = [
+        Prompt(value=negative_prompt, parameters=parameters)
+        for negative_prompt in RE_PROMPT_NEGATIVES.findall(combined_prompt)
+    ]
 
     positive_prompt = RE_PROMPT_NEGATIVES.sub("", combined_prompt).strip()
-    prompt = Prompt(value=positive_prompt, parameters=parameters)
-    sampler.prompts.append(prompt)
+    sampler["prompts"] = [Prompt(value=positive_prompt, parameters=parameters)]
 
 
 class VariantParser(NamedTuple):

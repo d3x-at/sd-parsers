@@ -218,25 +218,31 @@ class ImageContext:
         )
 
         # Sampler
-        sampler = Sampler(
-            sampler_id=node_id,
-            name=sampler_name,
-            parameters=sampler_parameters,
-        )
+        sampler = {
+            "sampler_id": node_id,
+            "name": sampler_name,
+            "parameters": sampler_parameters,
+        }
 
         # Model
         with suppress(KeyError, ValueError):
             model_id = int(inputs["model"][0])
-            sampler.model = self._get_model(model_id)
+            sampler["model"] = self._get_model(model_id)
 
         # Prompt
         with suppress(KeyError, ValueError):
             positive_prompt_id = int(inputs["positive"][0])
-            sampler.prompts = self._get_prompts(positive_prompt_id, POSITIVE_PROMPT_KEYS)
+            sampler["prompts"] = self._get_prompts(
+                positive_prompt_id,
+                POSITIVE_PROMPT_KEYS,
+            )
 
         # Negative Prompt
         with suppress(KeyError, ValueError):
             negative_prompt_id = int(inputs["negative"][0])
-            sampler.negative_prompts = self._get_prompts(negative_prompt_id, NEGATIVE_PROMPT_KEYS)
+            sampler["negative_prompts"] = self._get_prompts(
+                negative_prompt_id,
+                NEGATIVE_PROMPT_KEYS,
+            )
 
-        return sampler
+        return Sampler(**sampler)

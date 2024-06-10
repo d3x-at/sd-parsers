@@ -35,7 +35,7 @@ class Model:
         return hash((self.model_id, self.name))
 
 
-@dataclass
+@dataclass(frozen=True)
 class Sampler:
     """Represents a model used during image generation."""
 
