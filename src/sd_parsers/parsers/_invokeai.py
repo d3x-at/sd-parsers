@@ -124,12 +124,17 @@ def _parse_sd_metadata(parser: Parser, metadata: Dict[str, Any]):
         prompts = metadata_image.pop("prompt")
     except KeyError as error:
         raise ParserError("no prompt entry found") from error
+    except AttributeError as error:
+        raise ParserError("malformed prompt information") from error
 
     for prompt_item in prompts:
-        prompt_weight = prompt_item.get("weight", None)
-        prompt_params = {} if prompt_weight is None else {"weight": prompt_weight}
-        with suppress(KeyError):
-            _add_prompts(sampler, prompt_item["prompt"], prompt_params)
+        try:
+            prompt_text = prompt_item.pop("prompt")
+            _add_prompts(sampler, prompt_text, prompt_item)
+        except KeyError:
+            continue
+        except AttributeError as error:
+            raise ParserError("malformed prompt information") from error
 
     # model
     model_name = metadata.pop("model_weights", None)
@@ -191,13 +196,38 @@ def _get_sampler(parser: Parser, metadata: Dict[str, Any], key: str):
 
 
 def _add_prompts(sampler: dict, combined_prompt: str, parameters: dict):
-    sampler["negative_prompts"] = [
-        Prompt(value=negative_prompt, parameters=parameters)
-        for negative_prompt in RE_PROMPT_NEGATIVES.findall(combined_prompt)
-    ]
+    prompts = []
+    negative_prompts = []
 
-    positive_prompt = RE_PROMPT_NEGATIVES.sub("", combined_prompt).strip()
-    sampler["prompts"] = [Prompt(value=positive_prompt, parameters=parameters)]
+    def _get_prompt(prompt_string: str):
+        prompt_text = prompt_string.strip(" ,")
+        if not prompt_text:
+            raise ValueError
+        return Prompt(value=prompt_text, parameters=parameters)
+
+    prompt_index = 0
+    for match in RE_PROMPT_NEGATIVES.finditer(combined_prompt):
+        with suppress(ValueError):
+            negative_prompts.append(_get_prompt(match.group()[1:-1]))
+
+        start, end = match.span()
+        with suppress(ValueError):
+            prompts.append(_get_prompt(combined_prompt[prompt_index:start]))
+        prompt_index = end
+
+    if prompt_index < len(combined_prompt):
+        with suppress(ValueError):
+            prompts.append(_get_prompt(combined_prompt[prompt_index:]))
+
+    try:
+        sampler["prompts"].extend(prompts)
+    except KeyError:
+        sampler["prompts"] = prompts
+
+    try:
+        sampler["negative_prompts"].extend(negative_prompts)
+    except KeyError:
+        sampler["negative_prompts"] = negative_prompts
 
 
 class VariantParser(NamedTuple):
