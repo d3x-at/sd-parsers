@@ -4,8 +4,8 @@ from typing import Any, Dict
 
 from PIL.Image import Image
 
-from .._parser import Generators, Parser, ParseResult
-from .._prompt_info import PromptInfo
+from sd_parsers.data import PromptInfo, Sampler
+from sd_parsers.parser import Generators, Parser, ParseResult
 
 
 class DummyParser(Parser):
@@ -46,4 +46,4 @@ class DummyParser(Parser):
         """
         my_data = copy.deepcopy(parameters["my_data"])
 
-        return [], my_data
+        return [Sampler(name="some sampler", parameters={})], my_data

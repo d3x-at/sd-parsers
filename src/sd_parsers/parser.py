@@ -9,8 +9,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 from PIL import ExifTags
 from PIL.Image import Image
 
-from ._models import Sampler
-from ._prompt_info import PromptInfo
+from .data import PromptInfo, Sampler
 
 FormatField = Tuple[str, Tuple[List[str], str]]
 RenameField = Tuple[str, str]

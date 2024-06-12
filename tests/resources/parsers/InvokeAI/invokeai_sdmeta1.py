@@ -1,5 +1,5 @@
 import pytest
-from sd_parsers import Model, Prompt, Sampler
+from sd_parsers.data import Model, Prompt, Sampler
 
 MODELS = [
     Model(

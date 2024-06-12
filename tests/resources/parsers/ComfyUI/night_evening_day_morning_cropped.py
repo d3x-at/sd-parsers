@@ -1,5 +1,5 @@
 import pytest
-from sd_parsers import Model, Prompt, Sampler
+from sd_parsers.data import Model, Prompt, Sampler
 
 MODEL1 = Model(model_id=45, name="Anything-V3.0.ckpt", model_hash=None)
 MODEL2 = Model(

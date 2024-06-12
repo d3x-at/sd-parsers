@@ -7,7 +7,8 @@ usage: python3 deep_dive.py ../tests/resources/parsers/ComfyUI/night_evening_day
 import logging
 import sys
 
-from sd_parsers import ParserManager, Sampler
+from sd_parsers import ParserManager
+from sd_parsers.data import Sampler
 
 parser_manager = ParserManager()
 

@@ -1,5 +1,5 @@
 import pytest
-from sd_parsers import Prompt, Sampler
+from sd_parsers.data import Prompt, Sampler
 
 PROMPTS = [
     Prompt(

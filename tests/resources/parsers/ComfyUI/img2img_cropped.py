@@ -1,5 +1,5 @@
 import pytest
-from sd_parsers import Model, Prompt, Sampler
+from sd_parsers.data import Model, Prompt, Sampler
 
 MODEL = Model(
     name="v1-5-pruned-emaonly.ckpt", parameters={"config_name": "v1-inference.yaml"}, model_id=4

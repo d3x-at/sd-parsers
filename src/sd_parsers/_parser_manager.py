@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from PIL import Image
 
-from ._parser import Parser
-from ._prompt_info import PromptInfo
+from .data import PromptInfo
 from .exceptions import ParserError
+from .parser import Parser
 from .parsers import MANAGED_PARSERS
 
 if TYPE_CHECKING:

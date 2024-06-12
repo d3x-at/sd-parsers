@@ -1,6 +1,6 @@
 import pytest
 from PIL import Image
-from sd_parsers import Model, Prompt, Sampler
+from sd_parsers.data import Model, Prompt, Sampler
 from sd_parsers.parsers import NovelAIParser
 
 from tests.tools import RESOURCE_PATH

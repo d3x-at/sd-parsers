@@ -5,7 +5,8 @@ usage: python3 cmdline.py image.png
 import logging
 import sys
 
-from sd_parsers import ParserManager, PromptInfo
+from sd_parsers import ParserManager
+from sd_parsers.data import PromptInfo
 
 parser_manager = ParserManager()
 
