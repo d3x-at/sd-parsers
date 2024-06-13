@@ -3,13 +3,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from enum import Enum
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 from PIL import ExifTags
 from PIL.Image import Image
 
-from .data import PromptInfo, Sampler
+from .data import Generators, PromptInfo, Sampler
 
 FormatField = Tuple[str, Tuple[List[str], str]]
 RenameField = Tuple[str, str]
@@ -25,16 +24,6 @@ ParseResult = Tuple[List[Sampler], Dict[Any, Any]]
 """The result of Parser.parse() is a tuple of encountered samplers and remaining metadata."""
 
 _EXIF_TAGS = {v: k for k, v in ExifTags.TAGS.items()}
-
-
-class Generators(str, Enum):
-    """Image generator identifiers."""
-
-    UNKNOWN = "Unknown"
-    AUTOMATIC1111 = "AUTOMATIC1111"
-    COMFYUI = "ComfyUI"
-    INVOKEAI = "InvokeAI"
-    NOVELAI = "NovelAI"
 
 
 class Parser(ABC):

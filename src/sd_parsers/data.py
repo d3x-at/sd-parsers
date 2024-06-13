@@ -3,12 +3,23 @@ from __future__ import annotations
 
 import itertools
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
 from .exceptions import ParserError
 
 if TYPE_CHECKING:
-    from .parser import Generators, Parser
+    from .parser import Parser
+
+
+class Generators(str, Enum):
+    """Image generator identifiers."""
+
+    UNKNOWN = "Unknown"
+    AUTOMATIC1111 = "AUTOMATIC1111"
+    COMFYUI = "ComfyUI"
+    INVOKEAI = "InvokeAI"
+    NOVELAI = "NovelAI"
 
 
 @dataclass(frozen=True)
@@ -66,10 +77,10 @@ class PromptInfo:
     """Contains structured image generation parameters."""
 
     _parser: Parser
-    """parser (sdparsers.Parser): The parser object used to obtain the given image parameters."""
+    """The parser object used to obtain the given image parameters."""
 
     parameters: Dict[str, Any]
-    """The original parameters as found in the image metadata."""
+    """The original generation parameters as found in the image metadata."""
 
     _parsing_context: Any = None
     """
@@ -154,5 +165,5 @@ class PromptInfo:
             f"samplers={self.samplers}, "
             f"models={self.models}, "
             f"metadata={self.metadata}, "
-            "parameters={...})"
+            f"parameters={{{", ".join(f"'{key}': ..." for key in self.parameters.keys())}}}"
         )
