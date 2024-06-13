@@ -7,9 +7,9 @@ from typing import Any, Dict, Generator, List, Optional, Set, Tuple
 
 from PIL.Image import Image
 
-from sd_parsers.data import Model, Prompt, PromptInfo, Sampler
+from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Generators, Parser, ParseResult
+from sd_parsers.parser import Parser, ParseResult
 
 logger = logging.getLogger(__name__)
 

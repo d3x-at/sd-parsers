@@ -6,9 +6,9 @@ from typing import Any, Dict
 
 from PIL.Image import Image
 
-from sd_parsers.data import Model, Prompt, PromptInfo, Sampler
+from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Generators, Parser, ParseResult, get_exif_value, pop_keys
+from sd_parsers.parser import Parser, ParseResult, get_exif_value, pop_keys
 
 SAMPLER_PARAMS = ["Sampler", "CFG scale", "Seed", "Steps", "ENSD"]
 

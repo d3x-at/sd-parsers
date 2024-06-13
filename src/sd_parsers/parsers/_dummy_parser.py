@@ -4,8 +4,8 @@ from typing import Any, Dict
 
 from PIL.Image import Image
 
-from sd_parsers.data import PromptInfo, Sampler
-from sd_parsers.parser import Generators, Parser, ParseResult
+from sd_parsers.data import Generators, PromptInfo, Sampler
+from sd_parsers.parser import Parser, ParseResult
 
 
 class DummyParser(Parser):

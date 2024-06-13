@@ -5,8 +5,8 @@ from typing import Any, Callable, Dict, NamedTuple
 
 from PIL.Image import Image
 
-from sd_parsers.data import PromptInfo
-from sd_parsers.parser import Generators, Parser, ParseResult
+from sd_parsers.data import Generators, PromptInfo
+from sd_parsers.parser import Parser, ParseResult
 
 from ._variant_dream import _parse_dream
 from ._variant_invokeai_meta import _parse_invokeai_meta

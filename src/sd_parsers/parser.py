@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 from PIL import ExifTags
 from PIL.Image import Image
 
-from .data import Generators, PromptInfo, Sampler
+from . import data as _data
 
 FormatField = Tuple[str, Tuple[List[str], str]]
 RenameField = Tuple[str, str]
@@ -20,7 +20,7 @@ Contains instruction to either rename a key (see `RenameField`),
 or to create a new key using the given formatting instruction (see `FormatField`).
 """
 
-ParseResult = Tuple[List[Sampler], Dict[Any, Any]]
+ParseResult = Tuple[List[_data.Sampler], Dict[Any, Any]]
 """The result of Parser.parse() is a tuple of encountered samplers and remaining metadata."""
 
 _EXIF_TAGS = {v: k for k, v in ExifTags.TAGS.items()}
@@ -34,7 +34,7 @@ class Parser(ABC):
 
     @property
     @abstractmethod
-    def generator(self) -> Generators:
+    def generator(self) -> _data.Generators:
         """Identifier for the inferred image generator."""
 
     @abstractmethod
@@ -42,7 +42,7 @@ class Parser(ABC):
         self,
         image: Image,
         use_text: bool = True,
-    ) -> Optional[PromptInfo]:
+    ) -> Optional[_data.PromptInfo]:
         """
         Read generation parameters from image.
 

@@ -158,6 +158,7 @@ class PromptInfo:
         return self._models
 
     def __str__(self):
+        parameters = ", ".join(f"'{key}': ..." for key in self.parameters.keys())
         return (
             f"PromptInfo(generator={self.generator}, "
             f"prompts={self.prompts}, "
@@ -165,5 +166,5 @@ class PromptInfo:
             f"samplers={self.samplers}, "
             f"models={self.models}, "
             f"metadata={self.metadata}, "
-            f"parameters={{{", ".join(f"'{key}': ..." for key in self.parameters.keys())}}}"
+            f"parameters={{{parameters}}}"
         )

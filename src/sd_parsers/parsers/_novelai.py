@@ -7,9 +7,9 @@ from typing import Any, Dict
 
 from PIL.Image import Image
 
-from sd_parsers.data import Model, Prompt, PromptInfo, Sampler
+from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Generators, Parser, ParseResult, pop_keys
+from sd_parsers.parser import Parser, ParseResult, pop_keys
 
 SAMPLER_PARAMS = ["seed", "strength", "noise", "scale"]
 
