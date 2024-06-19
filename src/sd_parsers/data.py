@@ -126,6 +126,24 @@ class PromptInfo:
                 self._samplers, self._metadata = [], {}
         return self._metadata  # type: ignore
 
+    @property
+    def combined_prompt(self) -> str:
+        """
+        A simple concatenation of all prompts found in the generation data.
+
+        Reproducibility of the source image using this data is not guaratneed (=rather unlikely).
+        """
+        return ", ".join(map(str, self.prompts))
+
+    @property
+    def combined_negative_prompt(self) -> str:
+        """
+        A simple concatenation of all negative prompts found in the generation data.
+
+        Reproducibility of the source image using this data is not guaratneed (=rather unlikely).
+        """
+        return ", ".join(map(str, self.negative_prompts))
+
     _prompts = None
 
     @property

@@ -31,13 +31,11 @@ def display_info(prompt_info: PromptInfo):
         sampler_parameters = ", ".join(f"{k}: {v}" for k, v in sampler.parameters.items())
         print(f"Sampler: {sampler.name}\nSampler Parameters: {sampler_parameters}")
 
-    # Prompts
-    for prompt in prompt_info.prompts:
-        print(f"Prompt: {prompt.value}")
+    # Combined Prompt
+    print(f"\nPrompt: {prompt_info.combined_prompt}")
 
-    # Negative Prompts
-    for prompt in prompt_info.negative_prompts:
-        print(f"Negative Prompt: {prompt.value}")
+    # Combined Negative Prompt
+    print(f"\nNegative Prompt: {prompt_info.combined_negative_prompt}")
 
     # Remaining metadata
     print("\nOther Metadata:")
