@@ -32,8 +32,12 @@ class Prompt:
     prompt_id: Optional[int] = None
     """Prompt id"""
 
-    parameters: Dict[str, Any] = field(default_factory=dict)
-    """Additional prompt parameters"""
+    metadata: Dict[Any, Any] = field(default_factory=dict)
+    """
+    Additional generator-specific information.
+    
+    Highly dependent on the respective image generator.
+    """
 
     def __str__(self):
         return self.value
@@ -131,7 +135,7 @@ class PromptInfo:
         """
         A simple concatenation of all prompts found in the generation data.
 
-        Reproducibility of the source image using this data is not guaratneed (=rather unlikely).
+        Reproducibility of the source image using this data is not guaranteed (=rather unlikely).
         """
         return ", ".join(map(str, self.prompts))
 
@@ -140,7 +144,7 @@ class PromptInfo:
         """
         A simple concatenation of all negative prompts found in the generation data.
 
-        Reproducibility of the source image using this data is not guaratneed (=rather unlikely).
+        Reproducibility of the source image using this data is not guaranteed (=rather unlikely).
         """
         return ", ".join(map(str, self.negative_prompts))
 

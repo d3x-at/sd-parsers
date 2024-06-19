@@ -74,7 +74,7 @@ def _get_sampler(parser: Parser, metadata: Dict[str, Any], key: str):
     return sampler_data
 
 
-def _add_prompts(sampler: dict, combined_prompt: str, parameters: dict):
+def _add_prompts(sampler: dict, combined_prompt: str, metadata: dict):
     prompts = []
     negative_prompts = []
 
@@ -82,7 +82,7 @@ def _add_prompts(sampler: dict, combined_prompt: str, parameters: dict):
         prompt_text = prompt_string.strip(" ,")
         if not prompt_text:
             raise ValueError
-        return Prompt(value=prompt_text, parameters=parameters)
+        return Prompt(value=prompt_text, metadata=metadata)
 
     prompt_index = 0
     for match in re.finditer(r"\[([^\[]*)\]", combined_prompt):

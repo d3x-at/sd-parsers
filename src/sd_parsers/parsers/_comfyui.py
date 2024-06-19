@@ -109,30 +109,26 @@ class ImageContext:
 
     def _traverse(
         self, node_id: int, ignored_link_types: Optional[List[str]] = None
-    ) -> Generator[Tuple[int, Any], Optional[bool], None]:
+    ) -> Generator[Tuple[int, Any, List[int]], Optional[bool], None]:
         """Traverse backwards through node tree, starting at a given node_id"""
         visited = set()
         ignore_links = set(ignored_link_types) if ignored_link_types else set()
 
-        def traverse_inner(
-            node_id: int, depth: int = 0
-        ) -> Generator[Tuple[int, Any], Optional[bool], None]:
+        def traverse_inner(node_id: int, trace: List[int]):
             visited.add(node_id)
 
             with suppress(KeyError):
-                recurse = yield node_id, self.prompt[node_id]
+                recurse = yield node_id, self.prompt[node_id], trace
                 if recurse is False:
                     return
 
             with suppress(KeyError, RecursionError):
                 for link_id, link_types in self.links[node_id].items():
                     if link_id not in visited and link_types - ignore_links:
-                        logger.debug(
-                            "traverse %d->%d, %s%s", node_id, link_id, "\t" * depth, link_types
-                        )
-                        yield from traverse_inner(link_id, depth + 1)
+                        logger.debug("%d->%d, %s%s", node_id, link_id, "." * len(trace), link_types)
+                        yield from traverse_inner(link_id, trace + [link_id])
 
-        yield from traverse_inner(node_id)
+        yield from traverse_inner(node_id, [node_id])
 
     def _get_prompts(self, initial_node_id: int, text_keys: List[str]) -> List[Prompt]:
         """Get all prompts reachable from a given node_id."""
@@ -140,7 +136,7 @@ class ImageContext:
 
         prompts = []
 
-        def check_inputs(node_id: int, inputs: Dict) -> bool:
+        def check_inputs(node_id: int, inputs: Dict, trace: List[int]) -> bool:
             found_prompt = False
             for key in text_keys:
                 try:
@@ -150,17 +146,29 @@ class ImageContext:
 
                 if isinstance(text, str):
                     logger.debug("found prompt %s#%d: %s", key, node_id, text)
-                    prompts.append(Prompt(value=text.strip(), prompt_id=node_id))
+
+                    metadata = {}
+                    for tmp_id in trace[:-1]:
+                        with suppress(KeyError):
+                            tmp_node = self.prompt[tmp_id]
+
+                            metadata[tmp_node["class_type"], tmp_id] = {
+                                key: value
+                                for key, value in tmp_node["inputs"].items()
+                                if not isinstance(value, list)
+                            }
+
+                    prompts.append(Prompt(value=text.strip(), prompt_id=node_id, metadata=metadata))
                     found_prompt = True
 
             if found_prompt:
-                self.processed_nodes.add(node_id)
+                self.processed_nodes.update(trace)
                 return False
             return True
 
         prompt_iterator = self._traverse(initial_node_id, IGNORE_LINK_TYPES_PROMPT)
         with suppress(StopIteration):
-            node_id, node = next(prompt_iterator)
+            node_id, node, trace = next(prompt_iterator)
             while True:
                 recurse = True
                 try:
@@ -168,9 +176,9 @@ class ImageContext:
                 except KeyError:
                     pass
                 else:
-                    recurse = check_inputs(node_id, inputs)
+                    recurse = check_inputs(node_id, inputs, trace)
 
-                node_id, node = prompt_iterator.send(recurse)
+                node_id, node, trace = prompt_iterator.send(recurse)
 
         return prompts
 
@@ -178,7 +186,7 @@ class ImageContext:
         """Get the first model reached from the given node_id"""
         logger.debug("looking for model: #%s", initial_node_id)
 
-        for node_id, node in self._traverse(initial_node_id):
+        for node_id, node, _ in self._traverse(initial_node_id):
             try:
                 inputs = node["inputs"]
                 ckpt_name = inputs["ckpt_name"]

@@ -20,6 +20,8 @@ def main(files):
             if prompt_info:
                 for i, sampler in enumerate(prompt_info.samplers):
                     show_sampler(i, sampler)
+
+                print(f"\nRemaining Metadata: {prompt_info.metadata}")
         except Exception:
             logging.exception("error reading file: %s", filename)
 
@@ -33,12 +35,12 @@ def show_sampler(i: int, sampler: Sampler):
     if sampler.prompts:
         print("\nPrompts:")
         for prompt in sampler.prompts:
-            print(prompt)
+            print(f"Prompt: {prompt}\nMetadata: {prompt.metadata}")
 
     if sampler.negative_prompts:
         print("\nNegative Prompts:")
         for prompt in sampler.negative_prompts:
-            print(prompt)
+            print(f"Prompt: {prompt}\nMetadata: {prompt.metadata}")
 
     print(f"\nSampler Parameters: {sampler.parameters}")
 

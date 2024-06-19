@@ -12,26 +12,76 @@ PROMPTS1 = [
     Prompt(
         value="(best quality) (daytime:1.2) sky (blue)",
         prompt_id=17,
+        metadata={
+            ("ConditioningCombine", 19): {},
+            ("ConditioningCombine", 12): {},
+            ("ConditioningSetArea", 11): {
+                "width": 704,
+                "height": 384,
+                "x": 0,
+                "y": 512,
+                "strength": 1.0,
+            },
+        },
     ),
     Prompt(
         value="(best quality) (night:1.3) (darkness) sky (black) (stars:1.2) "
         "(galaxy:1.2) (space) (universe)",
         prompt_id=14,
+        metadata={
+            ("ConditioningCombine", 19): {},
+            ("ConditioningCombine", 12): {},
+            ("ConditioningCombine", 35): {},
+            ("ConditioningSetArea", 34): {
+                "width": 704,
+                "height": 384,
+                "x": 0,
+                "y": 0,
+                "strength": 1.2000000000000002,
+            },
+        },
     ),
     Prompt(
         value="(best quality) (evening:1.2) (sky:1.2) (clouds) (colorful) "
         "(HDR:1.2) (sunset:1.3)",
         prompt_id=13,
+        metadata={
+            ("ConditioningCombine", 19): {},
+            ("ConditioningCombine", 12): {},
+            ("ConditioningCombine", 35): {},
+            ("ConditioningSetArea", 18): {
+                "width": 704,
+                "height": 384,
+                "x": 0,
+                "y": 320,
+                "strength": 1.0,
+            },
+        },
     ),
     Prompt(
         value="(masterpiece) (best quality) morning sky",
         prompt_id=33,
+        metadata={
+            ("ConditioningCombine", 19): {},
+            ("ConditioningCombine", 10): {},
+            ("ConditioningSetArea", 15): {
+                "width": 704,
+                "height": 384,
+                "x": 0,
+                "y": 704,
+                "strength": 1.0,
+            },
+        },
     ),
     Prompt(
         value="(masterpiece) (best quality) beautiful landscape breathtaking "
         "amazing view nature photograph forest mountains ocean (sky) "
         "national park scenery",
         prompt_id=6,
+        metadata={
+            ("ConditioningCombine", 19): {},
+            ("ConditioningCombine", 10): {},
+        },
     ),
 ]
 
@@ -115,27 +165,6 @@ PARAM = pytest.param(
         {
             ("EmptyLatentImage", 5): {"width": 704, "height": 1280, "batch_size": 1},
             ("SaveImage", 9): {"filename_prefix": "ComfyUI"},
-            ("ConditioningSetArea", 11): {
-                "width": 704,
-                "height": 384,
-                "x": 0,
-                "y": 512,
-                "strength": 1.0,
-            },
-            ("ConditioningSetArea", 15): {
-                "width": 704,
-                "height": 384,
-                "x": 0,
-                "y": 704,
-                "strength": 1.0,
-            },
-            ("ConditioningSetArea", 18): {
-                "width": 704,
-                "height": 384,
-                "x": 0,
-                "y": 320,
-                "strength": 1.0,
-            },
             ("VAELoader", 20): {"vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"},
             ("LatentUpscale", 22): {
                 "upscale_method": "nearest-exact",
@@ -144,13 +173,6 @@ PARAM = pytest.param(
                 "crop": "disabled",
             },
             ("SaveImage", 32): {"filename_prefix": "ComfyUI"},
-            ("ConditioningSetArea", 34): {
-                "width": 704,
-                "height": 384,
-                "x": 0,
-                "y": 0,
-                "strength": 1.2000000000000002,
-            },
             ("CLIPSetLastLayer", 44): {"stop_at_clip_layer": -2},
             ("CLIPSetLastLayer", 47): {"stop_at_clip_layer": -2},
         },

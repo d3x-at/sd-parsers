@@ -19,14 +19,14 @@ PROMPTS = [
             "city background, 8k ultra detailed, realistic, high quality, "
             "film grain, low contrast"
         ),
-        parameters={"weight": 1.0},
+        metadata={"weight": 1.0},
     )
 ]
 
 NEGATIVE_PROMPTS = [
     Prompt(
         value="rendering, glowing eyes, skinny",
-        parameters={"weight": 1.0},
+        metadata={"weight": 1.0},
     )
 ]
 
