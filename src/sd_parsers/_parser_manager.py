@@ -1,6 +1,7 @@
 """Provides the ParserManager class."""
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from PIL import Image
@@ -15,17 +16,13 @@ if TYPE_CHECKING:
 
     from _typeshed import SupportsRead
 
+logger = logging.getLogger(__name__)
+
 
 class ParserManager:
     """
     Provides a simple way of testing multiple parser modules against a given image.
-
-    Attributes:
-        managed_parsers (list[Parser]): The parsers managed by this ParserManager instance.
     """
-
-    managed_parsers: List[Parser]
-    """The parsers managed by this ParserManager instance."""
 
     def __init__(
         self,
@@ -92,13 +89,10 @@ class ParserManager:
             for parser in self.managed_parsers:
                 try:
                     prompt_info = parser.read_parameters(image, use_text)
-                    if prompt_info is None:
-                        continue
-
                     if not self.lazy_read:
                         prompt_info.parse()
-
-                except ParserError:
+                except ParserError as error:
+                    logger.debug("error in %s parser: %s", parser.generator.value, error)
                     continue
 
                 return prompt_info

@@ -42,7 +42,7 @@ class Parser(ABC):
         self,
         image: Image,
         use_text: bool = True,
-    ) -> Optional[_data.PromptInfo]:
+    ) -> _data.PromptInfo:
         """
         Read generation parameters from image.
 
@@ -124,12 +124,12 @@ def get_exif_value(
     ifd_tag: int = 0x8769,
     prefix_length: int = 8,
     encoding: str = "utf_16_be",
-) -> Optional[str]:
+) -> str:
     """Read the value for a given key out of the images exif data."""
     exif_value = image.getexif().get_ifd(ifd_tag)[_EXIF_TAGS[key]]
-    if len(exif_value) > prefix_length:
-        return exif_value[prefix_length:].decode(encoding)
-    return None
+    if len(exif_value) <= prefix_length:
+        raise ValueError("exif value too short")
+    return exif_value[prefix_length:].decode(encoding)
 
 
 def pop_keys(keys: Iterable[str], dictionary: Dict[str, Any]) -> Iterator[Tuple[str, Any]]:

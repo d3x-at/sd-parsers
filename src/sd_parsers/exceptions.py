@@ -3,3 +3,7 @@
 
 class ParserError(Exception):
     """something went wrong while parsing the data"""
+
+
+class MetadataError(ParserError):
+    """metadata did not match our expectations - can be safely ignored"""

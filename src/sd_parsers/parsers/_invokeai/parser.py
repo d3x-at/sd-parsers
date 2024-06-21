@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, NamedTuple
 from PIL.Image import Image
 
 from sd_parsers.data import Generators, PromptInfo
+from sd_parsers.exceptions import MetadataError
 from sd_parsers.parser import Parser, ParseResult
 
 from ._variant_dream import _parse_dream
@@ -48,7 +49,7 @@ class InvokeAIParser(Parser):
 
     def read_parameters(self, image: Image, use_text: bool = True):
         if image.format != "PNG":
-            return None
+            raise MetadataError("unsupported image format", image.format)
 
         metadata = image.text if use_text else image.info  # type: ignore
         for variant in VARIANT_PARSERS:
@@ -60,7 +61,7 @@ class InvokeAIParser(Parser):
             if parameters:
                 return PromptInfo(self, parameters, variant)
 
-        return None
+        raise MetadataError("no matching variant")
 
     def parse(self, parameters: Dict[str, Any], variant: VariantParser) -> ParseResult:
         return variant.parse(self, parameters)

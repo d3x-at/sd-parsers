@@ -8,7 +8,7 @@ from typing import Any, Dict, Generator, List, Optional, Set, Tuple
 from PIL.Image import Image
 
 from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
-from sd_parsers.exceptions import ParserError
+from sd_parsers.exceptions import MetadataError, ParserError
 from sd_parsers.parser import Parser, ParseResult
 
 logger = logging.getLogger(__name__)
@@ -28,18 +28,17 @@ class ComfyUIParser(Parser):
 
     def read_parameters(self, image: Image, use_text: bool = True):
         if image.format != "PNG":
-            return None
+            raise MetadataError("unsupported image format", image.format)
 
-        metadata = image.text if use_text else image.info  # type: ignore
         try:
-            prompt = json.loads(metadata["prompt"])
-            workflow = json.loads(metadata["workflow"])
-        except KeyError:
-            return None
-        except (json.JSONDecodeError, TypeError) as error:
-            raise ParserError("error reading metadata") from error
+            metadata = image.text if use_text else image.info  # type: ignore
+            prompt = metadata["prompt"]
+            workflow = metadata["workflow"]
+            parameters = {"prompt": json.loads(prompt), "workflow": json.loads(workflow)}
+        except Exception as error:
+            raise MetadataError("no matching metadata") from error
 
-        return PromptInfo(self, {"prompt": prompt, "workflow": workflow})
+        return PromptInfo(self, parameters)
 
     def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:

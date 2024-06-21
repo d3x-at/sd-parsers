@@ -8,7 +8,7 @@ from typing import Any, Dict
 from PIL.Image import Image
 
 from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
-from sd_parsers.exceptions import ParserError
+from sd_parsers.exceptions import MetadataError, ParserError
 from sd_parsers.parser import Parser, ParseResult, pop_keys
 
 SAMPLER_PARAMS = ["seed", "strength", "noise", "scale"]
@@ -23,7 +23,7 @@ class NovelAIParser(Parser):
 
     def read_parameters(self, image: Image, use_text: bool = True):
         if image.format != "PNG":
-            return None
+            raise MetadataError("unsupported image format", image.format)
 
         metadata = image.text if use_text else image.info  # type: ignore
         try:
@@ -31,13 +31,11 @@ class NovelAIParser(Parser):
             software = metadata["Software"]
             source = metadata["Source"]
             comment = json.loads(metadata["Comment"])
-        except KeyError:
-            return None
-        except (json.JSONDecodeError, TypeError) as error:
-            raise ParserError("error reading metadata") from error
+        except Exception as error:
+            raise MetadataError("no matching metadata") from error
 
         if software != "NovelAI":
-            return None
+            raise MetadataError("unknown software version", software)
 
         return PromptInfo(
             self,

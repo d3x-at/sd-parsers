@@ -7,7 +7,7 @@ from typing import Any, Dict
 from PIL.Image import Image
 
 from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
-from sd_parsers.exceptions import ParserError
+from sd_parsers.exceptions import MetadataError, ParserError
 from sd_parsers.parser import Parser, ParseResult, get_exif_value, pop_keys
 
 SAMPLER_PARAMS = ["Sampler", "CFG scale", "Seed", "Steps", "ENSD"]
@@ -21,26 +21,18 @@ class AUTOMATIC1111Parser(Parser):
         return Generators.AUTOMATIC1111
 
     def read_parameters(self, image: Image, use_text: bool = True):
-        if image.format == "PNG":
-            try:
-                if use_text:
-                    parameters = image.text["parameters"]  # type: ignore
-                else:
-                    parameters = image.info["parameters"]
-            except KeyError:
-                return None
-
-            return PromptInfo(self, {"parameters": parameters})
-
-        if image.format in ("JPEG", "WEBP"):
-            try:
+        try:
+            if image.format == "PNG":
+                parameters = image.text["parameters"] if use_text else image.info["parameters"]  # type: ignore
+            elif image.format in ("JPEG", "WEBP"):
                 parameters = get_exif_value(image, "UserComment")
-            except (KeyError, ValueError):
-                return None
+            else:
+                raise MetadataError("unsupported image format", image.format)
 
-            return PromptInfo(self, {"parameters": parameters})
+        except (KeyError, ValueError) as error:
+            raise MetadataError("no matching metadata") from error
 
-        return None
+        return PromptInfo(self, {"parameters": parameters})
 
     def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:
