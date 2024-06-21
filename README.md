@@ -69,10 +69,9 @@ def main():
         try:
             prompt_info = parser.read_parameters(image)
     
-            if prompt_info:
-                # the following can be omitted for an equivalent
-                # of ParserManager(lazy_read=True)
-                prompt_info.parse()
+            # the following can be omitted for an equivalent
+            # of ParserManager(lazy_read=True)
+            prompt_info.parse()
 
         except ParserError:
             ...
