@@ -69,8 +69,6 @@ class AUTOMATIC1111Parser(Parser):
         if negative_prompt:
             sampler["negative_prompts"] = [Prompt(negative_prompt)]
 
-        metadata = self.normalize_parameters(metadata)
-
         return [Sampler(**sampler)], metadata
 
 

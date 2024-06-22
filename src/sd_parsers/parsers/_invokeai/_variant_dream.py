@@ -7,11 +7,9 @@ from typing import Any, Dict
 
 from sd_parsers.data import Prompt, Sampler
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ParseResult, ReplacementRules, pop_keys
+from sd_parsers.parser import Parser, ParseResult, pop_keys
 
 SAMPLER_PARAMS = ["cfg_scale", "cfg_rescale_multiplier", "perlin", "seed", "steps", "threshold"]
-
-REPLACEMENT_RULES: ReplacementRules = [("size", (["width", "height"], "{width}x{height}"))]
 
 DREAM_KEYS = {
     "A": ("sampler", None),
@@ -57,16 +55,15 @@ def _parse_dream(parser: Parser, parameters: dict) -> ParseResult:
     # prompts
     _add_prompts(sampler, prompts, {})
 
-    return [Sampler(**sampler)], parser.normalize_parameters(metadata, REPLACEMENT_RULES, False)
+    return [Sampler(**sampler)], metadata
 
 
 def _get_sampler(parser: Parser, metadata: Dict[str, Any], key: str):
     try:
+        samper_parameters = parser.normalize_parameters(pop_keys(SAMPLER_PARAMS, metadata))
         sampler_data = {
             "name": metadata.pop(key),
-            "parameters": parser.normalize_parameters(
-                pop_keys(SAMPLER_PARAMS, metadata), REPLACEMENT_RULES
-            ),
+            "parameters": samper_parameters,
         }
     except KeyError as error:
         raise ParserError("no sampler found") from error

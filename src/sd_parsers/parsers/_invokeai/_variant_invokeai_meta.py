@@ -9,7 +9,7 @@ from sd_parsers.data import Model, Prompt, Sampler
 from sd_parsers.exceptions import ParserError
 from sd_parsers.parser import Parser, ParseResult
 
-from ._variant_dream import REPLACEMENT_RULES, _get_sampler
+from ._variant_dream import _get_sampler
 
 
 def _parse_invokeai_meta(parser: Parser, parameters: Dict[str, Any]) -> ParseResult:
@@ -44,7 +44,7 @@ def _parse_invokeai_meta(parser: Parser, parameters: Dict[str, Any]) -> ParseRes
             parameters=model_info,
         )
 
-    return [Sampler(**sampler)], parser.normalize_parameters(metadata, REPLACEMENT_RULES, False)
+    return [Sampler(**sampler)], metadata
 
 
 __all__ = ["_parse_invokeai_meta"]

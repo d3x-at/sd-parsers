@@ -36,7 +36,6 @@ PARAM = pytest.param(
             "generation_mode": "sdxl_txt2img",
             "width": 1024,
             "height": 1024,
-            "size": "1024x1024",
             "rand_device": "cpu",
             "ipAdapters": [
                 {

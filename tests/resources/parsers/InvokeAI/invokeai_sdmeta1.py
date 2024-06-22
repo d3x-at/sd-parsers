@@ -55,7 +55,6 @@ PARAM = pytest.param(
             "app_version": "2.3.0",
             "height": 768,
             "width": 512,
-            "size": "512x768",
             "seamless": False,
             "hires_fix": False,
             "type": "txt2img",

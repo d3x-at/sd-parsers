@@ -39,7 +39,6 @@ PARAM = pytest.param(
             "cf": "0.75",
             "height": 768,
             "width": 512,
-            "size": "512x768",
         },
     ),
     id="invokeai_dream1.png",

@@ -74,6 +74,4 @@ class NovelAIParser(Parser):
             model_name, model_hash = match.groups()
             sampler["model"] = Model(name=model_name, hash=model_hash)
 
-        metadata = self.normalize_parameters(metadata)
-
         return [Sampler(**sampler)], metadata

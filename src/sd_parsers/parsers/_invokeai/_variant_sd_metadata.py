@@ -8,7 +8,7 @@ from sd_parsers.data import Model, Sampler
 from sd_parsers.exceptions import ParserError
 from sd_parsers.parser import Parser, ParseResult
 
-from ._variant_dream import REPLACEMENT_RULES, _add_prompts, _get_sampler
+from ._variant_dream import _add_prompts, _get_sampler
 
 
 def _parse_sd_metadata(parser: Parser, parameters: Dict[str, Any]) -> ParseResult:
@@ -50,9 +50,7 @@ def _parse_sd_metadata(parser: Parser, parameters: Dict[str, Any]) -> ParseResul
     if model_name or model_hash:
         sampler["model"] = Model(name=model_name, hash=model_hash)
 
-    metadata = parser.normalize_parameters({**metadata, **metadata_image}, REPLACEMENT_RULES)
-
-    return [Sampler(**sampler)], metadata
+    return [Sampler(**sampler)], {**metadata, **metadata_image}
 
 
 __all__ = ["_parse_sd_metadata"]
