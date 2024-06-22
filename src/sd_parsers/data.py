@@ -20,6 +20,7 @@ class Generators(str, Enum):
     COMFYUI = "ComfyUI"
     INVOKEAI = "InvokeAI"
     NOVELAI = "NovelAI"
+    FOOOCUS = "Fooocus"
 
 
 @dataclass(frozen=True)
@@ -92,7 +93,7 @@ class PromptInfo:
         Passed on to the parser's parse() method.
     """
 
-    def parse(self):
+    def _parse(self):
         """Populate sampler information and metadata."""
         self._samplers, self._metadata = self._parser.parse(self.parameters, self._parsing_context)
         return self._samplers, self._metadata
@@ -109,7 +110,7 @@ class PromptInfo:
         """Samplers used in generating the parsed image."""
         if self._samplers is None:
             try:
-                self.parse()
+                self._parse()
             except ParserError:
                 self._samplers, self._metadata = [], {}
         return self._samplers  # type: ignore
@@ -125,28 +126,36 @@ class PromptInfo:
         """
         if self._metadata is None:
             try:
-                self.parse()
+                self._parse()
             except ParserError:
                 self._samplers, self._metadata = [], {}
         return self._metadata  # type: ignore
 
     @property
-    def combined_prompt(self) -> str:
+    def full_prompt(self) -> str:
         """
-        A simple concatenation of all prompts found in the generation data.
+        Full prompt if present in the image metafata.
+        Otherwise, a simple concatenation of all prompts found in the generation data.
 
         Reproducibility of the source image using this data is not guaranteed (=rather unlikely).
         """
-        return ", ".join(map(str, self.prompts))
+        try:
+            return self.metadata["full_prompt"]
+        except KeyError:
+            return ", ".join(map(str, self.prompts))
 
     @property
-    def combined_negative_prompt(self) -> str:
+    def full_negative_prompt(self) -> str:
         """
-        A simple concatenation of all negative prompts found in the generation data.
+        Full negative prompt if present in the image metafata.
+        Otherwise, a simple concatenation of all negative prompts found in the generation data.
 
         Reproducibility of the source image using this data is not guaranteed (=rather unlikely).
         """
-        return ", ".join(map(str, self.negative_prompts))
+        try:
+            return self.metadata["full_negative_prompt"]
+        except KeyError:
+            return ", ".join(map(str, self.negative_prompts))
 
     _prompts = None
 

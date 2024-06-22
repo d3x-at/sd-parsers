@@ -24,7 +24,7 @@ def main(files):
 def display_info(prompt_info: PromptInfo):
     # Models
     for model in prompt_info.models:
-        print(f"Model: {model.name}\nModel Hash: {model.model_hash}")
+        print(f"Model: {model.name}\nModel Hash: {model.hash}")
 
     # Samplers
     for sampler in prompt_info.samplers:
@@ -32,10 +32,10 @@ def display_info(prompt_info: PromptInfo):
         print(f"Sampler: {sampler.name}\nSampler Parameters: {sampler_parameters}")
 
     # Combined Prompt
-    print(f"\nPrompt: {prompt_info.combined_prompt}")
+    print(f"\nPrompt: {prompt_info.full_prompt}")
 
     # Combined Negative Prompt
-    print(f"\nNegative Prompt: {prompt_info.combined_negative_prompt}")
+    print(f"\nNegative Prompt: {prompt_info.full_negative_prompt}")
 
     # Remaining metadata
     print("\nOther Metadata:")

@@ -90,7 +90,7 @@ class ParserManager:
                 try:
                     prompt_info = parser.read_parameters(image, use_text)
                     if not self.lazy_read:
-                        prompt_info.parse()
+                        prompt_info._parse()
                 except ParserError as error:
                     logger.debug("error in %s parser: %s", parser.generator.value, error)
                     continue
