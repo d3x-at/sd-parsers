@@ -8,9 +8,11 @@ from PIL.Image import Image
 
 from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
 from sd_parsers.exceptions import MetadataError, ParserError
-from sd_parsers.parser import Parser, ParseResult, get_exif_value, pop_keys
+from sd_parsers.parser import Parser, ParseResult, ReplacementRules, get_exif_value, pop_keys
 
-SAMPLER_PARAMS = ["Sampler", "CFG scale", "Seed", "Steps", "ENSD"]
+SAMPLER_PARAMS = ["Sampler", "CFG scale", "Seed", "Steps", "ENSD", "Schedule type"]
+
+REPLACEMENT_RULES: ReplacementRules = [("Schedule type", "scheduler")]
 
 
 class AUTOMATIC1111Parser(Parser):
@@ -47,7 +49,7 @@ class AUTOMATIC1111Parser(Parser):
         try:
             sampler = {
                 "name": sampler_info.pop("Sampler"),
-                "parameters": self.normalize_parameters(sampler_info),
+                "parameters": self.normalize_parameters(sampler_info, REPLACEMENT_RULES),
             }
         except KeyError as error:
             raise ParserError("no sampler found") from error
