@@ -5,7 +5,7 @@ from sd_parsers.parsers import NovelAIParser
 
 from tests.tools import RESOURCE_PATH
 
-MODEL = Model(name="Stable Diffusion", model_hash="1D44365E")
+MODEL = Model(name="Stable Diffusion", hash="1D44365E")
 PROMPTS = [Prompt(value="masterpiece, best quality,  cat, space, icon")]
 NEGATIVE_PROMPTS = [
     Prompt(
@@ -27,7 +27,7 @@ testdata = [
             Sampler(
                 name="k_euler_ancestral",
                 parameters={"seed": 2253955223, "strength": 0.4, "noise": 0.0, "scale": 10.0},
-                model=Model(name="Stable Diffusion", model_hash="1D44365E"),
+                model=Model(name="Stable Diffusion", hash="1D44365E"),
                 prompts=PROMPTS,
                 negative_prompts=NEGATIVE_PROMPTS,
             ),

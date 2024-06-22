@@ -11,7 +11,7 @@ PARAMETERS = (
     "Model hash: c0d1994c73, Model: realistic_realisticVisionV20_v20"
 )
 
-MODEL = Model(name="realistic_realisticVisionV20_v20", model_hash="c0d1994c73")
+MODEL = Model(name="realistic_realisticVisionV20_v20", hash="c0d1994c73")
 PROMPTS = [Prompt(value="photo of a duck")]
 NEGATIVE_PROMPTS = [Prompt(value="monochrome")]
 

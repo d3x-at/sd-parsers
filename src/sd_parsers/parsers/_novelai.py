@@ -72,7 +72,7 @@ class NovelAIParser(Parser):
         match = re.fullmatch(r"^(.*?)\s+([A-Z0-9]+)$", source)
         if match:
             model_name, model_hash = match.groups()
-            sampler["model"] = Model(name=model_name, model_hash=model_hash)
+            sampler["model"] = Model(name=model_name, hash=model_hash)
 
         metadata = self.normalize_parameters(metadata)
 

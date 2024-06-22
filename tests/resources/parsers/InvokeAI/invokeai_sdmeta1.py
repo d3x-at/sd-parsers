@@ -4,7 +4,7 @@ from sd_parsers.data import Model, Prompt, Sampler
 MODELS = [
     Model(
         name="deliberateForInvoke_v08",
-        model_hash="56d1442a0feefd64836a19ac8e3527ec71c884fc962e246ddf67b03e42921272",
+        hash="56d1442a0feefd64836a19ac8e3527ec71c884fc962e246ddf67b03e42921272",
     )
 ]
 

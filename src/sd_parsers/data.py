@@ -52,7 +52,7 @@ class Model:
 
     model_id: Optional[int] = None
     name: Optional[str] = None
-    model_hash: Optional[str] = None
+    hash: Optional[str] = None
 
     parameters: Dict[str, Any] = field(default_factory=dict)
     """Additional model parameters"""

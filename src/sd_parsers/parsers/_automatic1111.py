@@ -58,7 +58,7 @@ class AUTOMATIC1111Parser(Parser):
         if model_name or model_hash:
             sampler["model"] = Model(
                 name=model_name,
-                model_hash=model_hash,
+                hash=model_hash,
             )
 
         if prompt:

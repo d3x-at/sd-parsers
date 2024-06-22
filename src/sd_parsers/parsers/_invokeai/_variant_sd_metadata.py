@@ -48,7 +48,7 @@ def _parse_sd_metadata(parser: Parser, parameters: Dict[str, Any]) -> ParseResul
     model_name = metadata.pop("model_weights", None)
     model_hash = metadata.pop("model_hash", None)
     if model_name or model_hash:
-        sampler["model"] = Model(name=model_name, model_hash=model_hash)
+        sampler["model"] = Model(name=model_name, hash=model_hash)
 
     metadata = parser.normalize_parameters({**metadata, **metadata_image}, REPLACEMENT_RULES)
 
