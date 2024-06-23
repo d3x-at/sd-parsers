@@ -6,8 +6,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
-from .exceptions import ParserError
-
 if TYPE_CHECKING:
     from .parser import Parser
 
@@ -84,56 +82,38 @@ class Sampler:
 class PromptInfo:
     """Contains structured image generation parameters."""
 
-    def __init__(self, parser: Parser, parameters: dict[str, Any], parsing_context: Any = None):
+    samplers: Iterable[Sampler]
+    """Samplers used in generating the parsed image."""
+
+    metadata: dict[Any, Any]
+    """
+        Additional parameters which are found in the image metadata.
+
+        Highly dependent on the respective image generator.
+    """
+
+    def __init__(
+        self,
+        parser: Parser,
+        samplers: Iterable[Sampler],
+        metadata: dict[Any, Any],
+    ):
         """
         Initializes a ParserManager object.
 
         Parameters:
             parser: The parser object used to obtain the given image parameters.
-            parameters: The original generation parameters as found in the image metadata.
-            parsing_context: Any information needed during the parsing pass. Passed on to the parser's parse() method.
+            samplers: The samplers used in generating the parsed image.
+            metadata: Any additional parameters which are found in the image metadata.
         """
         self._parser = parser
-        self._parameters = parameters
-        self._parsing_context = parsing_context
-
-    def _parse(self):
-        """Populate sampler information and metadata."""
-        self._samplers, self._metadata = self._parser.parse(self._parameters, self._parsing_context)
-        return self._samplers, self._metadata
+        self.samplers = samplers
+        self.metadata = metadata
 
     @property
     def generator(self) -> Generators:
         """Image generater which might have produced the parsed image."""
         return self._parser.generator
-
-    _samplers = None
-
-    @property
-    def samplers(self) -> Iterable[Sampler]:
-        """Samplers used in generating the parsed image."""
-        if self._samplers is None:
-            try:
-                self._parse()
-            except ParserError:
-                self._samplers, self._metadata = [], {}
-        return self._samplers  # type: ignore
-
-    _metadata = None
-
-    @property
-    def metadata(self) -> dict[Any, Any]:
-        """
-        Additional parameters which are found in the image metadata.
-
-        Highly dependent on the respective image generator.
-        """
-        if self._metadata is None:
-            try:
-                self._parse()
-            except ParserError:
-                self._samplers, self._metadata = [], {}
-        return self._metadata  # type: ignore
 
     @property
     def full_prompt(self) -> str:
