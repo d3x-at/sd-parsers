@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Type, Union
 
 from PIL import Image
 
@@ -29,7 +29,7 @@ class ParserManager:
         *,
         two_pass: bool = True,
         normalize_parameters: bool = True,
-        managed_parsers: Optional[List[Parser]] = None,
+        managed_parsers: Optional[List[Type[Parser]]] = None,
     ):
         """
         Initializes a ParserManager object.
@@ -48,8 +48,8 @@ class ParserManager:
         original image parameters is needed. Manual verification of parameter data is advised.
         """
         self.two_pass = two_pass
-        self.managed_parsers = managed_parsers or [
-            parser(normalize_parameters) for parser in MANAGED_PARSERS
+        self.managed_parsers: List[Parser] = [
+            parser(normalize_parameters) for parser in managed_parsers or MANAGED_PARSERS
         ]
 
     def parse(
