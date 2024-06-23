@@ -1,6 +1,6 @@
 import pytest
 from PIL import Image
-from sd_parsers.data import Prompt, PromptInfo
+from sd_parsers.data import Prompt
 from sd_parsers.parsers import InvokeAIParser
 from sd_parsers.parsers._invokeai import _variant_dream
 
@@ -18,9 +18,6 @@ testdata = [
 def test_parse(filename: str, expected):
     (
         expected_sampler,
-        expected_models,
-        expected_prompts,
-        expected_negative_prompts,
         expected_metadata,
     ) = expected
 
@@ -28,14 +25,10 @@ def test_parse(filename: str, expected):
     with Image.open(RESOURCE_PATH / "parsers/InvokeAI" / filename) as image:
         params = parser.read_parameters(image)
 
-    image_data = PromptInfo(parser, *params)
+    samplers, metadata = parser.parse(*params)
 
-    assert image_data is not None
-    assert image_data.prompts == expected_prompts
-    assert image_data.negative_prompts == expected_negative_prompts
-    assert image_data.models == expected_models
-    assert image_data.metadata == expected_metadata
-    assert image_data.samplers == [expected_sampler]
+    assert metadata == expected_metadata
+    assert samplers == [expected_sampler]
 
 
 def test_split_prompt():

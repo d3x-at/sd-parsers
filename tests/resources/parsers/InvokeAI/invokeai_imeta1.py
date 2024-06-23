@@ -1,19 +1,6 @@
 import pytest
 from sd_parsers.data import Model, Prompt, Sampler
 
-MODELS = [Model(name="juggernautXL", metadata={"base_model": "sdxl", "model_type": "main"})]
-
-PROMPTS = [Prompt(value="digital artwork, oil painting. painterly brushstrokes, holidays,")]
-
-NEGATIVE_PROMPTS = [
-    Prompt(
-        value=(
-            "grainy+, photo, oversaturated, overexposed, blurry, "
-            "compressed jpg+, noisy++, unfocused , black and white"
-        )
-    )
-]
-
 PARAM = pytest.param(
     "invokeai_imeta1.png",
     (
@@ -25,13 +12,19 @@ PARAM = pytest.param(
                 "cfg_rescale_multiplier": 0.0,
                 "steps": 35,
             },
-            model=MODELS[0],
-            prompts=PROMPTS,
-            negative_prompts=NEGATIVE_PROMPTS,
+            model=Model(name="juggernautXL", metadata={"base_model": "sdxl", "model_type": "main"}),
+            prompts=[
+                Prompt(value="digital artwork, oil painting. painterly brushstrokes, holidays,")
+            ],
+            negative_prompts=[
+                Prompt(
+                    value=(
+                        "grainy+, photo, oversaturated, overexposed, blurry, "
+                        "compressed jpg+, noisy++, unfocused , black and white"
+                    )
+                )
+            ],
         ),
-        set(MODELS),
-        set(PROMPTS),
-        set(NEGATIVE_PROMPTS),
         {
             "generation_mode": "sdxl_txt2img",
             "width": 1024,

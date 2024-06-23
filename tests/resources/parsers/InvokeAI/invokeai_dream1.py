@@ -30,9 +30,6 @@ PARAM = pytest.param(
             prompts=PROMPTS,
             negative_prompts=NEGATIVE_PROMPTS,
         ),
-        set(),
-        set(PROMPTS),
-        set(NEGATIVE_PROMPTS),
         {
             "G": "0.9",
             "U": "4",

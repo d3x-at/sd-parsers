@@ -1,35 +1,6 @@
 import pytest
 from sd_parsers.data import Model, Prompt, Sampler
 
-MODELS = [
-    Model(
-        name="deliberateForInvoke_v08",
-        hash="56d1442a0feefd64836a19ac8e3527ec71c884fc962e246ddf67b03e42921272",
-    )
-]
-
-PROMPTS = [
-    Prompt(
-        value=(
-            "professional full body photo of young woman, "
-            "hyper long brunette hair, elegant hair, "
-            "wearing a bikini top and asymmetric short skirt, "
-            "curvy body, long legs, (imperfect skin), detailed skin, "
-            "intense freckles, super long eye lashes, at night, outside, "
-            "city background, 8k ultra detailed, realistic, high quality, "
-            "film grain, low contrast"
-        ),
-        metadata={"weight": 1.0},
-    )
-]
-
-NEGATIVE_PROMPTS = [
-    Prompt(
-        value="rendering, glowing eyes, skinny",
-        metadata={"weight": 1.0},
-    )
-]
-
 PARAM = pytest.param(
     "invokeai_sdmeta1.png",
     (
@@ -42,13 +13,31 @@ PARAM = pytest.param(
                 "perlin": 0,
                 "seed": 2980747362,
             },
-            model=MODELS[0],
-            prompts=PROMPTS,
-            negative_prompts=NEGATIVE_PROMPTS,
+            model=Model(
+                name="deliberateForInvoke_v08",
+                hash="56d1442a0feefd64836a19ac8e3527ec71c884fc962e246ddf67b03e42921272",
+            ),
+            prompts=[
+                Prompt(
+                    value=(
+                        "professional full body photo of young woman, "
+                        "hyper long brunette hair, elegant hair, "
+                        "wearing a bikini top and asymmetric short skirt, "
+                        "curvy body, long legs, (imperfect skin), detailed skin, "
+                        "intense freckles, super long eye lashes, at night, outside, "
+                        "city background, 8k ultra detailed, realistic, high quality, "
+                        "film grain, low contrast"
+                    ),
+                    metadata={"weight": 1.0},
+                )
+            ],
+            negative_prompts=[
+                Prompt(
+                    value="rendering, glowing eyes, skinny",
+                    metadata={"weight": 1.0},
+                )
+            ],
         ),
-        set(MODELS),
-        set(PROMPTS),
-        set(NEGATIVE_PROMPTS),
         {
             "model": "stable diffusion",
             "app_id": "invoke-ai/InvokeAI",

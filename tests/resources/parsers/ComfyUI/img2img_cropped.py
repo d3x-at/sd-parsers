@@ -1,19 +1,6 @@
 import pytest
 from sd_parsers.data import Model, Prompt, Sampler
 
-MODEL = Model(
-    name="v1-5-pruned-emaonly.ckpt", metadata={"config_name": "v1-inference.yaml"}, model_id=4
-)
-
-PROMPTS = [
-    Prompt(
-        value="photograph of victorian woman with wings, sky clouds, " "meadow grass",
-        prompt_id=6,
-    )
-]
-
-NEGATIVE_PROMPTS = [Prompt(value="watermark, text", prompt_id=7)]
-
 PARAM = pytest.param(
     "img2img_cropped.png",
     (
@@ -29,14 +16,21 @@ PARAM = pytest.param(
                     "denoise": 0.8700000000000001,
                 },
                 sampler_id=3,
-                model=MODEL,
-                prompts=PROMPTS,
-                negative_prompts=NEGATIVE_PROMPTS,
+                model=Model(
+                    name="v1-5-pruned-emaonly.ckpt",
+                    metadata={"config_name": "v1-inference.yaml"},
+                    model_id=4,
+                ),
+                prompts=[
+                    Prompt(
+                        value="photograph of victorian woman with wings, sky clouds, "
+                        "meadow grass",
+                        prompt_id=6,
+                    )
+                ],
+                negative_prompts=[Prompt(value="watermark, text", prompt_id=7)],
             ),
         ],
-        set([MODEL]),
-        set(PROMPTS),
-        set(NEGATIVE_PROMPTS),
         {
             ("SaveImage", 9): {"filename_prefix": "ComfyUI"},
             ("LoadImage", 10): {"image": "example.png"},
