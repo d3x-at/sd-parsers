@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 from PIL.Image import Image
 
-from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler
 from sd_parsers.exceptions import MetadataError, ParserError
 from sd_parsers.parser import Parser, ParseResult, pop_keys
 
@@ -37,15 +37,14 @@ class NovelAIParser(Parser):
         if software != "NovelAI":
             raise MetadataError("unknown software version", software)
 
-        return PromptInfo(
-            self,
-            {
-                "Comment": comment,
-                "Description": description,
-                "Software": software,
-                "Source": source,
-            },
-        )
+        parameters = {
+            "Comment": comment,
+            "Description": description,
+            "Software": software,
+            "Source": source,
+        }
+
+        return parameters, None
 
     def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:

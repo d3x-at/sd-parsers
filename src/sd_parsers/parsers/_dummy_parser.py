@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 from PIL.Image import Image
 
-from sd_parsers.data import Generators, PromptInfo, Sampler
+from sd_parsers.data import Generators, Sampler
 from sd_parsers.parser import Parser, ParseResult
 
 
@@ -33,7 +33,7 @@ class DummyParser(Parser):
         Add a `parsing_context` to PromptInfo if you need to
         pass on processing information to the `parse()` method.
         """
-        return PromptInfo(self, parameters={"my_data": {"key": "value"}})
+        return {"my_data": {"key": "value"}}, None
 
     def parse(self, parameters: Dict[str, Any], parsing_context: Any) -> ParseResult:
         """

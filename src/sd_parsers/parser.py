@@ -42,11 +42,11 @@ class Parser(ABC):
         self,
         image: Image,
         use_text: bool = True,
-    ) -> _data.PromptInfo:
+    ) -> Tuple[dict[str, Any], Any]:
         """
         Read generation parameters from image.
 
-        returns `PromptInfo` if suitable image metadata has been found.
+        returns image parameters (and a parsing_context if needed) if suitable image metadata has been found.
         """
 
     @abstractmethod

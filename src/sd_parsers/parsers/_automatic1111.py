@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 from PIL.Image import Image
 
-from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler
 from sd_parsers.exceptions import MetadataError, ParserError
 from sd_parsers.parser import Parser, ParseResult, ReplacementRules, get_exif_value, pop_keys
 
@@ -34,7 +34,7 @@ class AUTOMATIC1111Parser(Parser):
         except (KeyError, ValueError) as error:
             raise MetadataError("no matching metadata") from error
 
-        return PromptInfo(self, {"parameters": parameters})
+        return {"parameters": parameters}, None
 
     def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:

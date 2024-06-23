@@ -73,27 +73,37 @@ class ParserManager:
         """
 
         if isinstance(image, Image.Image):
-            prompt_info = self._read_parameters(image)
+            params = self.read_parameters(image)
         else:
             with Image.open(image) as _image:
-                prompt_info = self._read_parameters(_image)
+                params = self.read_parameters(_image)
+
+        if params is None:
+            return None
+
+        prompt_info = PromptInfo(*params)
+        if not self.lazy_read:
+            try:
+                prompt_info._parse()
+            except ParserError as error:
+                logger.debug("error in %s parser: %s", prompt_info.generator.value, error)
+                return None
 
         return prompt_info
 
-    def _read_parameters(self, image: Image.Image):
-        prompt_info = None
+    def read_parameters(self, image: Image.Image):
+        """Try to extract image generation parameters from the given image."""
+
         # two_pass only makes sense with PNG images
         two_pass = image.format == "PNG" if self.two_pass else False
 
         for use_text in [False, True] if two_pass else [True]:
             for parser in self.managed_parsers:
                 try:
-                    prompt_info = parser.read_parameters(image, use_text)
-                    if not self.lazy_read:
-                        prompt_info._parse()
+                    parameters, parsing_context = parser.read_parameters(image, use_text)
+                    return parser, parameters, parsing_context
                 except ParserError as error:
                     logger.debug("error in %s parser: %s", parser.generator.value, error)
                     continue
 
-                return prompt_info
         return None

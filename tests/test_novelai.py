@@ -1,6 +1,6 @@
 import pytest
 from PIL import Image
-from sd_parsers.data import Model, Prompt, Sampler
+from sd_parsers.data import Model, Prompt, PromptInfo, Sampler
 from sd_parsers.parsers import NovelAIParser
 
 from tests.tools import RESOURCE_PATH
@@ -53,7 +53,9 @@ def test_parse(filename: str, expected):
 
     parser = NovelAIParser()
     with Image.open(RESOURCE_PATH / "parsers/NovelAI" / filename) as image:
-        image_data = parser.read_parameters(image)
+        params = parser.read_parameters(image)
+
+    image_data = PromptInfo(parser, *params)
 
     assert image_data is not None
     assert image_data.samplers == [expected_sampler]

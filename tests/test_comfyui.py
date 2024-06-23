@@ -3,6 +3,7 @@
 
 import pytest
 from PIL import Image
+from sd_parsers.data import PromptInfo
 from sd_parsers.parsers import ComfyUIParser
 
 from tests.resources.parsers.ComfyUI import img2img_cropped, night_evening_day_morning_cropped
@@ -26,7 +27,9 @@ def test_parse(filename: str, expected):
 
     parser = ComfyUIParser()
     with Image.open(RESOURCE_PATH / "parsers/ComfyUI" / filename) as image:
-        image_data = parser.read_parameters(image)
+        params = parser.read_parameters(image)
+
+    image_data = PromptInfo(parser, *params)
 
     assert image_data is not None
     assert image_data.samplers == expected_samplers

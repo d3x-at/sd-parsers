@@ -81,25 +81,25 @@ class Sampler:
         return hash((self.sampler_id, self.name))
 
 
-@dataclass
 class PromptInfo:
     """Contains structured image generation parameters."""
 
-    _parser: Parser
-    """The parser object used to obtain the given image parameters."""
+    def __init__(self, parser: Parser, parameters: dict[str, Any], parsing_context: Any = None):
+        """
+        Initializes a ParserManager object.
 
-    parameters: Dict[str, Any]
-    """The original generation parameters as found in the image metadata."""
-
-    _parsing_context: Any = None
-    """
-        Any information needed during the parsing pass.
-        Passed on to the parser's parse() method.
-    """
+        Parameters:
+            parser: The parser object used to obtain the given image parameters.
+            parameters: The original generation parameters as found in the image metadata.
+            parsing_context: Any information needed during the parsing pass. Passed on to the parser's parse() method.
+        """
+        self._parser = parser
+        self._parameters = parameters
+        self._parsing_context = parsing_context
 
     def _parse(self):
         """Populate sampler information and metadata."""
-        self._samplers, self._metadata = self._parser.parse(self.parameters, self._parsing_context)
+        self._samplers, self._metadata = self._parser.parse(self._parameters, self._parsing_context)
         return self._samplers, self._metadata
 
     @property
@@ -193,13 +193,13 @@ class PromptInfo:
         return self._models
 
     def __str__(self):
-        parameters = ", ".join(f"'{key}': ..." for key in self.parameters.keys())
         return (
             f"PromptInfo(generator={self.generator}, "
+            f'full_prompt="{self.full_prompt}", '
+            f'full_negative_prompt="{self.full_negative_prompt}", '
             f"prompts={self.prompts}, "
             f"negative_prompts={self.negative_prompts}, "
             f"samplers={self.samplers}, "
             f"models={self.models}, "
-            f"metadata={self.metadata}, "
-            f"parameters={{{parameters}}}"
+            f"metadata={self.metadata}"
         )

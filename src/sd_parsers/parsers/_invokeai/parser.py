@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, NamedTuple
 
 from PIL.Image import Image
 
-from sd_parsers.data import Generators, PromptInfo
+from sd_parsers.data import Generators
 from sd_parsers.exceptions import MetadataError
 from sd_parsers.parser import Parser, ParseResult
 
@@ -59,7 +59,7 @@ class InvokeAIParser(Parser):
                 continue
 
             if parameters:
-                return PromptInfo(self, parameters, variant)
+                return parameters, variant
 
         raise MetadataError("no matching variant")
 

@@ -7,7 +7,7 @@ from typing import Any, Dict, Generator, List, Optional, Set, Tuple
 
 from PIL.Image import Image
 
-from sd_parsers.data import Generators, Model, Prompt, PromptInfo, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler
 from sd_parsers.exceptions import MetadataError, ParserError
 from sd_parsers.parser import Parser, ParseResult
 
@@ -38,7 +38,7 @@ class ComfyUIParser(Parser):
         except Exception as error:
             raise MetadataError("no matching metadata") from error
 
-        return PromptInfo(self, parameters)
+        return parameters, None
 
     def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
         try:
