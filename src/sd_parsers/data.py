@@ -49,14 +49,18 @@ class Prompt:
 
 @dataclass(frozen=True)
 class Model:
-    """Represents a model used during image generation."""
+    """Represents a checkpoint model used during image generation."""
 
-    model_id: Optional[int] = None
     name: Optional[str] = None
     hash: Optional[str] = None
+    model_id: Optional[int] = None
 
-    parameters: Dict[str, Any] = field(default_factory=dict)
-    """Additional model parameters"""
+    metadata: Dict[Any, Any] = field(default_factory=dict)
+    """
+    Additional generator-specific information.
+    
+    Highly dependent on the respective image generator.
+    """
 
     def __hash__(self) -> int:
         return hash((self.model_id, self.name))
@@ -134,7 +138,7 @@ class PromptInfo:
     @property
     def full_prompt(self) -> str:
         """
-        Full prompt if present in the image metafata.
+        Full prompt if present in the image metadata.
         Otherwise, a simple concatenation of all prompts found in the generation data.
 
         Reproducibility of the source image using this data is not guaranteed (=rather unlikely).
@@ -147,7 +151,7 @@ class PromptInfo:
     @property
     def full_negative_prompt(self) -> str:
         """
-        Full negative prompt if present in the image metafata.
+        Full negative prompt if present in the image metadata.
         Otherwise, a simple concatenation of all negative prompts found in the generation data.
 
         Reproducibility of the source image using this data is not guaranteed (=rather unlikely).

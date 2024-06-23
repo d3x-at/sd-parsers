@@ -1,7 +1,7 @@
 import pytest
 from sd_parsers.data import Model, Prompt, Sampler
 
-MODELS = [Model(name="juggernautXL", parameters={"base_model": "sdxl", "model_type": "main"})]
+MODELS = [Model(name="juggernautXL", metadata={"base_model": "sdxl", "model_type": "main"})]
 
 PROMPTS = [Prompt(value="digital artwork, oil painting. painterly brushstrokes, holidays,")]
 

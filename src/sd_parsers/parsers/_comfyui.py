@@ -95,12 +95,8 @@ class ImageContext:
             if node_id in context.processed_nodes:
                 continue
 
-            with suppress(KeyError, AttributeError):
-                inputs = {
-                    key: value
-                    for key, value in node["inputs"].items()
-                    if not isinstance(value, list)
-                }
+            with suppress(KeyError):
+                inputs = _get_input_values(node["inputs"])
                 if inputs:
                     metadata[node["class_type"], node_id] = inputs
 
@@ -150,12 +146,9 @@ class ImageContext:
                     for tmp_id in trace[:-1]:
                         with suppress(KeyError):
                             tmp_node = self.prompt[tmp_id]
-
-                            metadata[tmp_node["class_type"], tmp_id] = {
-                                key: value
-                                for key, value in tmp_node["inputs"].items()
-                                if not isinstance(value, list)
-                            }
+                            metadata[tmp_node["class_type"], tmp_id] = _get_input_values(
+                                tmp_node["inputs"]
+                            )
 
                     prompts.append(Prompt(value=text.strip(), prompt_id=node_id, metadata=metadata))
                     found_prompt = True
@@ -187,19 +180,16 @@ class ImageContext:
 
         for node_id, node, _ in self._traverse(initial_node_id):
             try:
-                inputs = node["inputs"]
-                ckpt_name = inputs["ckpt_name"]
+                inputs = dict(node["inputs"])
+                ckpt_name = inputs.pop("ckpt_name")
             except KeyError:
                 pass
             else:
                 self.processed_nodes.add(node_id)
                 logger.debug("found model #%d: %s", node_id, ckpt_name)
 
-                model = Model(model_id=node_id, name=ckpt_name)
-
-                with suppress(KeyError):
-                    model.parameters["config_name"] = inputs["config_name"]
-
+                metadata = _get_input_values(inputs)
+                model = Model(model_id=node_id, name=ckpt_name, metadata=metadata)
                 return model
 
         return None
@@ -207,7 +197,8 @@ class ImageContext:
     def _try_get_sampler(self, node_id: int, node):
         """Test if this node could contain sampler data"""
         try:
-            if not SAMPLER_PARAMS.issubset(node["inputs"]):
+            inputs = dict(node["inputs"])
+            if not SAMPLER_PARAMS.issubset(inputs.keys()):
                 return None
         except (KeyError, TypeError):
             return None
@@ -215,13 +206,9 @@ class ImageContext:
         logger.debug("found sampler #%d", node_id)
         self.processed_nodes.add(node_id)
 
-        inputs = dict(node["inputs"])
-
         # Sampler parameters
         sampler_name = inputs.pop("sampler_name")
-        sampler_parameters = self.parser.normalize_parameters(
-            (key, value) for key, value in inputs.items() if not isinstance(value, list)
-        )
+        sampler_parameters = self.parser.normalize_parameters(_get_input_values(inputs))
 
         # Sampler
         sampler = {
@@ -252,3 +239,10 @@ class ImageContext:
             )
 
         return Sampler(**sampler)
+
+
+def _get_input_values(inputs):
+    try:
+        return {key: value for key, value in inputs.items() if not isinstance(value, list)}
+    except Exception:
+        return {}

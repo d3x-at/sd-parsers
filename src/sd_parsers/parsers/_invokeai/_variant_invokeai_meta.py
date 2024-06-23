@@ -41,7 +41,7 @@ def _parse_invokeai_meta(parser: Parser, parameters: Dict[str, Any]) -> ParseRes
 
         sampler["model"] = Model(
             name=model_info.pop("model_name"),
-            parameters=model_info,
+            metadata=model_info,
         )
 
     return [Sampler(**sampler)], metadata
