@@ -1,13 +1,9 @@
-> [!IMPORTANT]  
-> Version 0.3 featuring a revisited API and extended ComfyUI & InvokeAI parsing logic is available.
-> 
-> See [release notes](https://github.com/d3x-at/sd-parsers/releases/tag/v0.3) for changes.
-
 ## Features
 
 Supports reading metadata from images generated with:
 * Automatic1111's Stable Diffusion web UI
 * ComfyUI *
+* Fooocus
 * InvokeAI
 * NovelAI
 
@@ -59,22 +55,29 @@ Each parser module can also be used directly, omitting the use of ```ParserManag
 
 ```python
 from PIL import Image
+from sd_parsers.data import PromptInfo
 from sd_parsers.exceptions import ParserError
 from sd_parsers.parsers import AUTOMATIC1111Parser
 
 parser = AUTOMATIC1111Parser()
 
-def main():
-    with Image.open("image.png") as image:
-        try:
-            prompt_info = parser.read_parameters(image)
-    
-            # the following can be omitted for an equivalent
-            # of ParserManager(lazy_read=True)
-            prompt_info.parse()
 
-        except ParserError:
-            ...
+def main():
+    try:
+        with Image.open("image.png") as image:
+            # read_parameters() returns relevant image metadata parameters
+            # and optional context information needed for parsing
+            parameters, parsing_context = parser.read_parameters(image)
+
+        # parse() builds a standardized data structure from the raw parameters
+        samplers, metadata = parser.parse(parameters, parsing_context)
+
+    except ParserError:
+        ...
+
+    # creating a PromptInfo object from the obtained data allows for the use
+    # of convenience poperties like ".prompts" or ".models"
+    prompt_info = PromptInfo(parser, samplers, metadata)
 ```
 
 ### Output
@@ -83,19 +86,35 @@ The output returned from `ParserManager` is a `PromptInfo` object (as can be see
 `PromptInfo` contains the following properties :
 * `generator`: Specifies the image generator that may have been used for creating the image.
 
+* `full_prompt`: A full prompt if present in the image metadata.
+
+  Otherwise, a simple concatenation of all prompts found.
+
+* `full_negative_prompt`: A full negative prompt if present in the image metadata. 
+  
+  Otherwise, a simple concatenation of all negative prompts found.
+
 * `prompts`: Prompts as found in the parsed metadata.
 
 * `negative_prompts`: Negative prompts as found in the parsed metadata.
 
 * `samplers`: Samplers used in the image generation process.
 
+  Samplers act as the central data autorithy (see [PromptInfo](src/sd_parsers/data.py#L82)).
+  
+  A Sampler contains the following properties specific to itself:
+    * `sampler_id`: A unique id of the sampler (if present in the metadata)
+    * `name`: The name of the sampler
+    * `parameters`: Generation parameters, including _cfg_scale_, _seed_, _steps_ and others.
+    * `model`: The model used by this sampler.
+    * `prompts`: A list of positive prompts used by this sampler.
+    * `negative_prompts`: A list of negative prompts used by this sampler.
+
 * `models`: Models used in the image generation process.
 
 * `metadata`: Additional metadata which could not be attributed to one of the former described.
 
   Highly dependent on the provided data structure of the respective image generator.
-
-* ```parameters```: A dictionary of unmodified metadata entries as found in the parsed image (if present).
 
 
 ## Contributing
