@@ -95,8 +95,8 @@ class PromptInfo:
     def __init__(
         self,
         parser: Parser,
-        samplers: Iterable[Sampler],
-        metadata: dict[Any, Any],
+        samplers: List[Sampler],
+        metadata: Dict[Any, Any],
     ):
         """
         Initializes a ParserManager object.
@@ -144,23 +144,41 @@ class PromptInfo:
     _prompts = None
 
     @property
-    def prompts(self) -> Iterable[Prompt]:
+    def prompts(self) -> List[Prompt]:
         """Prompts used in generating the parsed image."""
         if self._prompts is None:
-            self._prompts = set(
-                itertools.chain.from_iterable(sampler.prompts for sampler in self.samplers)
-            )
+            unique_prompts = set()
+            self._prompts = []
+
+            for prompt in itertools.chain.from_iterable(
+                sampler.prompts for sampler in self.samplers
+            ):
+                if prompt in unique_prompts:
+                    continue
+
+                unique_prompts.add(prompt)
+                self._prompts.append(prompt)
+
         return self._prompts
 
     _negative_prompts = None
 
     @property
-    def negative_prompts(self) -> Iterable[Prompt]:
+    def negative_prompts(self) -> List[Prompt]:
         """Negative prompts used in generating the parsed image."""
         if self._negative_prompts is None:
-            self._negative_prompts = set(
-                itertools.chain.from_iterable(sampler.negative_prompts for sampler in self.samplers)
-            )
+            unique_prompts = set()
+            self._negative_prompts = []
+
+            for prompt in itertools.chain.from_iterable(
+                sampler.negative_prompts for sampler in self.samplers
+            ):
+                if prompt in unique_prompts:
+                    continue
+
+                unique_prompts.add(prompt)
+                self._negative_prompts.append(prompt)
+
         return self._negative_prompts
 
     _models = None
