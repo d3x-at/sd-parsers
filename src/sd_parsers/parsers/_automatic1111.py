@@ -64,10 +64,10 @@ class AUTOMATIC1111Parser(Parser):
             )
 
         if prompt:
-            sampler["prompts"] = [Prompt(prompt)]
+            sampler["prompts"] = [Prompt(1, prompt)]
 
         if negative_prompt:
-            sampler["negative_prompts"] = [Prompt(negative_prompt)]
+            sampler["negative_prompts"] = [Prompt(1, negative_prompt)]
 
         return [Sampler(**sampler)], metadata
 

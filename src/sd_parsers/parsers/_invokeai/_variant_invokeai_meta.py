@@ -27,13 +27,13 @@ def _parse_invokeai_meta(parser: Parser, parameters: Dict[str, Any]) -> ParseRes
     with suppress(KeyError):
         prompt = metadata.pop("positive_prompt")
         if prompt != "":
-            sampler["prompts"] = [Prompt(value=prompt)]
+            sampler["prompts"] = [Prompt(prompt_id=1, value=prompt)]
 
     # negative prompt
     with suppress(KeyError):
         prompt = metadata.pop("negative_prompt")
         if prompt != "":
-            sampler["negative_prompts"] = [Prompt(value=prompt)]
+            sampler["negative_prompts"] = [Prompt(prompt_id=1, value=prompt)]
 
     # model
     with suppress(KeyError):

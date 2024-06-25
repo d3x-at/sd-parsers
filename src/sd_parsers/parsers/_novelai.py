@@ -62,10 +62,10 @@ class NovelAIParser(Parser):
         except KeyError as error:
             raise ParserError("no sampler found") from error
 
-        sampler["prompts"] = [Prompt(params.strip())]
+        sampler["prompts"] = [Prompt(1, params.strip())]
 
         with suppress(KeyError):
-            sampler["negative_prompts"] = [Prompt(metadata.pop("uc"))]
+            sampler["negative_prompts"] = [Prompt(1, metadata.pop("uc"))]
 
         # model
         match = re.fullmatch(r"^(.*?)\s+([A-Z0-9]+)$", source)

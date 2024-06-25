@@ -16,8 +16,8 @@ SAMPLERS = [
         name="UniPC",
         parameters={"steps": "15", "cfg_scale": "5", "seed": "235284042"},
         model=Model(name="realistic_realisticVisionV20_v20", hash="c0d1994c73"),
-        prompts=[Prompt(value="photo of a duck")],
-        negative_prompts=[Prompt(value="monochrome")],
+        prompts=[Prompt(1, "photo of a duck")],
+        negative_prompts=[Prompt(1, "monochrome")],
     )
 ]
 

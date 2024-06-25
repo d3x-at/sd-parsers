@@ -39,12 +39,12 @@ def test_split_prompt():
 
     assert output == {
         "negative_prompts": [
-            Prompt(value="nprompt1a, nprompt1b"),
-            Prompt(value="nprompt2a, nprompt2b"),
+            Prompt(1, "nprompt1a, nprompt1b"),
+            Prompt(2, "nprompt2a, nprompt2b"),
         ],
         "prompts": [
-            Prompt(value="prompt1a, prompt1b"),
-            Prompt(value="prompt2a, prompt2b"),
-            Prompt(value="prompt3a"),
+            Prompt(1, "prompt1a, prompt1b"),
+            Prompt(2, "prompt2a, prompt2b"),
+            Prompt(3, "prompt3a"),
         ],
     }

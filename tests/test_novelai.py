@@ -14,17 +14,18 @@ testdata = [
                     name="k_euler_ancestral",
                     parameters={"seed": 2253955223, "strength": 0.4, "noise": 0.0, "scale": 10.0},
                     model=Model(name="Stable Diffusion", hash="1D44365E"),
-                    prompts=[Prompt(value="masterpiece, best quality,  cat, space, icon")],
+                    prompts=[Prompt(1, "masterpiece, best quality,  cat, space, icon")],
                     negative_prompts=[
                         Prompt(
-                            value=(
+                            1,
+                            (
                                 "lowres, bad anatomy, bad hands, text, error, missing fingers, "
                                 "extra digit, fewer digits, cropped, worst quality, low quality, "
                                 "normal quality, jpeg artifacts, signature, watermark, username, "
                                 "blurry, lowres, bad anatomy, bad hands, text, error, missing fingers, "
                                 "extra digit, fewer digits, cropped, worst quality, low quality, "
                                 "normal quality, jpeg artifacts, signature, watermark, username, blurry"
-                            )
+                            ),
                         )
                     ],
                 )

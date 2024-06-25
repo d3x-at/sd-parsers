@@ -19,7 +19,7 @@ SAMPLERS = [
         model=Model(
             name="juggernautXL_v8Rundiffusion", hash="aeb7e9e689", model_id=None, metadata={}
         ),
-        prompts=[Prompt(value="a smiling goldfish", prompt_id=None, metadata={})],
+        prompts=[Prompt(value="a smiling goldfish", prompt_id=1, metadata={})],
         negative_prompts=[],
     )
 ]

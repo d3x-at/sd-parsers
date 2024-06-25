@@ -75,25 +75,26 @@ def _add_prompts(sampler: dict, combined_prompt: str, metadata: dict):
     prompts = []
     negative_prompts = []
 
-    def _get_prompt(prompt_string: str):
+    def _get_prompt(prompt_id: int, prompt_string: str):
         prompt_text = prompt_string.strip(" ,")
         if not prompt_text:
             raise ValueError
-        return Prompt(value=prompt_text, metadata=metadata)
+        return Prompt(prompt_id=prompt_id, value=prompt_text, metadata=metadata)
 
     prompt_index = 0
-    for match in re.finditer(r"\[([^\[]*)\]", combined_prompt):
+    i = 0
+    for i, match in enumerate(re.finditer(r"\[([^\[]*)\]", combined_prompt), start=1):
         with suppress(ValueError):
-            negative_prompts.append(_get_prompt(match.group()[1:-1]))
+            negative_prompts.append(_get_prompt(i, match.group()[1:-1]))
 
         start, end = match.span()
         with suppress(ValueError):
-            prompts.append(_get_prompt(combined_prompt[prompt_index:start]))
+            prompts.append(_get_prompt(i, combined_prompt[prompt_index:start]))
         prompt_index = end
 
     if prompt_index < len(combined_prompt):
         with suppress(ValueError):
-            prompts.append(_get_prompt(combined_prompt[prompt_index:]))
+            prompts.append(_get_prompt(i + 1, combined_prompt[prompt_index:]))
 
     try:
         sampler["prompts"].extend(prompts)

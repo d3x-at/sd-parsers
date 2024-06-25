@@ -59,12 +59,12 @@ class FooocusParser(Parser):
                 "name": parameters.pop("sampler"),
                 "parameters": sampler_parameters,
                 "model": model,
-                "prompts": [Prompt(parameters.pop("prompt"))],
+                "prompts": [Prompt(1, parameters.pop("prompt"))],
             }
 
             negative_prompt = parameters.pop("negative_prompt")
             if negative_prompt:
-                sampler["negative_prompts"] = [Prompt(negative_prompt)]
+                sampler["negative_prompts"] = [Prompt(1, negative_prompt)]
 
         except KeyError as error:
             raise ParserError("error reading parameter value") from error

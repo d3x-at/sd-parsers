@@ -25,11 +25,11 @@ class Generators(str, Enum):
 class Prompt:
     """Represents an image generation prompt."""
 
+    prompt_id: int
+    """Prompt id"""
+
     value: str
     """The value of the prompt."""
-
-    prompt_id: Optional[int] = None
-    """Prompt id"""
 
     metadata: Dict[Any, Any] = field(default_factory=dict)
     """
@@ -42,7 +42,7 @@ class Prompt:
         return self.value
 
     def __hash__(self) -> int:
-        return hash((self.prompt_id, self.value))
+        return hash(self.prompt_id)
 
 
 @dataclass(frozen=True)
