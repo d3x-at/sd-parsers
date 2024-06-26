@@ -86,7 +86,12 @@ class ParserManager:
 
     def read_parameters(self, image: Image.Image):
         """Try to extract image generation parameters from the given image."""
-        return next(iter(self._read_parameters(image)), None)
+        try:
+            parser, parameters, _ = next(iter(self._read_parameters(image)))
+            return parser.generator, parameters
+
+        except StopIteration:
+            return None
 
     def _read_parameters(self, image: Image.Image):
         # two_pass only makes sense with PNG images

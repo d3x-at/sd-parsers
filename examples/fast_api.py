@@ -27,5 +27,5 @@ def parse(image: UploadFile):
     if params is None:
         return {"success": False}
 
-    parser, metadata, _ = params
-    return {"success": True, "parser": parser.generator, "metadata": metadata}
+    image_generator, metadata = params
+    return {"success": True, "image_generator": image_generator, "metadata": metadata}
