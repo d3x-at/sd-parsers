@@ -42,10 +42,6 @@ class ParserManager:
         The performance effects of two-pass parsing depends on the given image files.
         If the image files are correctly formed and can be read with one of the supported parser modules,
         setting `two_pass` to `True` will considerably shorten the time needed to read the image parameters.
-
-        Warning: with lazy_read set to `True`, the returned image parameters may contain
-        "garbage" information as some metadata checks will be delayed. Use when fast access to the
-        original image parameters is needed. Manual verification of parameter data is advised.
         """
         self.two_pass = two_pass
         self.managed_parsers: List[Parser] = [

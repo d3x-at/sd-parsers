@@ -50,8 +50,13 @@ class Model:
     """Represents a checkpoint model used during image generation."""
 
     name: Optional[str] = None
+    """Name of the checkpoint model (if found)."""
+
     hash: Optional[str] = None
+    """Hash value of the checkpoint model. (if found)"""
+
     model_id: Optional[int] = None
+    """Model id"""
 
     metadata: Dict[Any, Any] = field(default_factory=dict)
     """
@@ -69,11 +74,22 @@ class Sampler:
     """Represents a model used during image generation."""
 
     name: str
+    """The name of the sampler"""
+
     parameters: Dict[str, Any]
+    """Generation parameters, including `cfg_scale`, `seed`, `steps` and others."""
+
     sampler_id: Optional[int] = None
+    """A unique id for this sampler (if present in the metadata)"""
+
     model: Optional[Model] = None
+    """The checkpoint model used."""
+
     prompts: List[Prompt] = field(default_factory=list)
+    """Positive prompts used by this sampler."""
+
     negative_prompts: List[Prompt] = field(default_factory=list)
+    """Negative prompts used by this sampler."""
 
     def __hash__(self) -> int:
         return hash((self.sampler_id, self.name))
@@ -82,10 +98,10 @@ class Sampler:
 class PromptInfo:
     """Contains structured image generation parameters."""
 
-    samplers: Iterable[Sampler]
+    samplers: List[Sampler]
     """Samplers used in generating the parsed image."""
 
-    metadata: dict[Any, Any]
+    metadata: Dict[Any, Any]
     """
         Additional parameters which are found in the image metadata.
 
