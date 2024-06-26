@@ -94,9 +94,11 @@ The output returned from `ParserManager` is a `PromptInfo` object (as can be see
   
   Otherwise, a simple concatenation of all negative prompts found.
 
-* `prompts`: Prompts as found in the parsed metadata.
+* `prompts`: All prompts found in the parsed metadata.
 
-* `negative_prompts`: Negative prompts as found in the parsed metadata.
+* `negative_prompts`: All negative prompts found in the parsed metadata.
+
+* `models`: Models used in the image generation process.
 
 * `samplers`: Samplers used in the image generation process.
 
@@ -109,8 +111,6 @@ The output returned from `ParserManager` is a `PromptInfo` object (as can be see
     * `model`: The model used by this sampler.
     * `prompts`: A list of positive prompts used by this sampler.
     * `negative_prompts`: A list of negative prompts used by this sampler.
-
-* `models`: Models used in the image generation process.
 
 * `metadata`: Additional metadata which could not be attributed to one of the former described.
 
