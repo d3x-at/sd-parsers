@@ -88,8 +88,9 @@ def _add_prompts(sampler: dict, combined_prompt: str, metadata: dict):
             negative_prompts.append(_get_prompt(i, match.group()[1:-1]))
 
         start, end = match.span()
-        with suppress(ValueError):
-            prompts.append(_get_prompt(i, combined_prompt[prompt_index:start]))
+        if start > prompt_index:
+            with suppress(ValueError):
+                prompts.append(_get_prompt(i, combined_prompt[prompt_index:start]))
         prompt_index = end
 
     if prompt_index < len(combined_prompt):
