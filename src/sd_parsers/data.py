@@ -65,6 +65,15 @@ class Model:
     Highly dependent on the respective image generator.
     """
 
+    def __post_init__(self):
+        if self.name is None and self.hash is None:
+            raise ValueError("Either name or hash need to be given.")
+
+    def __str__(self) -> str:
+        if self.name is None:
+            return self.hash or ""
+        return self.name
+
     def __hash__(self) -> int:
         return hash((self.model_id, self.name))
 
