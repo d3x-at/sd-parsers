@@ -68,56 +68,38 @@ class Parser(ABC):
 
         Returns a dictionary with normalized parameter values.
 
-        Override to alter the applied standardization logic.
         """
-        if self.do_normalization_pass:
-            return _normalize_parameters(
-                parameters, replacement_rules, to_lowercase, replace_whitespace
-            )
+        if not self.do_normalization_pass:
+            return parameters if isinstance(parameters, dict) else dict(parameters)  # type: ignore
 
-        return parameters if isinstance(parameters, dict) else dict(parameters)  # type: ignore
+        raw_props = dict(parameters)
+        processed = {}
 
+        if replacement_rules:
+            for property_key, instruction in replacement_rules:
+                # rename field instruction
+                if isinstance(instruction, str):
+                    with suppress(KeyError):
+                        processed[instruction] = raw_props.pop(property_key)
 
-def _normalize_parameters(
-    parameters: Union[Dict[str, Any], Iterable[Tuple[str, Any]]],
-    replacement_rules: Optional[ReplacementRules] = None,
-    to_lowercase=True,
-    replace_whitespace=True,
-) -> Dict[str, Any]:
-    """
-    Apply replacement rules and basic formatting to the keys of select image metadata entries.
+                # format field instruction
+                else:
+                    format_values, format_string = instruction
+                    with suppress(KeyError):
+                        processed[property_key] = format_string.format(
+                            **{key: raw_props[key] for key in format_values}
+                        )
 
-    Returns a dictionary with normalized parameter values.
-    """
+        for key, value in raw_props.items():
+            if to_lowercase:
+                key = key.lower()
 
-    raw_props = dict(parameters)
-    processed = {}
+            if replace_whitespace:
+                key = key.replace(" ", "_")
 
-    if replacement_rules:
-        for property_key, instruction in replacement_rules:
-            # rename field instruction
-            if isinstance(instruction, str):
-                with suppress(KeyError):
-                    processed[instruction] = raw_props.pop(property_key)
+            processed[key] = value
 
-            # format field instruction
-            else:
-                format_values, format_string = instruction
-                with suppress(KeyError):
-                    processed[property_key] = format_string.format(
-                        **{key: raw_props[key] for key in format_values}
-                    )
-
-    for key, value in raw_props.items():
-        if to_lowercase:
-            key = key.lower()
-
-        if replace_whitespace:
-            key = key.replace(" ", "_")
-
-        processed[key] = value
-
-    return processed
+        return processed
 
 
 def get_exif_value(
