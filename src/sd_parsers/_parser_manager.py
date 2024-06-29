@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union
 
 from PIL import Image
 
@@ -15,7 +15,7 @@ from .parsers import MANAGED_PARSERS
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from _typeshed import SupportsRead
+    from _typeshed import SupportsRead, SupportsRichComparison
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,6 @@ class ParserManager:
 
                 except ParserError as error:
                     logger.debug("error in %s parser: %s", parser.generator.value, error)
-                    continue
 
         return None
 
@@ -92,18 +91,24 @@ class ParserManager:
         """Try to extract image generation parameters from the given image."""
         with _get_image(image) as image:
             try:
-                parser, parameters, _ = next(iter(self._read_parameters(image)))
+                parser, parameters, _ = next(
+                    iter(self._read_parameters(image, lambda x: x._COMPLEXITY_INDEX))
+                )
                 return parser.generator, parameters
 
             except StopIteration:
                 return None
 
-    def _read_parameters(self, image: Image.Image):
+    def _read_parameters(
+        self,
+        image: Image.Image,
+        key: Optional[Callable[[Parser], SupportsRichComparison]] = None,
+    ):
         # two_pass only makes sense with PNG images
         two_pass = image.format == "PNG" if self.two_pass else False
 
         for use_text in [False, True] if two_pass else [True]:
-            for parser in self.managed_parsers:
+            for parser in sorted(self.managed_parsers, key=key) if key else self.managed_parsers:
                 try:
                     parameters, parsing_context = parser.read_parameters(image, use_text)
                     yield parser, parameters, parsing_context

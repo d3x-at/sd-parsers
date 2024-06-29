@@ -29,6 +29,9 @@ _EXIF_TAGS = {v: k for k, v in ExifTags.TAGS.items()}
 class Parser(ABC):
     """Parser base class."""
 
+    _COMPLEXITY_INDEX = 1
+    """Ordering hint for read_parameters()"""
+
     def __init__(self, normalize_parameters: bool = True):
         self.do_normalization_pass = normalize_parameters
 

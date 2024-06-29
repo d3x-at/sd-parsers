@@ -8,15 +8,9 @@ from fastapi import FastAPI, UploadFile
 from PIL import Image
 from sd_parsers import ParserManager
 
-# don't do this in production!
-from sd_parsers.parsers import *  # noqa: F403
-
 app = FastAPI()
 
-# reorder the used parsers so that the least complex metadata checks are done last (to reduce false positives)
-managed_parsers = [NovelAIParser, ComfyUIParser, InvokeAIParser, FooocusParser, AUTOMATIC1111Parser]  # noqa: F405
-
-parser_manager = ParserManager(managed_parsers=managed_parsers)
+parser_manager = ParserManager()
 
 
 @app.post("/api/parse")
