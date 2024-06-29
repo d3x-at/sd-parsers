@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import contextmanager
 from typing import TYPE_CHECKING, List, Optional, Type, Union
 
 from PIL import Image
@@ -17,6 +18,15 @@ if TYPE_CHECKING:
     from _typeshed import SupportsRead
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def _get_image(image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image]):
+    if isinstance(image, Image.Image):
+        yield image
+    else:
+        with Image.open(image) as _image:
+            yield _image
 
 
 class ParserManager:
@@ -65,7 +75,7 @@ class ParserManager:
         - ValueError: If a StringIO instance is used for `image`.
         """
 
-        def _parse(image: Image.Image):
+        with _get_image(image) as image:
             for parser, parameters, parsing_context in self._read_parameters(image):
                 try:
                     samplers, metadata = parser.parse(parameters, parsing_context)
@@ -76,22 +86,17 @@ class ParserManager:
                     logger.debug("error in %s parser: %s", parser.generator.value, error)
                     continue
 
-            return None
+        return None
 
-        if isinstance(image, Image.Image):
-            return _parse(image)
-
-        with Image.open(image) as _image:
-            return _parse(_image)
-
-    def read_parameters(self, image: Image.Image):
+    def read_parameters(self, image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image]):
         """Try to extract image generation parameters from the given image."""
-        try:
-            parser, parameters, _ = next(iter(self._read_parameters(image)))
-            return parser.generator, parameters
+        with _get_image(image) as image:
+            try:
+                parser, parameters, _ = next(iter(self._read_parameters(image)))
+                return parser.generator, parameters
 
-        except StopIteration:
-            return None
+            except StopIteration:
+                return None
 
     def _read_parameters(self, image: Image.Image):
         # two_pass only makes sense with PNG images
