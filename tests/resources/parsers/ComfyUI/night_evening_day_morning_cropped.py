@@ -8,7 +8,7 @@ PARAM = pytest.param(
             Sampler(
                 name="dpmpp_sde",
                 parameters={
-                    "cfg": 8.5,
+                    "cfg_scale": 8.5,
                     "denoise": 1.0,
                     "scheduler": "normal",
                     "seed": 335608130539327,
@@ -110,7 +110,7 @@ PARAM = pytest.param(
             Sampler(
                 name="dpmpp_2m",
                 parameters={
-                    "cfg": 7.0,
+                    "cfg_scale": 7.0,
                     "denoise": 0.5,
                     "scheduler": "simple",
                     "seed": 1122440447966177,

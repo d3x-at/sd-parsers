@@ -9,9 +9,10 @@ from PIL.Image import Image
 
 from sd_parsers.data import Generators, Model, Prompt, Sampler
 from sd_parsers.exceptions import MetadataError, ParserError
-from sd_parsers.parser import Parser, ParseResult, pop_keys
+from sd_parsers.parser import Parser, ParseResult, ReplacementRules, pop_keys
 
 SAMPLER_PARAMS = ["seed", "strength", "noise", "scale"]
+REPLACEMENT_RULES: ReplacementRules = [("scale", "cfg_scale")]
 
 
 class NovelAIParser(Parser):
@@ -57,7 +58,9 @@ class NovelAIParser(Parser):
         try:
             sampler = {
                 "name": metadata.pop("sampler"),
-                "parameters": self.normalize_parameters(pop_keys(SAMPLER_PARAMS, metadata)),
+                "parameters": self.normalize_parameters(
+                    pop_keys(SAMPLER_PARAMS, metadata), REPLACEMENT_RULES
+                ),
             }
         except KeyError as error:
             raise ParserError("no sampler found") from error

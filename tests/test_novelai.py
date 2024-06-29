@@ -12,7 +12,12 @@ testdata = [
             [
                 Sampler(
                     name="k_euler_ancestral",
-                    parameters={"seed": 2253955223, "strength": 0.4, "noise": 0.0, "scale": 10.0},
+                    parameters={
+                        "seed": 2253955223,
+                        "strength": 0.4,
+                        "noise": 0.0,
+                        "cfg_scale": 10.0,
+                    },
                     model=Model(name="Stable Diffusion", hash="1D44365E"),
                     prompts=[Prompt(1, "masterpiece, best quality,  cat, space, icon")],
                     negative_prompts=[

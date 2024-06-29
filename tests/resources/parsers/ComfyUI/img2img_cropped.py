@@ -11,7 +11,7 @@ PARAM = pytest.param(
                     "seed": 280823642470253,
                     "random_seed_after_every_gen": True,
                     "steps": 20,
-                    "cfg": 8.0,
+                    "cfg_scale": 8.0,
                     "scheduler": "normal",
                     "denoise": 0.8700000000000001,
                 },

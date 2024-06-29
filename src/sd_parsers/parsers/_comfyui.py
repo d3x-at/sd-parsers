@@ -9,11 +9,13 @@ from PIL.Image import Image
 
 from sd_parsers.data import Generators, Model, Prompt, Sampler
 from sd_parsers.exceptions import MetadataError, ParserError
-from sd_parsers.parser import Parser, ParseResult
+from sd_parsers.parser import Parser, ParseResult, ReplacementRules
 
 logger = logging.getLogger(__name__)
 
 SAMPLER_PARAMS = {"sampler_name", "steps", "cfg"}
+REPLACEMENT_RULES: ReplacementRules = [("cfg", "cfg_scale")]
+
 POSITIVE_PROMPT_KEYS = ["text", "positive"]
 NEGATIVE_PROMPT_KEYS = ["text", "negative"]
 IGNORE_LINK_TYPES_PROMPT = ["CLIP"]
@@ -208,7 +210,9 @@ class ImageContext:
 
         # Sampler parameters
         sampler_name = inputs.pop("sampler_name")
-        sampler_parameters = self.parser.normalize_parameters(_get_input_values(inputs))
+        sampler_parameters = self.parser.normalize_parameters(
+            _get_input_values(inputs), REPLACEMENT_RULES
+        )
 
         # Sampler
         sampler = {
