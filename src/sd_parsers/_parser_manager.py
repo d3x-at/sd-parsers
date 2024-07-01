@@ -69,7 +69,7 @@ class ParserManager:
             image: a PIL Image, filename, pathlib.Path object or a file object.
 
         If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
-        underlying `Image.open()` function:
+        underlying `Image.open()` method:
         - FileNotFoundError: If the file cannot be found.
         - PIL.UnidentifiedImageError: If the image cannot be opened and identified.
         - ValueError: If a StringIO instance is used for `image`.
@@ -88,7 +88,22 @@ class ParserManager:
         return None
 
     def read_parameters(self, image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image]):
-        """Try to extract image generation parameters from the given image."""
+        """
+        Try to read image metadata from the given image that refers to generation parameters.
+
+        Warning: This method is prone to returning false positives when given images that contain
+        random metadata.
+
+        Parameters:
+            image: a PIL Image, filename, pathlib.Path object or a file object.
+
+        If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
+        underlying `Image.open()` method:
+        - FileNotFoundError: If the file cannot be found.
+        - PIL.UnidentifiedImageError: If the image cannot be opened and identified.
+        - ValueError: If a StringIO instance is used for `image`.
+        """
+        
         with _get_image(image) as image:
             try:
                 parser, parameters, _ = next(
@@ -115,4 +130,3 @@ class ParserManager:
 
                 except ParserError as error:
                     logger.debug("error in %s parser: %s", parser.generator.value, error)
-                    continue
