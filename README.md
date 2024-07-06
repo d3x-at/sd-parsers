@@ -25,7 +25,7 @@ From command line: ```python3 -m sd_parsers <filenames>```.
 
 For a simple query, import ```ParserManager``` from ```sd_parsers``` and use its ```parse()``` method to parse an image. (see [examples](examples))
 
-Read prompt information from a given filename:
+#### Read prompt information from a given filename with `parse()`:
 ```python
 from sd_parsers import ParserManager
 
@@ -39,7 +39,7 @@ def main():
             print(f"Prompt: {prompt.value}")
 ```
 
-Read prompt information from an already opened image:
+#### Read prompt information from an already opened image:
 ```python
 from PIL import Image
 from sd_parsers import ParserManager
@@ -51,7 +51,28 @@ def main():
         prompt_info = parser_manager.parse(image)
 ```
 
-Each parser module can also be used directly, omitting the use of ```ParserManager```:
+#### Read raw parameter data from a given filename with `read_parameters()`:
+```python
+from sd_parsers import ParserManager
+
+parser_manager = ParserManager()
+
+def main():
+    params = parser_manager.read_parameters("image.png")
+
+    if params is None:
+      return
+    
+    image_generator, metadata = params
+
+    ...
+```
+
+> [!IMPORTANT]  
+> As a larger portion of the metadata validation is performed during the 'parsing'-operation, this method is more prone to returning false positives.
+> As such, either a more strict control of input images or additional subsequent validation is advised.
+
+#### Each parser module can also be used directly, omitting the use of ```ParserManager```:
 
 ```python
 from PIL import Image
