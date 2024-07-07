@@ -43,7 +43,7 @@ line-length = 100
 dev = [
     "pytest>=7.4.2",
     "ruff>=0.0.292",
-    "types-Pillow>=10.0.0.3",
+    "types-Pillow>=10.2.0.20240520",
 ]
 
 [tool.pytest.ini_options]
