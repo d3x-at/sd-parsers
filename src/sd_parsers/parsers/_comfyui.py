@@ -19,6 +19,7 @@ REPLACEMENT_RULES: ReplacementRules = [("cfg", "cfg_scale")]
 POSITIVE_PROMPT_KEYS = ["text", "positive"]
 NEGATIVE_PROMPT_KEYS = ["text", "negative"]
 IGNORE_LINK_TYPES_PROMPT = ["CLIP"]
+IGNORE_CLASS_TYPES = ["ConditioningCombine"]
 
 
 class ComfyUIParser(Parser):
@@ -158,11 +159,38 @@ class ImageContext:
         except Exception:
             return {}
 
+    def _get_trace_metadata(self, trace: list[int]):
+        metadata = {}
+
+        for node_id in trace:
+            try:
+                node = self.prompt[node_id]
+                class_type = node["class_type"]
+
+                if class_type in IGNORE_CLASS_TYPES:
+                    continue
+
+                value = self._get_input_values(node["inputs"])
+
+            except KeyError:
+                continue
+
+            try:
+                entry = metadata[class_type]
+                if isinstance(entry, list):
+                    entry.append(value)
+                else:
+                    metadata[class_type] = [entry, value]
+            except KeyError:
+                metadata[class_type] = value
+
+        return metadata
+
     def _get_model(self, initial_node_id: int) -> Optional[Model]:
         """Get the first model reached from the given node_id"""
         logger.debug("looking for model: #%s", initial_node_id)
 
-        for node_id, node, _ in self._traverse(initial_node_id):
+        for node_id, node, trace in self._traverse(initial_node_id):
             try:
                 inputs = dict(node["inputs"])
                 ckpt_name = inputs.pop("ckpt_name")
@@ -173,6 +201,8 @@ class ImageContext:
                 logger.debug("found model #%d: %s", node_id, ckpt_name)
 
                 metadata = self._get_input_values(inputs)
+                metadata.update(self._get_trace_metadata(trace))
+
                 model = Model(model_id=node_id, name=ckpt_name, metadata=metadata)
                 return model
 
@@ -188,26 +218,27 @@ class ImageContext:
             found_prompt = False
             for key in text_keys:
                 try:
-                    text = inputs[key]
+                    text = inputs.pop(key)
                 except KeyError:
                     continue
 
                 if isinstance(text, str):
                     logger.debug("found prompt %s#%d: %s", key, node_id, text)
 
-                    metadata = {}
-                    for tmp_id in trace[:-1]:
-                        with suppress(KeyError):
-                            tmp_node = self.prompt[tmp_id]
-                            metadata[tmp_node["class_type"], tmp_id] = self._get_input_values(
-                                tmp_node["inputs"]
-                            )
+                    metadata = self._get_input_values(inputs)
+                    metadata.update(self._get_trace_metadata(trace))
 
-                    prompts.append(Prompt(value=text.strip(), prompt_id=node_id, metadata=metadata))
+                    prompts.append(
+                        Prompt(
+                            value=text.strip(),
+                            prompt_id=node_id,
+                            metadata=metadata,
+                        )
+                    )
                     found_prompt = True
 
             if found_prompt:
-                self.processed_nodes.update(trace)
+                self.processed_nodes.update([node_id], trace)
                 return False
             return True
 
@@ -221,7 +252,7 @@ class ImageContext:
                 except KeyError:
                     pass
                 else:
-                    recurse = check_inputs(node_id, inputs, trace)
+                    recurse = check_inputs(node_id, dict(inputs), trace)
 
                 node_id, node, trace = prompt_iterator.send(recurse)
 
@@ -238,7 +269,7 @@ class ImageContext:
             visited.add(node_id)
 
             with suppress(KeyError):
-                recurse = yield node_id, self.prompt[node_id], trace
+                recurse = yield node_id, self.prompt[node_id], trace[:-1]
                 if recurse is False:
                     return
 

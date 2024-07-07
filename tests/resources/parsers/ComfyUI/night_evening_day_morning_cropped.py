@@ -21,9 +21,7 @@ PARAM = pytest.param(
                         value="(best quality) (daytime:1.2) sky (blue)",
                         prompt_id=17,
                         metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 12): {},
-                            ("ConditioningSetArea", 11): {
+                            "ConditioningSetArea": {
                                 "width": 704,
                                 "height": 384,
                                 "x": 0,
@@ -37,10 +35,7 @@ PARAM = pytest.param(
                         "(galaxy:1.2) (space) (universe)",
                         prompt_id=14,
                         metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 12): {},
-                            ("ConditioningCombine", 35): {},
-                            ("ConditioningSetArea", 34): {
+                            "ConditioningSetArea": {
                                 "width": 704,
                                 "height": 384,
                                 "x": 0,
@@ -54,10 +49,7 @@ PARAM = pytest.param(
                         "(HDR:1.2) (sunset:1.3)",
                         prompt_id=13,
                         metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 12): {},
-                            ("ConditioningCombine", 35): {},
-                            ("ConditioningSetArea", 18): {
+                            "ConditioningSetArea": {
                                 "width": 704,
                                 "height": 384,
                                 "x": 0,
@@ -70,9 +62,7 @@ PARAM = pytest.param(
                         value="(masterpiece) (best quality) morning sky",
                         prompt_id=33,
                         metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 10): {},
-                            ("ConditioningSetArea", 15): {
+                            "ConditioningSetArea": {
                                 "width": 704,
                                 "height": 384,
                                 "x": 0,
@@ -86,10 +76,7 @@ PARAM = pytest.param(
                         "amazing view nature photograph forest mountains ocean (sky) "
                         "national park scenery",
                         prompt_id=6,
-                        metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 10): {},
-                        },
+                        metadata={},
                     ),
                 ],
                 negative_prompts=[
@@ -104,6 +91,7 @@ PARAM = pytest.param(
                         "(forehead mark) (depth of field) "
                         "(emotionless) (penis) (pumpkin)",
                         prompt_id=7,
+                        metadata={},
                     )
                 ],
             ),
@@ -130,6 +118,7 @@ PARAM = pytest.param(
                         "mountains ocean daytime night evening morning, "
                         "(sky:1.2)",
                         prompt_id=26,
+                        metadata={},
                     )
                 ],
                 negative_prompts=[
@@ -144,6 +133,7 @@ PARAM = pytest.param(
                         "(forehead mark) (depth of field) "
                         "(emotionless) (penis) (pumpkin)",
                         prompt_id=27,
+                        metadata={},
                     )
                 ],
             ),
