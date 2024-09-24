@@ -1,10 +1,11 @@
 """Read generation parameters for an image containing a `sd-metadata` field."""
+
 from __future__ import annotations
 
 import json
 from typing import Any, Dict
 
-from sd_parsers.data import Model, Sampler
+from sd_parsers.data import Generators, Model, Sampler
 from sd_parsers.exceptions import ParserError
 from sd_parsers.parser import Parser, ParseResult
 
@@ -50,7 +51,7 @@ def _parse_sd_metadata(parser: Parser, parameters: Dict[str, Any]) -> ParseResul
     if model_name or model_hash:
         sampler["model"] = Model(name=model_name, hash=model_hash)
 
-    return [Sampler(**sampler)], {**metadata, **metadata_image}
+    return Generators.INVOKEAI, [Sampler(**sampler)], {**metadata, **metadata_image}
 
 
 __all__ = ["_parse_sd_metadata"]

@@ -1,13 +1,11 @@
 """Data classes representing a subset of image generation parameters."""
+
 from __future__ import annotations
 
 import itertools
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
-
-if TYPE_CHECKING:
-    from .parser import Parser
+from typing import Any, Dict, Iterable, List, Optional
 
 
 class Generators(str, Enum):
@@ -107,6 +105,9 @@ class Sampler:
 class PromptInfo:
     """Contains structured image generation parameters."""
 
+    generator: Generators
+    """Image generator which might have produced the parsed image."""
+
     samplers: List[Sampler]
     """Samplers used in generating the parsed image."""
 
@@ -119,7 +120,7 @@ class PromptInfo:
 
     def __init__(
         self,
-        parser: Parser,
+        generator: Generators,
         samplers: List[Sampler],
         metadata: Dict[Any, Any],
     ):
@@ -131,14 +132,9 @@ class PromptInfo:
             samplers: The samplers used in generating the parsed image.
             metadata: Any additional parameters which are found in the image metadata.
         """
-        self._parser = parser
+        self.generator = generator
         self.samplers = samplers
         self.metadata = metadata
-
-    @property
-    def generator(self) -> Generators:
-        """Image generater which might have produced the parsed image."""
-        return self._parser.generator
 
     @property
     def full_prompt(self) -> str:

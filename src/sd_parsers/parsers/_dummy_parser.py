@@ -1,4 +1,5 @@
 """Example stub for additional parsers"""
+
 import json
 from typing import Any, Dict
 
@@ -13,10 +14,6 @@ class DummyParser(Parser):
     """
     Example stub for additional parsers
     """
-
-    @property
-    def generator(self):
-        return Generators.UNKNOWN
 
     def read_parameters(self, image: Image, use_text: bool = True):
         """
@@ -95,4 +92,4 @@ class DummyParser(Parser):
             raise ParserError("something happened here") from error
 
         # return list of samplers and unused working parameters
-        return [Sampler(**sampler)], working_parameters
+        return Generators.UNKNOWN, [Sampler(**sampler)], working_parameters

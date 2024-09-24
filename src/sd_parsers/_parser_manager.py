@@ -1,4 +1,5 @@
 """Provides the ParserManager class."""
+
 from __future__ import annotations
 
 import logging
@@ -78,12 +79,12 @@ class ParserManager:
         with _get_image(image) as image:
             for parser, parameters, parsing_context in self._read_parameters(image):
                 try:
-                    samplers, metadata = parser.parse(parameters, parsing_context)
+                    generator, samplers, metadata = parser.parse(parameters, parsing_context)
 
-                    return PromptInfo(parser, samplers, metadata)
+                    return PromptInfo(generator, samplers, metadata)
 
                 except ParserError as error:
-                    logger.debug("error in %s parser: %s", parser.generator.value, error)
+                    logger.debug("error in parser: %s", error)
 
         return None
 
@@ -103,13 +104,13 @@ class ParserManager:
         - PIL.UnidentifiedImageError: If the image cannot be opened and identified.
         - ValueError: If a StringIO instance is used for `image`.
         """
-        
+
         with _get_image(image) as image:
             try:
-                parser, parameters, _ = next(
+                parser, parameters, parsing_context = next(
                     iter(self._read_parameters(image, lambda x: x._COMPLEXITY_INDEX))
                 )
-                return parser.generator, parameters
+                return parser, parameters, parsing_context
 
             except StopIteration:
                 return None
@@ -129,4 +130,4 @@ class ParserManager:
                     yield parser, parameters, parsing_context
 
                 except ParserError as error:
-                    logger.debug("error in %s parser: %s", parser.generator.value, error)
+                    logger.debug("error in parser: %s", error)

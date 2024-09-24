@@ -63,7 +63,7 @@ def main():
     if params is None:
       return
     
-    image_generator, metadata = params
+    parser, metadata, parsing_context = params
 
     ...
 ```
@@ -91,14 +91,14 @@ def main():
             parameters, parsing_context = parser.read_parameters(image)
 
         # parse() builds a standardized data structure from the raw parameters
-        samplers, metadata = parser.parse(parameters, parsing_context)
+        generator, samplers, metadata = parser.parse(parameters, parsing_context)
 
     except ParserError:
         ...
 
     # creating a PromptInfo object from the obtained data allows for the use
     # of convenience poperties like ".prompts" or ".models"
-    prompt_info = PromptInfo(parser, samplers, metadata)
+    prompt_info = PromptInfo(generator, samplers, metadata)
 ```
 
 ### Output

@@ -1,4 +1,5 @@
 """Provides the Parser base class & other useful utility."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -20,7 +21,7 @@ Contains instruction to either rename a key (see `RenameField`),
 or to create a new key using the given formatting instruction (see `FormatField`).
 """
 
-ParseResult = Tuple[List[_data.Sampler], Dict[Any, Any]]
+ParseResult = Tuple[_data.Generators, List[_data.Sampler], Dict[Any, Any]]
 """The result of Parser.parse() is a tuple of encountered samplers and remaining metadata."""
 
 _EXIF_TAGS = {v: k for k, v in ExifTags.TAGS.items()}
@@ -34,11 +35,6 @@ class Parser(ABC):
 
     def __init__(self, normalize_parameters: bool = True):
         self.do_normalization_pass = normalize_parameters
-
-    @property
-    @abstractmethod
-    def generator(self) -> _data.Generators:
-        """Identifier for the inferred image generator."""
 
     @abstractmethod
     def read_parameters(

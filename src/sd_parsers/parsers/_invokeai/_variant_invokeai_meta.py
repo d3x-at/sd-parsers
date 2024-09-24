@@ -1,11 +1,12 @@
 """Read generation parameters from the newest InvokeAI metadata format."""
+
 from __future__ import annotations
 
 import json
 from contextlib import suppress
 from typing import Any, Dict
 
-from sd_parsers.data import Model, Prompt, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler
 from sd_parsers.exceptions import ParserError
 from sd_parsers.parser import Parser, ParseResult
 
@@ -44,7 +45,7 @@ def _parse_invokeai_meta(parser: Parser, parameters: Dict[str, Any]) -> ParseRes
             metadata=model_info,
         )
 
-    return [Sampler(**sampler)], metadata
+    return Generators.INVOKEAI, [Sampler(**sampler)], metadata
 
 
 __all__ = ["_parse_invokeai_meta"]

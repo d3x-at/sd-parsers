@@ -1,6 +1,6 @@
 import pytest
 from PIL import Image
-from sd_parsers.data import Model, Prompt, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler
 from sd_parsers.parsers import FooocusParser
 
 from tests.tools import RESOURCE_PATH
@@ -60,7 +60,8 @@ def test_parse(filename: str, expected):
     with Image.open(RESOURCE_PATH / "parsers/Fooocus" / filename) as image:
         params = parser.read_parameters(image)
 
-    samplers, metadata = parser.parse(*params)
+    generator, samplers, metadata = parser.parse(*params)
 
+    assert generator == Generators.FOOOCUS
     assert samplers == expected_samplers
     assert metadata == expected_metadata
