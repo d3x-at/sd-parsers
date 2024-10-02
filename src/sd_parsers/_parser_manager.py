@@ -76,15 +76,14 @@ class ParserManager:
         - ValueError: If a StringIO instance is used for `image`.
         """
 
-        with _get_image(image) as image:
-            for parser, parameters, parsing_context in self._read_parameters(image):
-                try:
-                    generator, samplers, metadata = parser.parse(parameters, parsing_context)
+        for parser, parameters, parsing_context in self._read_parameters(image):
+            try:
+                generator, samplers, metadata = parser.parse(parameters, parsing_context)
 
-                    return PromptInfo(generator, samplers, metadata)
+                return PromptInfo(generator, samplers, metadata)
 
-                except ParserError as error:
-                    logger.debug("error in parser: %s", error)
+            except ParserError as error:
+                logger.debug("error in parser: %s", error)
 
         return None
 
@@ -92,8 +91,7 @@ class ParserManager:
         """
         Try to read image metadata from the given image that refers to generation parameters.
 
-        Warning: This method is prone to returning false positives when given images that contain
-        random metadata.
+        Warning: Using results from this method without calling parse() is prone to returning false positives.
 
         Parameters:
             image: a PIL Image, filename, pathlib.Path object or a file object.
@@ -105,29 +103,24 @@ class ParserManager:
         - ValueError: If a StringIO instance is used for `image`.
         """
 
-        with _get_image(image) as image:
-            try:
-                parser, parameters, parsing_context = next(
-                    iter(self._read_parameters(image, lambda x: x._COMPLEXITY_INDEX))
-                )
-                return parser, parameters, parsing_context
-
-            except StopIteration:
-                return None
+        return self._read_parameters(image, lambda x: x._COMPLEXITY_INDEX)
 
     def _read_parameters(
         self,
-        image: Image.Image,
+        image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
         key: Optional[Callable[[Parser], SupportsRichComparison]] = None,
     ):
-        # two_pass only makes sense with PNG images
-        two_pass = image.format == "PNG" if self.two_pass else False
+        with _get_image(image) as image:
+            # two_pass only makes sense with PNG images
+            two_pass = image.format == "PNG" if self.two_pass else False
 
-        for use_text in [False, True] if two_pass else [True]:
-            for parser in sorted(self.managed_parsers, key=key) if key else self.managed_parsers:
-                try:
-                    parameters, parsing_context = parser.read_parameters(image, use_text)
-                    yield parser, parameters, parsing_context
+            for use_text in [False, True] if two_pass else [True]:
+                for parser in (
+                    sorted(self.managed_parsers, key=key) if key else self.managed_parsers
+                ):
+                    try:
+                        parameters, parsing_context = parser.read_parameters(image, use_text)
+                        yield parser, parameters, parsing_context
 
-                except ParserError as error:
-                    logger.debug("error in parser: %s", error)
+                    except ParserError as error:
+                        logger.debug("error in parser: %s", error)
