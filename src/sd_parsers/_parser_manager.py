@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 from PIL import Image
 
@@ -19,6 +19,14 @@ if TYPE_CHECKING:
     from _typeshed import SupportsRead, SupportsRichComparison
 
 logger = logging.getLogger(__name__)
+
+GET_PNG_METADATA: List[Callable[[Image.Image], Dict[str, Any]]] = [
+    # use image.info
+    lambda i: i.info,
+    # use image.text property (iTxt, tEXt and zTXt chunks may appear at the end of the file)
+    lambda i: i.text,  # type: ignore
+]
+"""A list of metadata retrieval functions to provide multiple metadata entrypoints for each parser module."""
 
 
 @contextmanager
@@ -38,7 +46,6 @@ class ParserManager:
     def __init__(
         self,
         *,
-        two_pass: bool = True,
         normalize_parameters: bool = True,
         managed_parsers: Optional[List[Type[Parser]]] = None,
     ):
@@ -46,15 +53,10 @@ class ParserManager:
         Initializes a ParserManager object.
 
         Optional Parameters:
-            two_pass: for PNG images, use `Image.info` before using `Image.text` as metadata source.
             normalize_parameters: Try to unify the parameter keys of the parser outputs.
             managed_parsers: A list of parsers to be managed.
 
-        The performance effects of two-pass parsing depends on the given image files.
-        If the image files are correctly formed and can be read with one of the supported parser modules,
-        setting `two_pass` to `True` will considerably shorten the time needed to read the image parameters.
         """
-        self.two_pass = two_pass
         self.managed_parsers: List[Parser] = [
             parser(normalize_parameters) for parser in managed_parsers or MANAGED_PARSERS
         ]
@@ -112,14 +114,13 @@ class ParserManager:
     ):
         with _get_image(image) as image:
             # two_pass only makes sense with PNG images
-            two_pass = image.format == "PNG" if self.two_pass else False
 
-            for use_text in [False, True] if two_pass else [True]:
+            for get_metadata in GET_PNG_METADATA:
                 for parser in (
                     sorted(self.managed_parsers, key=key) if key else self.managed_parsers
                 ):
                     try:
-                        parameters, parsing_context = parser.read_parameters(image, use_text)
+                        parameters, parsing_context = parser.read_parameters(image, get_metadata)
                         yield parser, parameters, parsing_context
 
                     except ParserError as error:

@@ -1,7 +1,7 @@
 """Example stub for additional parsers"""
 
 import json
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
 from PIL.Image import Image
 
@@ -15,7 +15,11 @@ class DummyParser(Parser):
     Example stub for additional parsers
     """
 
-    def read_parameters(self, image: Image, use_text: bool = True):
+    def read_parameters(
+        self,
+        image: Image,
+        get_png_metadata: Callable[[Image], Dict[str, Any]] | None = None,
+    ):
         """
         Read the relevant generation parameters from the given image.
 
@@ -42,9 +46,8 @@ class DummyParser(Parser):
                 parsing_context["parameters_key"] = "user_comment"
 
             elif image.format == "PNG":
-                # Use `image.text` as parameters source if use_text is True.
-                # Use `image.info` otherwise.
-                metadata = image.text if use_text else image.info  # type: ignore
+                # use metadata retrieval function if given, otherwise the Image.info field
+                metadata = get_png_metadata(image) if get_png_metadata else image.info
 
                 # deserialize parameters in json format
                 parameters["some_image_parameter"] = json.loads(

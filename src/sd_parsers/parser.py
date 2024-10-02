@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 from PIL import ExifTags
 from PIL.Image import Image
@@ -40,7 +40,7 @@ class Parser(ABC):
     def read_parameters(
         self,
         image: Image,
-        use_text: bool = True,
+        get_png_metadata: Callable[[Image], Dict[str, Any]] | None = None,
     ) -> Tuple[dict[str, Any], Any]:
         """
         Read generation parameters from image.

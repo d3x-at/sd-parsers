@@ -2,7 +2,7 @@
 
 import copy
 import json
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
 from PIL.Image import Image
 
@@ -20,10 +20,15 @@ class FooocusParser(Parser):
 
     _COMPLEXITY_INDEX = 90
 
-    def read_parameters(self, image: Image, use_text: bool = True):
+    def read_parameters(
+        self,
+        image: Image,
+        get_png_metadata: Callable[[Image], Dict[str, Any]] | None = None,
+    ):
         try:
             if image.format == "PNG":
-                parameters = image.text["parameters"] if use_text else image.info["parameters"]  # type: ignore
+                metadata = get_png_metadata(image) if get_png_metadata else image.info
+                parameters = metadata["parameters"]
             elif image.format in ("JPEG", "WEBP"):
                 parameters = get_exif_value(image, "UserComment")
             else:
