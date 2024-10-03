@@ -91,24 +91,6 @@ class ParserManager:
 
         return None
 
-    def read_parameters(self, image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image]):
-        """
-        Try to read image metadata from the given image that refers to generation parameters.
-
-        Warning: Using results from this method without calling parse() is prone to returning false positives.
-
-        Parameters:
-            image: a PIL Image, filename, pathlib.Path object or a file object.
-
-        If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
-        underlying `Image.open()` method:
-        - FileNotFoundError: If the file cannot be found.
-        - PIL.UnidentifiedImageError: If the image cannot be opened and identified.
-        - ValueError: If a StringIO instance is used for `image`.
-        """
-
-        return self._read_parameters(image, lambda x: x._COMPLEXITY_INDEX)
-
     def _read_parameters(
         self,
         image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],

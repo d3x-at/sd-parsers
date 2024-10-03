@@ -51,27 +51,6 @@ def main():
         prompt_info = parser_manager.parse(image)
 ```
 
-#### Read raw parameter data from a given filename with `read_parameters()`:
-```python
-from sd_parsers import ParserManager
-
-parser_manager = ParserManager()
-
-def main():
-    params = parser_manager.read_parameters("image.png")
-
-    if params is None:
-      return
-    
-    parser, metadata, parsing_context = params
-
-    ...
-```
-
-> [!IMPORTANT]  
-> As a larger portion of the metadata validation is performed during the 'parsing'-operation, this method is more prone to returning false positives.
-> As such, either a more strict control of input images or additional subsequent validation is advised.
-
 #### Each parser module can also be used directly, omitting the use of ```ParserManager```:
 
 ```python
