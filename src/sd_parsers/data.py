@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import itertools
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional
+from json import dumps
 
 
 class Generators(str, Enum):
@@ -102,6 +103,7 @@ class Sampler:
         return hash((self.sampler_id, self.name))
 
 
+@dataclass
 class PromptInfo:
     """Contains structured image generation parameters."""
 
@@ -117,24 +119,6 @@ class PromptInfo:
 
         Highly dependent on the respective image generator.
     """
-
-    def __init__(
-        self,
-        generator: Generators,
-        samplers: List[Sampler],
-        metadata: Dict[Any, Any],
-    ):
-        """
-        Initializes a ParserManager object.
-
-        Parameters:
-            parser: The parser object used to obtain the given image parameters.
-            samplers: The samplers used in generating the parsed image.
-            metadata: Any additional parameters which are found in the image metadata.
-        """
-        self.generator = generator
-        self.samplers = samplers
-        self.metadata = metadata
 
     @property
     def full_prompt(self) -> str:
@@ -211,14 +195,5 @@ class PromptInfo:
             self._models = set(sampler.model for sampler in self.samplers if sampler.model)
         return self._models
 
-    def __str__(self):
-        return (
-            f"PromptInfo(generator={self.generator}, "
-            f'full_prompt="{self.full_prompt}", '
-            f'full_negative_prompt="{self.full_negative_prompt}", '
-            f"prompts={self.prompts}, "
-            f"negative_prompts={self.negative_prompts}, "
-            f"samplers={self.samplers}, "
-            f"models={self.models}, "
-            f"metadata={self.metadata}"
-        )
+    def to_json(self):
+        return dumps(asdict(self))
