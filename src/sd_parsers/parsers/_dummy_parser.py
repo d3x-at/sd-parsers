@@ -1,7 +1,7 @@
 """Example stub for additional parsers"""
 
 import json
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from PIL.Image import Image
 
@@ -18,7 +18,7 @@ class DummyParser(Parser):
     def read_parameters(
         self,
         image: Image,
-        get_png_metadata: Callable[[Image], Dict[str, Any]] | None = None,
+        get_metadata: Optional[Callable[[Image], Dict[str, Any]]] = None,
     ):
         """
         Read the relevant generation parameters from the given image.
@@ -47,7 +47,7 @@ class DummyParser(Parser):
 
             elif image.format == "PNG":
                 # use metadata retrieval function if given, otherwise the Image.info field
-                metadata = get_png_metadata(image) if get_png_metadata else image.info
+                metadata = get_metadata(image) if get_metadata else image.info
 
                 # deserialize parameters in json format
                 parameters["some_image_parameter"] = json.loads(

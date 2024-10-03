@@ -20,13 +20,15 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-GET_PNG_METADATA: List[Callable[[Image.Image], Dict[str, Any]]] = [
-    # use image.info
-    lambda i: i.info,
-    # use image.text property (iTxt, tEXt and zTXt chunks may appear at the end of the file)
-    lambda i: i.text,  # type: ignore
-]
-"""A list of metadata retrieval functions to provide multiple metadata entrypoints for each parser module."""
+METADATA_EXTRACTORS: Dict[str, List[Callable[[Image.Image], Dict[str, Any]]]] = {
+    "PNG": [
+        # use image.info
+        lambda i: i.info,
+        # use image.text property (iTxt, tEXt and zTXt chunks may appear at the end of the file)
+        lambda i: i.text,  # type: ignore
+    ]
+}
+"""A list of retrieval functions to provide multiple metadata entrypoints for each parser module."""
 
 
 @contextmanager
@@ -113,9 +115,12 @@ class ParserManager:
         key: Optional[Callable[[Parser], SupportsRichComparison]] = None,
     ):
         with _get_image(image) as image:
-            # two_pass only makes sense with PNG images
+            if image.format is None:
+                raise ParserError("unknown image format")
 
-            for get_metadata in GET_PNG_METADATA:
+            extractors = METADATA_EXTRACTORS.get(image.format, [None])
+
+            for get_metadata in extractors:
                 for parser in (
                     sorted(self.managed_parsers, key=key) if key else self.managed_parsers
                 ):

@@ -40,7 +40,7 @@ class Parser(ABC):
     def read_parameters(
         self,
         image: Image,
-        get_png_metadata: Callable[[Image], Dict[str, Any]] | None = None,
+        get_metadata: Optional[Callable[[Image], Dict[str, Any]]] = None,
     ) -> Tuple[dict[str, Any], Any]:
         """
         Read generation parameters from image.

@@ -28,13 +28,13 @@ class ComfyUIParser(Parser):
     def read_parameters(
         self,
         image: Image,
-        get_png_metadata: Callable[[Image], Dict[str, Any]] | None = None,
+        get_metadata: Optional[Callable[[Image], Dict[str, Any]]] = None,
     ):
         if image.format != "PNG":
             raise MetadataError("unsupported image format", image.format)
 
         try:
-            metadata = get_png_metadata(image) if get_png_metadata else image.info
+            metadata = get_metadata(image) if get_metadata else image.info
             prompt = metadata["prompt"]
             workflow = metadata["workflow"]
             parameters = {"prompt": json.loads(prompt), "workflow": json.loads(workflow)}

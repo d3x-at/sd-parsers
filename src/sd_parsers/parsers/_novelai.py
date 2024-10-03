@@ -4,7 +4,7 @@ import copy
 import json
 import re
 from contextlib import suppress
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from PIL.Image import Image
 
@@ -22,12 +22,12 @@ class NovelAIParser(Parser):
     def read_parameters(
         self,
         image: Image,
-        get_png_metadata: Callable[[Image], Dict[str, Any]] | None = None,
+        get_metadata: Optional[Callable[[Image], Dict[str, Any]]] = None,
     ):
         if image.format != "PNG":
             raise MetadataError("unsupported image format", image.format)
 
-        metadata = get_png_metadata(image) if get_png_metadata else image.info
+        metadata = get_metadata(image) if get_metadata else image.info
         try:
             description = metadata["Description"]
             software = metadata["Software"]
