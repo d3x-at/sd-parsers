@@ -84,7 +84,7 @@ class ParserManager:
             try:
                 generator, samplers, metadata = parser.parse(parameters, parsing_context)
 
-                return PromptInfo(generator, samplers, metadata)
+                return PromptInfo(generator, samplers, metadata, parameters)
 
             except ParserError as error:
                 logger.debug("error in parser: %s", error)

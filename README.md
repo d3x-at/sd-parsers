@@ -116,6 +116,7 @@ The output returned from `ParserManager` is a `PromptInfo` object (as can be see
 
   Highly dependent on the provided data structure of the respective image generator.
 
+* `raw_parameters`: The unprocessed metadata entries as found in the parsed image (if present).
 
 ## Contributing
 As i don't have the time and resources to keep up with all the available AI-based image generators out there, the scale and features of this library is depending greatly on your help.

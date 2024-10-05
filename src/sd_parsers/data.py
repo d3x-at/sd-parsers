@@ -120,6 +120,11 @@ class PromptInfo:
         Highly dependent on the respective image generator.
     """
 
+    raw_parameters: Dict[str, Any]
+    """
+        Unprocessed parameters as found in the parsed image.
+    """
+
     @property
     def full_prompt(self) -> str:
         """
