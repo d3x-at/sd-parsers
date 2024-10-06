@@ -66,12 +66,16 @@ class ParserManager:
     def parse(
         self,
         image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
+        eagerness: int = 2,
     ) -> Optional[PromptInfo]:
         """
         Try to extract image generation parameters from the given image.
 
         Parameters:
             image: a PIL Image, filename, pathlib.Path object or a file object.
+            eagerness: metadata searching effort
+              1: cut some corners to save some time
+              2: try to ensure all metadata is read (default)
 
         If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
         underlying `Image.open()` method:
@@ -79,13 +83,13 @@ class ParserManager:
         - PIL.UnidentifiedImageError: If the image cannot be opened and identified.
         - ValueError: If a StringIO instance is used for `image`.
         """
+        if not 0 < eagerness <= 2:
+            raise ValueError("depth not in valid range")
 
-        for parser, parameters, parsing_context in self._read_parameters(image):
+        for parser, parameters, parsing_context in self._read_parameters(image, eagerness):
             try:
                 generator, samplers, metadata = parser.parse(parameters, parsing_context)
-
                 return PromptInfo(generator, samplers, metadata, parameters)
-
             except ParserError as error:
                 logger.debug("error in parser: %s", error)
 
@@ -94,6 +98,7 @@ class ParserManager:
     def _read_parameters(
         self,
         image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
+        max_tries: int,
         key: Optional[Callable[[Parser], SupportsRichComparison]] = None,
     ):
         with _get_image(image) as image:
@@ -102,7 +107,7 @@ class ParserManager:
 
             extractors = METADATA_EXTRACTORS.get(image.format, [None])
 
-            for get_metadata in extractors:
+            for get_metadata in extractors[:max_tries]:
                 for parser in (
                     sorted(self.managed_parsers, key=key) if key else self.managed_parsers
                 ):
