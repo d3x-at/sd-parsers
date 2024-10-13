@@ -3,104 +3,14 @@
 from __future__ import annotations
 
 import itertools
-from dataclasses import dataclass, field, asdict
-from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional
-from json import dumps
+import json
+from dataclasses import dataclass, asdict
+from typing import Any, Dict, Iterable, List
 
-
-class Generators(str, Enum):
-    """Image generator identifiers."""
-
-    UNKNOWN = "Unknown"
-    AUTOMATIC1111 = "AUTOMATIC1111"
-    COMFYUI = "ComfyUI"
-    INVOKEAI = "InvokeAI"
-    NOVELAI = "NovelAI"
-    FOOOCUS = "Fooocus"
-
-
-@dataclass(frozen=True)
-class Prompt:
-    """Represents an image generation prompt."""
-
-    prompt_id: int
-    """Prompt id"""
-
-    value: str
-    """The value of the prompt."""
-
-    metadata: Dict[Any, Any] = field(default_factory=dict)
-    """
-    Additional generator-specific information.
-    
-    Highly dependent on the respective image generator.
-    """
-
-    def __str__(self):
-        return self.value
-
-    def __hash__(self) -> int:
-        return hash(self.prompt_id)
-
-
-@dataclass(frozen=True)
-class Model:
-    """Represents a checkpoint model used during image generation."""
-
-    name: Optional[str] = None
-    """Name of the checkpoint model (if found)."""
-
-    hash: Optional[str] = None
-    """Hash value of the checkpoint model. (if found)"""
-
-    model_id: Optional[int] = None
-    """Model id"""
-
-    metadata: Dict[Any, Any] = field(default_factory=dict)
-    """
-    Additional generator-specific information.
-    
-    Highly dependent on the respective image generator.
-    """
-
-    def __post_init__(self):
-        if self.name is None and self.hash is None:
-            raise ValueError("Either name or hash need to be given.")
-
-    def __str__(self) -> str:
-        if self.name is None:
-            return self.hash or ""
-        return self.name
-
-    def __hash__(self) -> int:
-        return hash((self.model_id, self.name))
-
-
-@dataclass(frozen=True)
-class Sampler:
-    """Represents a model used during image generation."""
-
-    name: str
-    """The name of the sampler"""
-
-    parameters: Dict[str, Any]
-    """Generation parameters, including `cfg_scale`, `seed`, `steps` and others."""
-
-    sampler_id: Optional[int] = None
-    """A unique id for this sampler (if present in the metadata)"""
-
-    model: Optional[Model] = None
-    """The checkpoint model used."""
-
-    prompts: List[Prompt] = field(default_factory=list)
-    """Positive prompts used by this sampler."""
-
-    negative_prompts: List[Prompt] = field(default_factory=list)
-    """Negative prompts used by this sampler."""
-
-    def __hash__(self) -> int:
-        return hash((self.sampler_id, self.name))
+from .generators import Generators
+from .model import Model
+from .prompt import Prompt
+from .sampler import Sampler
 
 
 @dataclass
@@ -200,5 +110,12 @@ class PromptInfo:
             self._models = set(sampler.model for sampler in self.samplers if sampler.model)
         return self._models
 
+    def asdict(self):
+        return {
+            "full_prompt": self.full_prompt,
+            "full_negative_prompt": self.full_negative_prompt,
+            **asdict(self),
+        }
+
     def to_json(self):
-        return dumps(asdict(self))
+        return json.dumps(self.asdict)
