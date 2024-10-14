@@ -20,15 +20,16 @@ class AUTOMATIC1111Parser(Parser):
     """parse images created in AUTOMATIC1111's webui"""
 
     _COMPLEXITY_INDEX = 100
+    _generator = Generators.AUTOMATIC1111
 
     def read_parameters(
         self,
         image: Image,
-        get_metadata: Optional[Callable[[Image], Dict[str, Any]]] = None,
+        get_metadata: Optional[Callable[[Image, Generators], Dict[str, Any]]] = None,
     ):
         try:
             if image.format == "PNG":
-                metadata = get_metadata(image) if get_metadata else image.info
+                metadata = get_metadata(image, self._generator) if get_metadata else image.info
                 parameters = metadata["parameters"]
             elif image.format in ("JPEG", "WEBP"):
                 parameters = get_exif_value(image, "UserComment")
@@ -73,7 +74,7 @@ class AUTOMATIC1111Parser(Parser):
         if negative_prompt:
             sampler["negative_prompts"] = [Prompt(1, negative_prompt)]
 
-        return Generators.AUTOMATIC1111, [Sampler(**sampler)], metadata
+        return self._generator, [Sampler(**sampler)], metadata
 
 
 def get_sampler_info(lines):

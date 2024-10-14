@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Uni
 
 from PIL import Image
 
-from .data import PromptInfo
+from .data import PromptInfo, Generators
 from .exceptions import ParserError
 from .parser import Parser
 from .parsers import MANAGED_PARSERS
@@ -20,12 +20,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-METADATA_EXTRACTORS: Dict[str, List[Callable[[Image.Image], Dict[str, Any]]]] = {
+METADATA_EXTRACTORS: Dict[str, List[Callable[[Image.Image, Generators], Dict[str, Any]]]] = {
     "PNG": [
         # use image.info
-        lambda i: i.info,
+        lambda i, _: i.info,
         # use image.text property (iTxt, tEXt and zTXt chunks may appear at the end of the file)
-        lambda i: i.text,  # type: ignore
+        lambda i, _: i.text,  # type: ignore
     ]
 }
 """A list of retrieval functions to provide multiple metadata entrypoints for each parser module."""

@@ -15,10 +15,12 @@ class DummyParser(Parser):
     Example stub for additional parsers
     """
 
+    _generator = Generators.UNKNOWN
+
     def read_parameters(
         self,
         image: Image,
-        get_metadata: Optional[Callable[[Image], Dict[str, Any]]] = None,
+        get_metadata: Optional[Callable[[Image, Generators], Dict[str, Any]]] = None,
     ):
         """
         Read the relevant generation parameters from the given image.
@@ -47,7 +49,7 @@ class DummyParser(Parser):
 
             elif image.format == "PNG":
                 # use metadata retrieval function if given, otherwise the Image.info field
-                metadata = get_metadata(image) if get_metadata else image.info
+                metadata = get_metadata(image, self._generator) if get_metadata else image.info
 
                 # deserialize parameters in json format
                 parameters["some_image_parameter"] = json.loads(
@@ -95,4 +97,4 @@ class DummyParser(Parser):
             raise ParserError("something happened here") from error
 
         # return list of samplers and unused working parameters
-        return Generators.UNKNOWN, [Sampler(**sampler)], working_parameters
+        return self._generator, [Sampler(**sampler)], working_parameters
