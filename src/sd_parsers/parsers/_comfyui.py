@@ -159,7 +159,7 @@ class ImageContext:
         except Exception:
             return {}
 
-    def _get_trace_metadata(self, trace: list[int]):
+    def _get_trace_metadata(self, trace: List[int]):
         metadata = {}
 
         for node_id in trace:
