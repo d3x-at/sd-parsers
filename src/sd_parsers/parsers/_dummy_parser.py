@@ -1,6 +1,7 @@
 """Example stub for additional parsers"""
+
 import json
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Optional
 
 from PIL.Image import Image
 
@@ -14,11 +15,13 @@ class DummyParser(Parser):
     Example stub for additional parsers
     """
 
-    @property
-    def generator(self):
-        return Generators.UNKNOWN
+    _generator = Generators.UNKNOWN
 
-    def read_parameters(self, image: Image, use_text: bool = True):
+    def read_parameters(
+        self,
+        image: Image,
+        get_metadata: Optional[Callable[[Image, Generators], Dict[str, Any]]] = None,
+    ):
         """
         Read the relevant generation parameters from the given image.
 
@@ -45,9 +48,8 @@ class DummyParser(Parser):
                 parsing_context["parameters_key"] = "user_comment"
 
             elif image.format == "PNG":
-                # Use `image.text` as parameters source if use_text is True.
-                # Use `image.info` otherwise.
-                metadata = image.text if use_text else image.info  # type: ignore
+                # use metadata retrieval function if given, otherwise the Image.info field
+                metadata = get_metadata(image, self._generator) if get_metadata else image.info
 
                 # deserialize parameters in json format
                 parameters["some_image_parameter"] = json.loads(
@@ -95,4 +97,4 @@ class DummyParser(Parser):
             raise ParserError("something happened here") from error
 
         # return list of samplers and unused working parameters
-        return [Sampler(**sampler)], working_parameters
+        return self._generator, [Sampler(**sampler)], working_parameters

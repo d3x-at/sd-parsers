@@ -51,27 +51,6 @@ def main():
         prompt_info = parser_manager.parse(image)
 ```
 
-#### Read raw parameter data from a given filename with `read_parameters()`:
-```python
-from sd_parsers import ParserManager
-
-parser_manager = ParserManager()
-
-def main():
-    params = parser_manager.read_parameters("image.png")
-
-    if params is None:
-      return
-    
-    image_generator, metadata = params
-
-    ...
-```
-
-> [!IMPORTANT]  
-> As a larger portion of the metadata validation is performed during the 'parsing'-operation, this method is more prone to returning false positives.
-> As such, either a more strict control of input images or additional subsequent validation is advised.
-
 #### Each parser module can also be used directly, omitting the use of ```ParserManager```:
 
 ```python
@@ -91,14 +70,14 @@ def main():
             parameters, parsing_context = parser.read_parameters(image)
 
         # parse() builds a standardized data structure from the raw parameters
-        samplers, metadata = parser.parse(parameters, parsing_context)
+        generator, samplers, metadata = parser.parse(parameters, parsing_context)
 
     except ParserError:
         ...
 
     # creating a PromptInfo object from the obtained data allows for the use
     # of convenience poperties like ".prompts" or ".models"
-    prompt_info = PromptInfo(parser, samplers, metadata)
+    prompt_info = PromptInfo(generator, samplers, metadata)
 ```
 
 ### Output
@@ -137,6 +116,7 @@ The output returned from `ParserManager` is a `PromptInfo` object (as can be see
 
   Highly dependent on the provided data structure of the respective image generator.
 
+* `raw_parameters`: The unprocessed metadata entries as found in the parsed image (if present).
 
 ## Contributing
 As i don't have the time and resources to keep up with all the available AI-based image generators out there, the scale and features of this library is depending greatly on your help.

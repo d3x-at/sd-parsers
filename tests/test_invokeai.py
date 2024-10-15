@@ -1,6 +1,6 @@
 import pytest
 from PIL import Image
-from sd_parsers.data import Prompt
+from sd_parsers.data import Generators, Prompt
 from sd_parsers.parsers import InvokeAIParser
 from sd_parsers.parsers._invokeai import _variant_dream
 
@@ -25,8 +25,9 @@ def test_parse(filename: str, expected):
     with Image.open(RESOURCE_PATH / "parsers/InvokeAI" / filename) as image:
         params = parser.read_parameters(image)
 
-    samplers, metadata = parser.parse(*params)
+    generator, samplers, metadata = parser.parse(*params)
 
+    assert generator == Generators.INVOKEAI
     assert metadata == expected_metadata
     assert samplers == [expected_sampler]
 
