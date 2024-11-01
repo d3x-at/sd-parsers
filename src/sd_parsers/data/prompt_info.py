@@ -118,4 +118,4 @@ class PromptInfo:
         }
 
     def to_json(self):
-        return json.dumps(self.asdict)
+        return json.dumps(self.asdict())

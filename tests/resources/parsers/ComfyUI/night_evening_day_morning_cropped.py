@@ -21,9 +21,8 @@ PARAM = pytest.param(
                         value="(best quality) (daytime:1.2) sky (blue)",
                         prompt_id=17,
                         metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 12): {},
-                            ("ConditioningSetArea", 11): {
+                            "ConditioningSetArea": {
+                                "id": 11,
                                 "width": 704,
                                 "height": 384,
                                 "x": 0,
@@ -37,10 +36,8 @@ PARAM = pytest.param(
                         "(galaxy:1.2) (space) (universe)",
                         prompt_id=14,
                         metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 12): {},
-                            ("ConditioningCombine", 35): {},
-                            ("ConditioningSetArea", 34): {
+                            "ConditioningSetArea": {
+                                "id": 34,
                                 "width": 704,
                                 "height": 384,
                                 "x": 0,
@@ -54,10 +51,8 @@ PARAM = pytest.param(
                         "(HDR:1.2) (sunset:1.3)",
                         prompt_id=13,
                         metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 12): {},
-                            ("ConditioningCombine", 35): {},
-                            ("ConditioningSetArea", 18): {
+                            "ConditioningSetArea": {
+                                "id": 18,
                                 "width": 704,
                                 "height": 384,
                                 "x": 0,
@@ -70,9 +65,8 @@ PARAM = pytest.param(
                         value="(masterpiece) (best quality) morning sky",
                         prompt_id=33,
                         metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 10): {},
-                            ("ConditioningSetArea", 15): {
+                            "ConditioningSetArea": {
+                                "id": 15,
                                 "width": 704,
                                 "height": 384,
                                 "x": 0,
@@ -86,10 +80,7 @@ PARAM = pytest.param(
                         "amazing view nature photograph forest mountains ocean (sky) "
                         "national park scenery",
                         prompt_id=6,
-                        metadata={
-                            ("ConditioningCombine", 19): {},
-                            ("ConditioningCombine", 10): {},
-                        },
+                        metadata={},
                     ),
                 ],
                 negative_prompts=[
@@ -104,6 +95,7 @@ PARAM = pytest.param(
                         "(forehead mark) (depth of field) "
                         "(emotionless) (penis) (pumpkin)",
                         prompt_id=7,
+                        metadata={},
                     )
                 ],
             ),
@@ -130,6 +122,7 @@ PARAM = pytest.param(
                         "mountains ocean daytime night evening morning, "
                         "(sky:1.2)",
                         prompt_id=26,
+                        metadata={},
                     )
                 ],
                 negative_prompts=[
@@ -144,23 +137,31 @@ PARAM = pytest.param(
                         "(forehead mark) (depth of field) "
                         "(emotionless) (penis) (pumpkin)",
                         prompt_id=27,
+                        metadata={},
                     )
                 ],
             ),
         ],
         {
-            ("EmptyLatentImage", 5): {"width": 704, "height": 1280, "batch_size": 1},
-            ("SaveImage", 9): {"filename_prefix": "ComfyUI"},
-            ("VAELoader", 20): {"vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"},
-            ("LatentUpscale", 22): {
-                "upscale_method": "nearest-exact",
-                "width": 1088,
-                "height": 1920,
-                "crop": "disabled",
-            },
-            ("SaveImage", 32): {"filename_prefix": "ComfyUI"},
-            ("CLIPSetLastLayer", 44): {"stop_at_clip_layer": -2},
-            ("CLIPSetLastLayer", 47): {"stop_at_clip_layer": -2},
+            "CLIPSetLastLayer": [
+                {"id": 44, "stop_at_clip_layer": -2},
+                {"id": 47, "stop_at_clip_layer": -2},
+            ],
+            "EmptyLatentImage": [{"batch_size": 1, "height": 1280, "id": 5, "width": 704}],
+            "LatentUpscale": [
+                {
+                    "crop": "disabled",
+                    "height": 1920,
+                    "id": 22,
+                    "upscale_method": "nearest-exact",
+                    "width": 1088,
+                }
+            ],
+            "SaveImage": [
+                {"filename_prefix": "ComfyUI", "id": 9},
+                {"filename_prefix": "ComfyUI", "id": 32},
+            ],
+            "VAELoader": [{"id": 20, "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"}],
         },
     ),
     id="night_evening_day_morning_cropped.png",

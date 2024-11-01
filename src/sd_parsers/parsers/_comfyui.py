@@ -20,6 +20,7 @@ REPLACEMENT_RULES: ReplacementRules = [("cfg", "cfg_scale")]
 POSITIVE_PROMPT_KEYS = ["text", "positive"]
 NEGATIVE_PROMPT_KEYS = ["text", "negative"]
 IGNORE_LINK_TYPES_PROMPT = ["CLIP"]
+IGNORE_CLASS_TYPES = ["ConditioningCombine"]
 
 
 class ComfyUIParser(Parser):
@@ -83,11 +84,11 @@ class ImageContext:
     @classmethod
     def extract(
         cls, parser: ComfyUIParser, prompt: Any, links: Any
-    ) -> Tuple[List[Sampler], Dict[Tuple[str, int], Dict[str, Any]]]:
+    ) -> Tuple[List[Sampler], Dict[str, List[Dict[str, Any]]]]:
         """Extract samplers with their child parameters aswell as metadata"""
         context = cls(parser, prompt, links)
         samplers = []
-        metadata = {}
+        metadata = defaultdict(list)
 
         # Pass 1: get samplers and related data
         for node_id, node in context.prompt.items():
@@ -101,103 +102,11 @@ class ImageContext:
                 continue
 
             with suppress(KeyError):
-                inputs = _get_input_values(node["inputs"])
+                inputs = context._get_input_values(node["inputs"], node_id)
                 if inputs:
-                    metadata[node["class_type"], node_id] = inputs
+                    metadata[node["class_type"]].append(inputs)
 
-        return samplers, metadata
-
-    def _traverse(
-        self, node_id: int, ignored_link_types: Optional[List[str]] = None
-    ) -> Generator[Tuple[int, Any, List[int]], Optional[bool], None]:
-        """Traverse backwards through node tree, starting at a given node_id"""
-        visited = set()
-        ignore_links = set(ignored_link_types) if ignored_link_types else set()
-
-        def traverse_inner(node_id: int, trace: List[int]):
-            visited.add(node_id)
-
-            with suppress(KeyError):
-                recurse = yield node_id, self.prompt[node_id], trace
-                if recurse is False:
-                    return
-
-            with suppress(KeyError, RecursionError):
-                for link_id, link_types in self.links[node_id].items():
-                    if link_id not in visited and link_types - ignore_links:
-                        logger.debug("%d->%d, %s%s", node_id, link_id, "." * len(trace), link_types)
-                        yield from traverse_inner(link_id, trace + [link_id])
-
-        yield from traverse_inner(node_id, [node_id])
-
-    def _get_prompts(self, initial_node_id: int, text_keys: List[str]) -> List[Prompt]:
-        """Get all prompts reachable from a given node_id."""
-        logger.debug("looking for prompts: %d", initial_node_id)
-
-        prompts = []
-
-        def check_inputs(node_id: int, inputs: Dict, trace: List[int]) -> bool:
-            found_prompt = False
-            for key in text_keys:
-                try:
-                    text = inputs[key]
-                except KeyError:
-                    continue
-
-                if isinstance(text, str):
-                    logger.debug("found prompt %s#%d: %s", key, node_id, text)
-
-                    metadata = {}
-                    for tmp_id in trace[:-1]:
-                        with suppress(KeyError):
-                            tmp_node = self.prompt[tmp_id]
-                            metadata[tmp_node["class_type"], tmp_id] = _get_input_values(
-                                tmp_node["inputs"]
-                            )
-
-                    prompts.append(Prompt(value=text.strip(), prompt_id=node_id, metadata=metadata))
-                    found_prompt = True
-
-            if found_prompt:
-                self.processed_nodes.update(trace)
-                return False
-            return True
-
-        prompt_iterator = self._traverse(initial_node_id, IGNORE_LINK_TYPES_PROMPT)
-        with suppress(StopIteration):
-            node_id, node, trace = next(prompt_iterator)
-            while True:
-                recurse = True
-                try:
-                    inputs = node["inputs"]
-                except KeyError:
-                    pass
-                else:
-                    recurse = check_inputs(node_id, inputs, trace)
-
-                node_id, node, trace = prompt_iterator.send(recurse)
-
-        return prompts
-
-    def _get_model(self, initial_node_id: int) -> Optional[Model]:
-        """Get the first model reached from the given node_id"""
-        logger.debug("looking for model: #%s", initial_node_id)
-
-        for node_id, node, _ in self._traverse(initial_node_id):
-            try:
-                inputs = dict(node["inputs"])
-                ckpt_name = inputs.pop("ckpt_name")
-            except KeyError:
-                pass
-            else:
-                self.processed_nodes.add(node_id)
-                logger.debug("found model #%d: %s", node_id, ckpt_name)
-
-                metadata = _get_input_values(inputs)
-                model = Model(model_id=node_id, name=ckpt_name, metadata=metadata)
-                return model
-
-        return None
+        return samplers, dict(metadata)
 
     def _try_get_sampler(self, node_id: int, node):
         """Test if this node could contain sampler data"""
@@ -214,7 +123,7 @@ class ImageContext:
         # Sampler parameters
         sampler_name = inputs.pop("sampler_name")
         sampler_parameters = self.parser.normalize_parameters(
-            _get_input_values(inputs), REPLACEMENT_RULES
+            self._get_input_values(inputs), REPLACEMENT_RULES
         )
 
         # Sampler
@@ -247,9 +156,135 @@ class ImageContext:
 
         return Sampler(**sampler)
 
+    def _get_model(self, initial_node_id: int) -> Optional[Model]:
+        """Get the first model reached from the given node_id"""
+        logger.debug("looking for model: #%s", initial_node_id)
 
-def _get_input_values(inputs):
-    try:
-        return {key: value for key, value in inputs.items() if not isinstance(value, list)}
-    except Exception:
+        for node_id, node, trace in self._traverse(initial_node_id):
+            try:
+                inputs = dict(node["inputs"])
+                ckpt_name = inputs.pop("ckpt_name")
+            except KeyError:
+                pass
+            else:
+                self.processed_nodes.add(node_id)
+                logger.debug("found model #%d: %s", node_id, ckpt_name)
+
+                metadata = self._get_input_values(inputs)
+                metadata.update(self._get_trace_metadata(trace))
+
+                model = Model(model_id=node_id, name=ckpt_name, metadata=metadata)
+                return model
+
+        return None
+
+    def _get_prompts(self, initial_node_id: int, text_keys: List[str]) -> List[Prompt]:
+        """Get all prompts reachable from a given node_id."""
+        logger.debug("looking for prompts: %d", initial_node_id)
+
+        prompts = []
+
+        def check_inputs(node_id: int, inputs: Dict, trace: List[int]) -> bool:
+            found_prompt = False
+            for key in text_keys:
+                try:
+                    text = inputs.pop(key)
+                except KeyError:
+                    continue
+
+                if isinstance(text, str):
+                    logger.debug("found prompt %s#%d: %s", key, node_id, text)
+
+                    metadata = self._get_input_values(inputs)
+                    metadata.update(self._get_trace_metadata(trace))
+
+                    prompts.append(
+                        Prompt(
+                            value=text.strip(),
+                            prompt_id=node_id,
+                            metadata=metadata,
+                        )
+                    )
+                    found_prompt = True
+
+            if found_prompt:
+                self.processed_nodes.update([node_id], trace)
+                return False
+            return True
+
+        prompt_iterator = self._traverse(initial_node_id, IGNORE_LINK_TYPES_PROMPT)
+        with suppress(StopIteration):
+            node_id, node, trace = next(prompt_iterator)
+            while True:
+                recurse = True
+                try:
+                    inputs = node["inputs"]
+                except KeyError:
+                    pass
+                else:
+                    recurse = check_inputs(node_id, dict(inputs), trace)
+
+                node_id, node, trace = prompt_iterator.send(recurse)
+
+        return prompts
+
+    def _traverse(
+        self, node_id: int, ignored_link_types: Optional[List[str]] = None
+    ) -> Generator[Tuple[int, Any, List[int]], Optional[bool], None]:
+        """Traverse backwards through node tree, starting at a given node_id"""
+        visited = set()
+        ignore_links = set(ignored_link_types) if ignored_link_types else set()
+
+        def traverse_inner(node_id: int, trace: List[int]):
+            visited.add(node_id)
+
+            with suppress(KeyError):
+                recurse = yield node_id, self.prompt[node_id], trace[:-1]
+                if recurse is False:
+                    return
+
+            with suppress(KeyError, RecursionError):
+                for link_id, link_types in self.links[node_id].items():
+                    if link_id not in visited and link_types - ignore_links:
+                        logger.debug("%d->%d, %s%s", node_id, link_id, "." * len(trace), link_types)
+                        yield from traverse_inner(link_id, trace + [link_id])
+
+        yield from traverse_inner(node_id, [node_id])
+
+    def _get_trace_metadata(self, trace: List[int]):
+        metadata = {}
+
+        for node_id in trace:
+            try:
+                node = self.prompt[node_id]
+                class_type = node["class_type"]
+
+                if class_type in IGNORE_CLASS_TYPES:
+                    continue
+
+                value = self._get_input_values(node["inputs"], node_id)
+
+            except KeyError:
+                continue
+
+            try:
+                entry = metadata[class_type]
+                if isinstance(entry, list):
+                    entry.append(value)
+                else:
+                    metadata[class_type] = [entry, value]
+            except KeyError:
+                metadata[class_type] = value
+
+        return metadata
+
+    def _get_input_values(
+        self,
+        inputs: Dict[str, Any],
+        node_id: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        with suppress(Exception):
+            vals = {key: value for key, value in inputs.items() if not isinstance(value, list)}
+            if vals:
+                return vals if node_id is None else {"id": node_id, **vals}
         return {}

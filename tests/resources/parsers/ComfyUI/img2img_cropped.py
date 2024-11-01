@@ -32,8 +32,8 @@ PARAM = pytest.param(
             ),
         ],
         {
-            ("SaveImage", 9): {"filename_prefix": "ComfyUI"},
-            ("LoadImage", 10): {"image": "example.png"},
+            "SaveImage": [{"filename_prefix": "ComfyUI", "id": 9}],
+            "LoadImage": [{"image": "example.png", "id": 10}],
         },
     ),
     id="img2img_cropped.png",
