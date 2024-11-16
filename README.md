@@ -70,7 +70,7 @@ def main():
             parameters, parsing_context = parser.read_parameters(image)
 
         # parse() builds a standardized data structure from the raw parameters
-        generator, samplers, metadata = parser.parse(parameters, parsing_context)
+        generator, samplers, metadata = parser.parse(parameters, parsing_context, parameters)
 
     except ParserError:
         ...
@@ -83,10 +83,10 @@ def main():
 ### Output
 The output returned from `ParserManager` is a `PromptInfo` object (as can be seen when executing ```python3 -m sd_parsers <image.png>```) or `None` if no metadata was found.
 
-`PromptInfo` contains the following properties :
-* `generator`: Specifies the image generator that may have been used for creating the image.
+`PromptInfo` ([source](src/sd_parsers/data/prompt_info.py)) contains the following properties :
+* `generator`: Specifies the image [generator](src/sd_parsers/data/generators.py) that may have been used for creating the image.
 
-* `full_prompt`: A full prompt if present in the image metadata.
+* `full_prompt`: A full prompt, if present in the image metadata.
 
   Otherwise, a simple concatenation of all prompts found.
 
@@ -94,22 +94,25 @@ The output returned from `ParserManager` is a `PromptInfo` object (as can be see
   
   Otherwise, a simple concatenation of all negative prompts found.
 
-* `prompts`: All prompts found in the parsed metadata.
+* `prompts`: All [prompts](src/sd_parsers/data/prompt.py) found in the parsed metadata.
 
-* `negative_prompts`: All negative prompts found in the parsed metadata.
+* `negative_prompts`: All negative [prompts](src/sd_parsers/data/prompt.py) found in the parsed metadata.
 
-* `models`: Models used in the image generation process.
+* `models`: [Models](src/sd_parsers/data/model.py) used in the image generation process.
 
-* `samplers`: Samplers used in the image generation process.
+* `samplers`: [Samplers](src/sd_parsers/data/sampler.py) used in the image generation process.
 
-  Samplers act as the central data autorithy (see [PromptInfo](src/sd_parsers/data.py#L82)).
-  
   A Sampler contains the following properties specific to itself:
-    * `sampler_id`: A unique id of the sampler (if present in the metadata)
     * `name`: The name of the sampler
+
     * `parameters`: Generation parameters, including _cfg_scale_, _seed_, _steps_ and others.
+
+    * `sampler_id`: A unique id of the sampler (if present in the metadata)
+
     * `model`: The model used by this sampler.
+
     * `prompts`: A list of positive prompts used by this sampler.
+    
     * `negative_prompts`: A list of negative prompts used by this sampler.
 
 * `metadata`: Additional metadata which could not be attributed to one of the former described.
