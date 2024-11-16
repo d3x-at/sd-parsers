@@ -56,10 +56,10 @@ def test_parse(filename: str, expected):
     assert metadata == expected_metadata
 
 
-def test_civitai_hashes():
+def test_hashes():
     parameters = PARAMETERS + ', Hashes: {"vae": "c6a580b13a", "model": "c0d1994c73"}'
 
-    info_index, sampler_info, metadata = _automatic1111.get_sampler_info(parameters.split("\n"))
+    info_index, sampler_info, metadata = _automatic1111._get_sampler_info(parameters.split("\n"))
 
     assert info_index == 2
     assert sampler_info == {
@@ -72,5 +72,5 @@ def test_civitai_hashes():
         "Model": "realistic_realisticVisionV20_v20",
         "Model hash": "c0d1994c73",
         "Size": "512x400",
-        "civitai_hashes": {"model": "c0d1994c73", "vae": "c6a580b13a"},
+        "Hashes": {"model": "c0d1994c73", "vae": "c6a580b13a"},
     }

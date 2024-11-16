@@ -47,7 +47,7 @@ class AUTOMATIC1111Parser(Parser):
         except (KeyError, ValueError) as error:
             raise ParserError("error reading parameter string") from error
 
-        info_index, sampler_info, metadata = get_sampler_info(lines)
+        info_index, sampler_info, metadata = _get_sampler_info(lines)
         prompts = "\n".join(lines[:info_index]).split("Negative prompt:")
         prompt, negative_prompt = map(str.strip, prompts + [""] * (2 - len(prompts)))
 
@@ -77,34 +77,32 @@ class AUTOMATIC1111Parser(Parser):
         return self._generator, [Sampler(**sampler)], metadata
 
 
-def get_sampler_info(lines):
-    def split_meta(line: str) -> Dict[str, str]:
-        # try to extract civitai hashes
-        civitai_hashes = None
-        match = re.search(r"(?:,\s*)?Hashes:\s*(\{[^\}]*\})\s*", line)
-        if match:
-            with suppress(json.JSONDecodeError):
-                civitai_hashes = json.loads(match.group(1))
-            start, end = match.span(0)
-            line = line[:start] + line[end:]
-
-        metadata = {}
-        for item in line.split(","):
-            try:
-                key, value = map(str.strip, item.split(":"))
-                metadata[key] = value
-            except ValueError:
-                pass
-
-        if civitai_hashes:
-            metadata["civitai_hashes"] = civitai_hashes
-
-        return metadata
-
+def _get_sampler_info(lines):
     for index, line in reversed(list(enumerate(lines))):
-        metadata = split_meta(line)
+        metadata = _extract_metadata(line)
         sampler_info = dict(pop_keys(SAMPLER_PARAMS, metadata))
         if len(sampler_info) >= 3:
             return index, sampler_info, metadata
 
     raise ParserError("no sampler information found")
+
+
+def _extract_metadata(line: str) -> Dict[str, str]:
+    metadata = {}
+
+    # try to extract hashes
+    match = re.search(r"(?:,\s*)?Hashes:\s*(\{[^\}]*\})\s*", line)
+    if match:
+        with suppress(json.JSONDecodeError):
+            metadata["Hashes"] = json.loads(match.group(1))
+        start, end = match.span(0)
+        line = line[:start] + line[end:]
+
+    for item in line.split(","):
+        try:
+            key, value = map(str.strip, item.split(":"))
+            metadata[key] = value
+        except ValueError:
+            pass
+
+    return metadata
