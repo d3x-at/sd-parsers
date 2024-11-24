@@ -70,20 +70,24 @@ def main():
             parameters, parsing_context = parser.read_parameters(image)
 
         # parse() builds a standardized data structure from the raw parameters
-        generator, samplers, metadata = parser.parse(parameters, parsing_context, parameters)
+        generator, samplers, metadata = parser.parse(parameters, parsing_context)
 
     except ParserError:
         ...
 
     # creating a PromptInfo object from the obtained data allows for the use
     # of convenience poperties like ".prompts" or ".models"
-    prompt_info = PromptInfo(generator, samplers, metadata)
+    prompt_info = PromptInfo(generator, samplers, metadata, parameters)
 ```
 
 ### Output
-The output returned from `ParserManager` is a `PromptInfo` object (as can be seen when executing ```python3 -m sd_parsers <image.png>```) or `None` if no metadata was found.
+The `parse()` method returns a `PromptInfo` ([source](src/sd_parsers/data/prompt_info.py)) object when suitable metadata is found.
 
-`PromptInfo` ([source](src/sd_parsers/data/prompt_info.py)) contains the following properties :
+> Use ```python3 -m sd_parsers <image.png>``` to get an idea of the data parsed from an image file.
+
+> To get a result in JSON form, an approach as demonstrated in https://github.com/d3x-at/sd-parsers-web can be used.
+
+`PromptInfo` contains the following properties :
 * `generator`: Specifies the image [generator](src/sd_parsers/data/generators.py) that may have been used for creating the image.
 
 * `full_prompt`: A full prompt, if present in the image metadata.
