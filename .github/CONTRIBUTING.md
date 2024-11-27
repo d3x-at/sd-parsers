@@ -13,20 +13,44 @@ Pull requests are accepted in the form of squash merges to the `main` branch. Pl
 * Create a pull request to merge your changes into SD-Parser's `main` branch.
 
 ## Preparing the dev environment
-  With [pdm](https://github.com/pdm-project/pdm) installed (```pip install pdm```), clone the forked repository and let pdm install the needed dependencies:
+
+Clone the forked repository and change into the project directory:
   ```
   > git clone https://github.com/<your-repo-here>/sd-parsers.git
-  > cd sd-parsers && pdm install -d
+  > cd sd-parsers
   ```
 
-  After installing, run linting with:
+Then, prepare the virtual environment and install the requirements.
+### using [pdm](https://github.com/pdm-project/pdm)
+  * With pdm installed (```pip install pdm```), execute:
+      ```
+      > pdm install -d
+      ```
+### using pip
+  * Create & activate a virtual environment:
+      ```
+      > python3 -m venv .venv
+      > source .venv/bin/activate
+      ```
+  * Install the requirements for sd-parsers using:
+      ```
+      > pip3 install -e .
+      ```
+      If this step fails, upgrade pip and try again. (using ```pip install --upgrade pip```)
+      
+  * Install the development tools using:
+      ```
+      > pip3 install pytest ruff types-Pillow
+      ```
+
+  ### run linting with:
   ```
-  > pdm run ruff check src
+  > (pdm run) ruff check src
   ```
 
-  Run tests with:
+  ### run tests with:
   ```
-  > pdm run pytest
+  > (pdm run) pytest
   ```
 
 ## Adding/Modifying a parser module
