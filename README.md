@@ -1,4 +1,11 @@
+# SD-Parsers
+Read structured metadata from images created with stable diffusion.
+
+![Example Output](example_output.png)
+
 ## Features
+
+Prompts as well as some well-known generation parameters are provided as easily accessible properties (see [Output](#output)).
 
 Supports reading metadata from images generated with:
 * Automatic1111's Stable Diffusion web UI
@@ -6,8 +13,6 @@ Supports reading metadata from images generated with:
 * Fooocus
 * InvokeAI
 * NovelAI
-
-Provides a list of prompts used in the generation of the image, as well as generator-specific metadata.
 
 \* Custom ComfyUI nodes might parse incorrectly / with incomplete data.
 
