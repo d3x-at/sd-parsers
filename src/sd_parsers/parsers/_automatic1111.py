@@ -19,7 +19,6 @@ REPLACEMENT_RULES: ReplacementRules = [("Schedule type", "scheduler")]
 class AUTOMATIC1111Parser(Parser):
     """parse images created in AUTOMATIC1111's webui"""
 
-    _COMPLEXITY_INDEX = 100
     _generator = Generators.AUTOMATIC1111
 
     def read_parameters(
