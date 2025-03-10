@@ -4,14 +4,15 @@ from __future__ import annotations
 
 import logging
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union
 
 from PIL import Image
 
-from .data import PromptInfo, Generators
+from .data import PromptInfo
 from .exceptions import ParserError
 from .parser import Parser
 from .parsers import MANAGED_PARSERS
+from .extractors import METADATA_EXTRACTORS
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -19,16 +20,6 @@ if TYPE_CHECKING:
     from _typeshed import SupportsRead, SupportsRichComparison
 
 logger = logging.getLogger(__name__)
-
-METADATA_EXTRACTORS: Dict[str, List[Callable[[Image.Image, Generators], Dict[str, Any]]]] = {
-    "PNG": [
-        # use image.info
-        lambda i, _: i.info,
-        # use image.text property (iTxt, tEXt and zTXt chunks may appear at the end of the file)
-        lambda i, _: i.text,  # type: ignore
-    ]
-}
-"""A list of retrieval functions to provide multiple metadata entrypoints for each parser module."""
 
 
 @contextmanager
