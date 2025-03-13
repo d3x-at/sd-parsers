@@ -17,6 +17,7 @@ def usercomment(image: Image.Image, generator: Generators) -> Optional[Dict[str,
     image_id = id(image)
     if image_id != _image_id:
         _image_id = image_id
+        _usercomment = None
 
         with suppress(KeyError, ValueError):
             _usercomment = get_exif_value(image, "UserComment")
