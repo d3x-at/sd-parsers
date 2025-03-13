@@ -10,6 +10,8 @@ from sd_parsers.data.generators import Generators
 
 from . import data as _data
 
+DEBUG = False
+
 FormatField = Tuple[str, Tuple[List[str], str]]
 RenameField = Tuple[str, str]
 

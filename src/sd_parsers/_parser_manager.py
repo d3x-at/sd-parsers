@@ -49,6 +49,7 @@ class ParserManager:
         *,
         normalize_parameters: bool = True,
         managed_parsers: Optional[List[Type[Parser]]] = None,
+        debug: bool = False,
     ):
         """
         Initializes a ParserManager object.
@@ -58,6 +59,8 @@ class ParserManager:
             managed_parsers: A list of parsers to be managed.
 
         """
+        self._debug = debug
+
         self.managed_parsers: List[Parser] = [
             parser(normalize_parameters) for parser in managed_parsers or MANAGED_PARSERS
         ]
@@ -103,6 +106,7 @@ class ParserManager:
                         generator, samplers, metadata = parser.parse(parameters)
                         return PromptInfo(generator, samplers, metadata, parameters)
                     except ParserError as error:
-                        logger.debug("error in parser[%s]: %s", type(parser), error)
+                        if self._debug:
+                            logger.debug("error in parser[%s]: %s", type(parser), error)
 
         return None
