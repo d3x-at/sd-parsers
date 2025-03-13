@@ -1,6 +1,6 @@
 from contextlib import suppress
 from PIL import Image
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from sd_parsers.data import Generators
 from ._get_exif_value import get_exif_value
@@ -9,7 +9,7 @@ _image_id = None
 _usercomment = None
 
 
-def usercomment(image: Image.Image, generator: Generators) -> Dict[str, Any] | None:
+def usercomment(image: Image.Image, generator: Generators) -> Optional[Dict[str, Any]]:
     """use image.info"""
     global _image_id, _usercomment
 
