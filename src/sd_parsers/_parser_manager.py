@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import itertools
 import logging
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union
+from enum import Enum
+from typing import TYPE_CHECKING, List, Optional, Type, Union
 
 from PIL import Image
 
@@ -17,9 +19,15 @@ from .extractors import METADATA_EXTRACTORS
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from _typeshed import SupportsRead, SupportsRichComparison
+    from _typeshed import SupportsRead
 
 logger = logging.getLogger(__name__)
+
+
+class Eagerness(Enum):
+    FAST = 1
+    DEFAULT = 2
+    EAGER = None
 
 
 @contextmanager
@@ -57,7 +65,7 @@ class ParserManager:
     def parse(
         self,
         image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
-        eagerness: int = 2,
+        eagerness: Eagerness = Eagerness.DEFAULT,
     ) -> Optional[PromptInfo]:
         """
         Try to extract image generation parameters from the given image.
@@ -65,8 +73,9 @@ class ParserManager:
         Parameters:
             image: a PIL Image, filename, pathlib.Path object or a file object.
             eagerness: metadata searching effort
-              1: cut some corners to save some time
-              2: try to ensure all metadata is read (default)
+              FAST: cut some corners to save some time
+              DEFAULT: try to ensure all metadata is read (default)
+              EAGER: include additional methods to try and retrieve metadata (computationally expensive)
 
         If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
         underlying `Image.open()` method:
@@ -74,37 +83,26 @@ class ParserManager:
         - PIL.UnidentifiedImageError: If the image cannot be opened and identified.
         - ValueError: If a StringIO instance is used for `image`.
         """
-        if not 0 < eagerness <= 2:
-            raise ValueError("depth not in valid range")
 
-        for parser, parameters, parsing_context in self._read_parameters(image, eagerness):
-            try:
-                generator, samplers, metadata = parser.parse(parameters, parsing_context)
-                return PromptInfo(generator, samplers, metadata, parameters)
-            except ParserError as error:
-                logger.debug("error in parser: %s", error)
-
-        return None
-
-    def _read_parameters(
-        self,
-        image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
-        max_tries: int,
-        key: Optional[Callable[[Parser], SupportsRichComparison]] = None,
-    ):
         with _get_image(image) as image:
             if image.format is None:
                 raise ParserError("unknown image format")
 
-            extractors = METADATA_EXTRACTORS.get(image.format, [None])
+            try:
+                extractors = METADATA_EXTRACTORS[image.format][: eagerness.value]
+            except KeyError as error:
+                raise ParserError("unsupported image format") from error
 
-            for get_metadata in extractors[:max_tries]:
-                for parser in (
-                    sorted(self.managed_parsers, key=key) if key else self.managed_parsers
-                ):
+            for get_metadata in itertools.chain(*extractors):
+                for parser in self.managed_parsers:
                     try:
-                        parameters, parsing_context = parser.read_parameters(image, get_metadata)
-                        yield parser, parameters, parsing_context
+                        parameters = get_metadata(image, parser.generator)
+                        if parameters is None:
+                            continue
 
+                        generator, samplers, metadata = parser.parse(parameters)
+                        return PromptInfo(generator, samplers, metadata, parameters)
                     except ParserError as error:
-                        logger.debug("error in parser: %s", error)
+                        logger.debug("error in parser[%s]: %s", type(parser), error)
+
+        return None

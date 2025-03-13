@@ -54,7 +54,7 @@ def _parse_sd_metadata(parser: InvokeAIParser, parameters: Dict[str, Any]) -> Pa
     if model_name or model_hash:
         sampler["model"] = Model(name=model_name, hash=model_hash)
 
-    return parser._generator, [Sampler(**sampler)], {**metadata, **metadata_image}
+    return parser.generator, [Sampler(**sampler)], {**metadata, **metadata_image}
 
 
 __all__ = ["_parse_sd_metadata"]

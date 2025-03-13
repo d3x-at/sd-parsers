@@ -48,7 +48,7 @@ def _parse_invokeai_meta(parser: InvokeAIParser, parameters: Dict[str, Any]) -> 
             metadata=model_info,
         )
 
-    return parser._generator, [Sampler(**sampler)], metadata
+    return parser.generator, [Sampler(**sampler)], metadata
 
 
 __all__ = ["_parse_invokeai_meta"]

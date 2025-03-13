@@ -17,6 +17,7 @@ def main():
     if prompt_info:
         print(prompt_info)
 """
-from ._parser_manager import ParserManager
 
-__all__ = ["ParserManager"]
+from ._parser_manager import ParserManager, Eagerness
+
+__all__ = ["ParserManager", "Eagerness"]

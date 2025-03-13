@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
-from PIL import ExifTags
-from PIL.Image import Image
+from sd_parsers.data.generators import Generators
 
 from . import data as _data
 
@@ -24,29 +23,17 @@ or to create a new key using the given formatting instruction (see `FormatField`
 ParseResult = Tuple[_data.Generators, List[_data.Sampler], Dict[Any, Any]]
 """The result of Parser.parse() is a tuple of encountered samplers and remaining metadata."""
 
-_EXIF_TAGS = {v: k for k, v in ExifTags.TAGS.items()}
-
 
 class Parser(ABC):
     """Parser base class."""
+
+    generator = Generators.UNKNOWN
 
     def __init__(self, normalize_parameters: bool = True):
         self.do_normalization_pass = normalize_parameters
 
     @abstractmethod
-    def read_parameters(
-        self,
-        image: Image,
-        get_metadata: Optional[Callable[[Image, _data.Generators], Dict[str, Any]]] = None,
-    ) -> Tuple[dict[str, Any], Any]:
-        """
-        Read generation parameters from image.
-
-        returns image parameters (and a parsing_context if needed) if suitable image metadata has been found.
-        """
-
-    @abstractmethod
-    def parse(self, parameters: Dict[str, Any], parsing_context: Any) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
         """Extract image generation information from the image metadata."""
 
     def normalize_parameters(
@@ -93,21 +80,6 @@ class Parser(ABC):
             processed[key] = value
 
         return processed
-
-
-def get_exif_value(
-    image: Image,
-    key: str,
-    *,
-    ifd_tag: int = 0x8769,
-    prefix_length: int = 8,
-    encoding: str = "utf_16_be",
-) -> str:
-    """Read the value for a given key out of the images exif data."""
-    exif_value = image.getexif().get_ifd(ifd_tag)[_EXIF_TAGS[key]]
-    if len(exif_value) <= prefix_length:
-        raise ValueError("exif value too short")
-    return exif_value[prefix_length:].decode(encoding)
 
 
 def pop_keys(keys: Iterable[str], dictionary: Dict[str, Any]) -> Iterator[Tuple[str, Any]]:

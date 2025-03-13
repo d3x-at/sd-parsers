@@ -5,6 +5,7 @@ import pytest
 from PIL import Image
 from sd_parsers.data import Generators
 from sd_parsers.parsers import ComfyUIParser
+from sd_parsers import extractors
 
 from tests.resources.parsers.ComfyUI import img2img_cropped, night_evening_day_morning_cropped
 from tests.tools import RESOURCE_PATH
@@ -24,9 +25,12 @@ def test_parse(filename: str, expected):
 
     parser = ComfyUIParser()
     with Image.open(RESOURCE_PATH / "parsers/ComfyUI" / filename) as image:
-        params = parser.read_parameters(image)
+        assert image.format
+        extractor = extractors.METADATA_EXTRACTORS[image.format][0][0]
+        params = extractor(image, parser.generator)
+        assert params
 
-    generator, samplers, metadata = parser.parse(*params)
+    generator, samplers, metadata = parser.parse(params)
 
     assert generator == Generators.COMFYUI
     assert samplers == expected_samplers

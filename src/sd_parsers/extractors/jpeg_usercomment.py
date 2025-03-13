@@ -9,7 +9,7 @@ _image_id = None
 _usercomment = None
 
 
-def usercomment(image: Image.Image, generator: Generators) -> Dict[str, Any]:
+def usercomment(image: Image.Image, generator: Generators) -> Dict[str, Any] | None:
     """use image.info"""
     global _image_id, _usercomment
 
@@ -22,9 +22,9 @@ def usercomment(image: Image.Image, generator: Generators) -> Dict[str, Any]:
             _usercomment = get_exif_value(image, "UserComment")
 
     if _usercomment is None:
-        return {}
+        return None
 
     if generator in (Generators.AUTOMATIC1111, Generators.FOOOCUS):
         return {"parameters": _usercomment}
 
-    return {}
+    return None

@@ -59,7 +59,7 @@ def _parse_dream(parser: InvokeAIParser, parameters: dict) -> ParseResult:
     # prompts
     _add_prompts(sampler, prompts, {})
 
-    return parser._generator, [Sampler(**sampler)], metadata
+    return parser.generator, [Sampler(**sampler)], metadata
 
 
 def _get_sampler(parser: InvokeAIParser, metadata: Dict[str, Any], key: str):

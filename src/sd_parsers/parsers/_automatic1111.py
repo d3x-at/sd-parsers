@@ -3,13 +3,11 @@
 import json
 import re
 from contextlib import suppress
-from typing import Any, Callable, Dict, Optional
-
-from PIL.Image import Image
+from typing import Any, Dict
 
 from sd_parsers.data import Generators, Model, Prompt, Sampler
-from sd_parsers.exceptions import MetadataError, ParserError
-from sd_parsers.parser import Parser, ParseResult, ReplacementRules, get_exif_value, pop_keys
+from sd_parsers.exceptions import ParserError
+from sd_parsers.parser import Parser, ParseResult, ReplacementRules, pop_keys
 
 SAMPLER_PARAMS = ["Sampler", "CFG scale", "Seed", "Steps", "ENSD", "Schedule type"]
 
@@ -19,28 +17,9 @@ REPLACEMENT_RULES: ReplacementRules = [("Schedule type", "scheduler")]
 class AUTOMATIC1111Parser(Parser):
     """parse images created in AUTOMATIC1111's webui"""
 
-    _generator = Generators.AUTOMATIC1111
+    generator = Generators.AUTOMATIC1111
 
-    def read_parameters(
-        self,
-        image: Image,
-        get_metadata: Optional[Callable[[Image, Generators], Dict[str, Any]]] = None,
-    ):
-        try:
-            if image.format == "PNG":
-                metadata = get_metadata(image, self._generator) if get_metadata else image.info
-                parameters = metadata["parameters"]
-            elif image.format in ("JPEG", "WEBP"):
-                parameters = get_exif_value(image, "UserComment")
-            else:
-                raise MetadataError("unsupported image format", image.format)
-
-        except (KeyError, ValueError) as error:
-            raise MetadataError("no matching metadata") from error
-
-        return {"parameters": parameters}, None
-
-    def parse(self, parameters: Dict[str, Any], _) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
         try:
             lines = parameters["parameters"].split("\n")
         except (KeyError, ValueError) as error:
@@ -73,7 +52,7 @@ class AUTOMATIC1111Parser(Parser):
         if negative_prompt:
             sampler["negative_prompts"] = [Prompt(1, negative_prompt)]
 
-        return self._generator, [Sampler(**sampler)], metadata
+        return self.generator, [Sampler(**sampler)], metadata
 
 
 def _get_sampler_info(lines):
