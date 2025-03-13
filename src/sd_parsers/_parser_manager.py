@@ -86,12 +86,12 @@ class ParserManager:
 
         with _get_image(image) as image:
             if image.format is None:
-                raise ParserError("unknown image format")
+                return None
 
             try:
                 extractors = METADATA_EXTRACTORS[image.format][: eagerness.value]
-            except KeyError as error:
-                raise ParserError("unsupported image format") from error
+            except KeyError:
+                return None
 
             for get_metadata in itertools.chain(*extractors):
                 for parser in self.managed_parsers:
