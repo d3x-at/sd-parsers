@@ -1,10 +1,6 @@
 # SD-Parsers
 Read structured metadata from images created with stable diffusion.
 
-> [!NOTE]
-> This is a note
-
-
 ![Example Output](example_output.png)
 
 > [!Caution]
