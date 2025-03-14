@@ -1,7 +1,16 @@
 # SD-Parsers
 Read structured metadata from images created with stable diffusion.
 
+> [!NOTE]
+> This is a note
+
+
 ![Example Output](example_output.png)
+
+> [!Caution]
+> You are currently reading the documentation for the master branch!
+> 
+> Go [here](https://github.com/d3x-at/sd-parsers/tree/v0.5) for the documentation of the latest release.
 
 ## Features
 
@@ -56,33 +65,24 @@ def main():
         prompt_info = parser_manager.parse(image)
 ```
 
-#### Each parser module can also be used directly, omitting the use of ```ParserManager```:
+#### Only use a specific parser module (or add a custom one):
 
 ```python
 from PIL import Image
-from sd_parsers.data import PromptInfo
-from sd_parsers.exceptions import ParserError
-from sd_parsers.parsers import AUTOMATIC1111Parser
+from sd_parsers import ParserManager
+from sd_parsers.parsers import MANAGED_PARSERS, AUTOMATIC1111Parser
 
-parser = AUTOMATIC1111Parser()
+# remove all preset parser modules
+MANAGED_PARSERS.clear()
 
+# add the AUTOMATIC1111 parser as only parser module
+MANAGED_PARSERS.extend([AUTOMATIC1111Parser])
+
+parser_manager = ParserManager()
 
 def main():
-    try:
-        with Image.open("image.png") as image:
-            # read_parameters() returns relevant image metadata parameters
-            # and optional context information needed for parsing
-            parameters, parsing_context = parser.read_parameters(image)
-
-        # parse() builds a standardized data structure from the raw parameters
-        generator, samplers, metadata = parser.parse(parameters, parsing_context)
-
-    except ParserError:
-        ...
-
-    # creating a PromptInfo object from the obtained data allows for the use
-    # of convenience poperties like ".prompts" or ".models"
-    prompt_info = PromptInfo(generator, samplers, metadata, parameters)
+    with Image.open("image.png") as image:
+        prompt_info = parser_manager.parse(image)
 ```
 
 ### Output
