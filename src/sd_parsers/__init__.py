@@ -18,6 +18,7 @@ def main():
         print(prompt_info)
 """
 
-from ._parser_manager import ParserManager, Eagerness
+from ._parser_manager import ParserManager
+from .extractors import Eagerness
 
 __all__ = ["ParserManager", "Eagerness"]

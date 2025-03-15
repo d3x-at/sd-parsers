@@ -1,6 +1,6 @@
 import pytest
 from PIL import Image
-from sd_parsers import extractors
+from sd_parsers.extractors import Eagerness, METADATA_EXTRACTORS
 from sd_parsers.data import Generators, Model, Prompt, Sampler
 from sd_parsers.parsers import NovelAIParser
 
@@ -53,7 +53,7 @@ def test_parse(filename: str, expected):
     parser = NovelAIParser()
     with Image.open(RESOURCE_PATH / "parsers/NovelAI" / filename) as image:
         assert image.format
-        extractor = extractors.METADATA_EXTRACTORS[image.format][0][0]
+        extractor = METADATA_EXTRACTORS[image.format][Eagerness.FAST][0]
         params = extractor(image, parser.generator)
         assert params
 

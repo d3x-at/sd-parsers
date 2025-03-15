@@ -2,7 +2,7 @@ import pytest
 from PIL import Image
 from sd_parsers.data import Model, Prompt, Sampler, Generators
 from sd_parsers.parsers import AUTOMATIC1111Parser, _automatic1111
-from sd_parsers import extractors
+from sd_parsers.extractors import Eagerness, METADATA_EXTRACTORS
 
 from tests.tools import RESOURCE_PATH
 
@@ -49,7 +49,7 @@ def test_parse(filename: str, expected):
     parser = AUTOMATIC1111Parser()
     with Image.open(RESOURCE_PATH / "parsers/AUTOMATIC1111" / filename) as image:
         assert image.format
-        extractor = extractors.METADATA_EXTRACTORS[image.format][0][0]
+        extractor = METADATA_EXTRACTORS[image.format][Eagerness.FAST][0]
         params = extractor(image, parser.generator)
         assert params
 

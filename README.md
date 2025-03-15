@@ -64,7 +64,6 @@ def main():
 #### Only use a specific parser module (or add a custom one):
 
 ```python
-from PIL import Image
 from sd_parsers import ParserManager
 from sd_parsers.parsers import MANAGED_PARSERS, AUTOMATIC1111Parser
 
@@ -75,11 +74,28 @@ MANAGED_PARSERS.clear()
 MANAGED_PARSERS.extend([AUTOMATIC1111Parser])
 
 parser_manager = ParserManager()
+```
+
+#### Only use a specific metadata extractor (or add a custom one):
+
+```python
+from sd_parsers import ParserManager
+from sd_parsers.extractors import METADATA_EXTRACTORS, Eagerness
+
+# remove all preset PNG extractors for the first (FAST) stage
+METADATA_EXTRACTORS["PNG"][Eagerness.FAST].clear()
+
+# add a custom extractor
+METADATA_EXTRACTORS["PNG"][Eagerness.FAST].append(
+    lambda i, g: {"parameters": "custom extracted data\nSampler: UniPC, Steps: 15, CFG scale: 5"}
+)
+
+parser_manager = ParserManager()
+```
 
 def main():
-    with Image.open("image.png") as image:
+    with Image.open("tests/resources/parsers/AUTOMATIC1111/automatic1111_cropped.png") as image:
         prompt_info = parser_manager.parse(image)
-```
 
 ### Output
 The `parse()` method returns a `PromptInfo` ([source](src/sd_parsers/data/prompt_info.py)) object when suitable metadata is found.

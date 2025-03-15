@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import itertools
 import logging
 from contextlib import contextmanager
-from enum import Enum
 from typing import TYPE_CHECKING, List, Optional, Type, Union
 
 from PIL import Image
@@ -14,7 +12,7 @@ from .data import PromptInfo
 from .exceptions import ParserError
 from .parser import Parser
 from .parsers import MANAGED_PARSERS
-from .extractors import METADATA_EXTRACTORS
+from .extractors import METADATA_EXTRACTORS, Eagerness
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -22,12 +20,6 @@ if TYPE_CHECKING:
     from _typeshed import SupportsRead
 
 logger = logging.getLogger(__name__)
-
-
-class Eagerness(Enum):
-    FAST = 1
-    DEFAULT = 2
-    EAGER = None
 
 
 @contextmanager
@@ -89,24 +81,32 @@ class ParserManager:
 
         with _get_image(image) as image:
             if image.format is None:
+                if self._debug:
+                    logger.debug("unknown image format")
                 return None
 
             try:
-                extractors = METADATA_EXTRACTORS[image.format][: eagerness.value]
+                extractors = METADATA_EXTRACTORS[image.format]
             except KeyError:
+                if self._debug:
+                    logger.debug("unsupported image format: %s", image.format)
                 return None
 
-            for get_metadata in itertools.chain(*extractors):
-                for parser in self.managed_parsers:
-                    try:
-                        parameters = get_metadata(image, parser.generator)
-                        if parameters is None:
-                            continue
+            for e in Eagerness:
+                if e.value > eagerness.value:
+                    break
 
-                        generator, samplers, metadata = parser.parse(parameters)
-                        return PromptInfo(generator, samplers, metadata, parameters)
-                    except ParserError as error:
-                        if self._debug:
-                            logger.debug("error in parser[%s]: %s", type(parser), error)
+                for get_metadata in extractors[e]:
+                    for parser in self.managed_parsers:
+                        try:
+                            parameters = get_metadata(image, parser.generator)
+                            if parameters is None:
+                                continue
+
+                            generator, samplers, metadata = parser.parse(parameters)
+                            return PromptInfo(generator, samplers, metadata, parameters)
+                        except ParserError as error:
+                            if self._debug:
+                                logger.debug("error in parser[%s]: %s", type(parser), error)
 
         return None
