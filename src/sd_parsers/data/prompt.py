@@ -6,7 +6,7 @@ from typing import Any, Dict
 class Prompt:
     """Represents an image generation prompt."""
 
-    prompt_id: int
+    prompt_id: str
     """Prompt id"""
 
     value: str

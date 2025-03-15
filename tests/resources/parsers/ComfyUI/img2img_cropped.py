@@ -15,25 +15,24 @@ PARAM = pytest.param(
                     "scheduler": "normal",
                     "denoise": 0.8700000000000001,
                 },
-                sampler_id=3,
+                sampler_id="3",
                 model=Model(
                     name="v1-5-pruned-emaonly.ckpt",
                     metadata={"config_name": "v1-inference.yaml"},
-                    model_id=4,
+                    model_id="4",
                 ),
                 prompts=[
                     Prompt(
-                        value="photograph of victorian woman with wings, sky clouds, "
-                        "meadow grass",
-                        prompt_id=6,
+                        value="photograph of victorian woman with wings, sky clouds, meadow grass",
+                        prompt_id="6",
                     )
                 ],
-                negative_prompts=[Prompt(value="watermark, text", prompt_id=7)],
+                negative_prompts=[Prompt(value="watermark, text", prompt_id="7")],
             ),
         ],
         {
-            "SaveImage": [{"filename_prefix": "ComfyUI", "id": 9}],
-            "LoadImage": [{"image": "example.png", "id": 10}],
+            "SaveImage": [{"filename_prefix": "ComfyUI", "id": "9"}],
+            "LoadImage": [{"image": "example.png", "id": "10"}],
         },
     ),
     id="img2img_cropped.png",

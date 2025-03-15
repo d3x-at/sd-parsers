@@ -29,8 +29,13 @@ class ComfyUIParser(Parser):
 
     def parse(self, parameters: Dict[str, Any]) -> ParseResult:
         try:
-            prompt = json.loads(parameters["prompt"])
-            workflow = json.loads(parameters["workflow"])
+            prompt = parameters["prompt"]
+            if not isinstance(prompt, dict):
+                prompt = json.loads(prompt)
+
+            workflow = parameters["workflow"]
+            if not isinstance(workflow, dict):
+                workflow = json.loads(workflow)
         except Exception as error:
             raise ParserError("error reading parameters") from error
 
@@ -40,17 +45,17 @@ class ComfyUIParser(Parser):
 
 class ImageContext:
     parser: ComfyUIParser
-    prompt: Dict[int, Any]
-    links: Dict[int, Dict[int, Set[str]]]
-    processed_nodes: Set[int]
+    prompt: Dict[str, Any]
+    links: Dict[str, Dict[str, Set[str]]]
+    processed_nodes: Set[str]
 
     def __init__(self, parser: ComfyUIParser, prompt, workflow):
         self.parser = parser
         self.processed_nodes = set()
 
-        # ensure that prompt keys are integers
+        # ensure that prompt keys are strings
         try:
-            self.prompt = {int(k): v for k, v in prompt.items()}
+            self.prompt = {str(k): v for k, v in prompt.items()}
         except (AttributeError, ValueError) as error:
             raise ParserError("prompt has unexpected format") from error
 
@@ -58,7 +63,7 @@ class ImageContext:
         self.links = defaultdict(lambda: defaultdict(set))
         try:
             for _, output_id, _, input_id, _, link_type in workflow["links"]:
-                self.links[int(input_id)][int(output_id)].add(link_type)
+                self.links[str(input_id)][str(output_id)].add(link_type)
         except (TypeError, KeyError, ValueError) as error:
             raise ParserError("workflow has unexpected format") from error
 
@@ -89,7 +94,7 @@ class ImageContext:
 
         return samplers, dict(metadata)
 
-    def _try_get_sampler(self, node_id: int, node):
+    def _try_get_sampler(self, node_id: str, node):
         """Test if this node could contain sampler data"""
         try:
             inputs = dict(node["inputs"])
@@ -117,12 +122,12 @@ class ImageContext:
 
         # Model
         with suppress(KeyError, ValueError):
-            model_id = int(inputs["model"][0])
+            model_id = str(inputs["model"][0])
             sampler["model"] = self._get_model(model_id)
 
         # Prompt
         with suppress(KeyError, ValueError):
-            positive_prompt_id = int(inputs["positive"][0])
+            positive_prompt_id = str(inputs["positive"][0])
             sampler["prompts"] = self._get_prompts(
                 positive_prompt_id,
                 POSITIVE_PROMPT_KEYS,
@@ -130,7 +135,7 @@ class ImageContext:
 
         # Negative Prompt
         with suppress(KeyError, ValueError):
-            negative_prompt_id = int(inputs["negative"][0])
+            negative_prompt_id = str(inputs["negative"][0])
             sampler["negative_prompts"] = self._get_prompts(
                 negative_prompt_id,
                 NEGATIVE_PROMPT_KEYS,
@@ -138,7 +143,7 @@ class ImageContext:
 
         return Sampler(**sampler)
 
-    def _get_model(self, initial_node_id: int) -> Optional[Model]:
+    def _get_model(self, initial_node_id: str) -> Optional[Model]:
         """Get the first model reached from the given node_id"""
         if DEBUG:
             logger.debug("looking for model: #%s", initial_node_id)
@@ -162,14 +167,14 @@ class ImageContext:
 
         return None
 
-    def _get_prompts(self, initial_node_id: int, text_keys: List[str]) -> List[Prompt]:
+    def _get_prompts(self, initial_node_id: str, text_keys: List[str]) -> List[Prompt]:
         """Get all prompts reachable from a given node_id."""
         if DEBUG:
             logger.debug("looking for prompts: %d", initial_node_id)
 
         prompts = []
 
-        def check_inputs(node_id: int, inputs: Dict, trace: List[int]) -> bool:
+        def check_inputs(node_id: str, inputs: Dict, trace: List[str]) -> bool:
             found_prompt = False
             for key in text_keys:
                 try:
@@ -215,13 +220,13 @@ class ImageContext:
         return prompts
 
     def _traverse(
-        self, node_id: int, ignored_link_types: Optional[List[str]] = None
-    ) -> Generator[Tuple[int, Any, List[int]], Optional[bool], None]:
+        self, node_id: str, ignored_link_types: Optional[List[str]] = None
+    ) -> Generator[Tuple[str, Any, List[str]], Optional[bool], None]:
         """Traverse backwards through node tree, starting at a given node_id"""
         visited = set()
         ignore_links = set(ignored_link_types) if ignored_link_types else set()
 
-        def traverse_inner(node_id: int, trace: List[int]):
+        def traverse_inner(node_id: str, trace: List[str]):
             visited.add(node_id)
 
             with suppress(KeyError):
@@ -240,7 +245,7 @@ class ImageContext:
 
         yield from traverse_inner(node_id, [node_id])
 
-    def _get_trace_metadata(self, trace: List[int]):
+    def _get_trace_metadata(self, trace: List[str]):
         metadata = {}
 
         for node_id in trace:
@@ -270,7 +275,7 @@ class ImageContext:
     def _get_input_values(
         self,
         inputs: Dict[str, Any],
-        node_id: Optional[int] = None,
+        node_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         with suppress(Exception):
             vals = {key: value for key, value in inputs.items() if not isinstance(value, list)}

@@ -15,7 +15,7 @@ class Sampler:
     parameters: Dict[str, Any]
     """Generation parameters, including `cfg_scale`, `seed`, `steps` and others."""
 
-    sampler_id: Optional[int] = None
+    sampler_id: Optional[str] = None
     """A unique id for this sampler (if present in the metadata)"""
 
     model: Optional[Model] = None

@@ -12,7 +12,7 @@ class Model:
     hash: Optional[str] = None
     """Hash value of the checkpoint model. (if found)"""
 
-    model_id: Optional[int] = None
+    model_id: Optional[str] = None
     """Model id"""
 
     metadata: Dict[Any, Any] = field(default_factory=dict)
