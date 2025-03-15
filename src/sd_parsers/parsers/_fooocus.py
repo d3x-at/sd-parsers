@@ -20,7 +20,7 @@ class FooocusParser(Parser):
     def parse(self, _parameters: Dict[str, Any]) -> ParseResult:
         try:
             parameters = json.loads(_parameters["parameters"])
-        except (KeyError, json.JSONDecodeError) as error:
+        except (KeyError, TypeError, json.JSONDecodeError) as error:
             raise ParserError("error decoding parameter data") from error
 
         try:

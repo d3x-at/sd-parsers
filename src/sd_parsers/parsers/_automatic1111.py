@@ -22,7 +22,7 @@ class AUTOMATIC1111Parser(Parser):
     def parse(self, parameters: Dict[str, Any]) -> ParseResult:
         try:
             lines = parameters["parameters"].split("\n")
-        except (KeyError, ValueError) as error:
+        except (KeyError, ValueError, AttributeError) as error:
             raise ParserError("error reading parameter string") from error
 
         info_index, sampler_info, metadata = _get_sampler_info(lines)
@@ -71,7 +71,7 @@ def _extract_metadata(line: str) -> Dict[str, str]:
     # try to extract hashes
     match = re.search(r"(?:,\s*)?Hashes:\s*(\{[^\}]*\})\s*", line)
     if match:
-        with suppress(json.JSONDecodeError):
+        with suppress(TypeError, json.JSONDecodeError):
             metadata["Hashes"] = json.loads(match.group(1))
         start, end = match.span(0)
         line = line[:start] + line[end:]
