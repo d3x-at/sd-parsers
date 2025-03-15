@@ -93,10 +93,6 @@ METADATA_EXTRACTORS["PNG"][Eagerness.FAST].append(
 parser_manager = ParserManager()
 ```
 
-def main():
-    with Image.open("tests/resources/parsers/AUTOMATIC1111/automatic1111_cropped.png") as image:
-        prompt_info = parser_manager.parse(image)
-
 ### Output
 The `parse()` method returns a `PromptInfo` ([source](src/sd_parsers/data/prompt_info.py)) object when suitable metadata is found.
 
