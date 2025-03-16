@@ -19,7 +19,6 @@ def main():
 """
 
 from ._parser_manager import ParserManager
-from ._video_parser import parse_video
 from .extractors import Eagerness
 
-__all__ = ["ParserManager", "Eagerness", "parse_video"]
+__all__ = ["ParserManager", "Eagerness"]
