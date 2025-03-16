@@ -11,17 +11,14 @@ pip3 install ffmpeg-python
 """
 
 import json
-import logging
 import ffmpeg
 import sys
 from pprint import pprint
 
 from sd_parsers.data import PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import DEBUG
 from sd_parsers.parsers import ComfyUIParser
 
-logger = logging.getLogger(__name__)
 parser = ComfyUIParser()
 
 
@@ -38,8 +35,7 @@ def parse_video(video_file: str):
         generator, samplers, metadata = parser.parse(parameters)
         return PromptInfo(generator, samplers, metadata, parameters)
     except ParserError as error:
-        if DEBUG:
-            logger.debug("error in parser[%s]: %s", type(parser), error)
+        print("error in parser: ", error)
 
     return None
 
@@ -49,6 +45,7 @@ if __name__ == "__main__":
         prompt_info = parse_video(sys.argv[1])
     except IndexError:
         print("usage: parse_video <video_file.mp4>")
+        sys.exit(1)
 
     if prompt_info is None:
         print("no metadata found")
