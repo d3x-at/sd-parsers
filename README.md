@@ -61,7 +61,21 @@ def main():
         prompt_info = parser_manager.parse(image)
 ```
 
-#### Only use a specific parser module (or add a custom one):
+### Parsing options:
+
+#### Only use specific (or custom) parser modules:
+
+```python
+from sd_parsers import ParserManager
+from sd_parsers.parsers import AUTOMATIC1111Parser
+
+# set the AUTOMATIC1111 parser as only parser module used by this ParserManager
+# you can use multiple manager objects with different parsers
+# caution: the order of parser entries matters!
+parser_manager = ParserManager(managed_parsers=[AUTOMATIC1111Parser])
+```
+
+#### Change default parser modules:
 
 ```python
 from sd_parsers import ParserManager
@@ -73,10 +87,11 @@ MANAGED_PARSERS.clear()
 # add the AUTOMATIC1111 parser as only parser module
 MANAGED_PARSERS.extend([AUTOMATIC1111Parser])
 
+# the default will still be overriden with managed_parsers=...
 parser_manager = ParserManager()
 ```
 
-#### Only use a specific metadata extractor (or add a custom one):
+#### Configure metadata extractors:
 
 ```python
 from sd_parsers import ParserManager
