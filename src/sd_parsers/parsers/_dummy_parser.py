@@ -38,11 +38,10 @@ class DummyParser(Parser):
                 },
                 model=Model("name of the used checkpoint", "hash value of the checkpoint"),
                 prompts=[
-                    Prompt("1", "positive prompt"),
+                    Prompt("positive prompt"),
                 ],
                 negative_prompts=[
-                    Prompt("2", "negative prompt"),
-                    Prompt("3", "keep prompt ids unique"),
+                    Prompt("negative prompt"),
                 ],
             )
         except Exception as error:

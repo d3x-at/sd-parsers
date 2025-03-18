@@ -30,8 +30,8 @@ def test_parse(filename: str, expected):
         params = extractor(image, parser.generator)
         assert params
 
-    generator, samplers, metadata = parser.parse(params)
+    prompt_info = parser.parse(params)
 
-    assert generator == Generators.COMFYUI
-    assert samplers == expected_samplers
-    assert metadata == expected_metadata
+    assert prompt_info.generator == Generators.COMFYUI
+    assert prompt_info.samplers == expected_samplers
+    assert prompt_info.metadata == expected_metadata

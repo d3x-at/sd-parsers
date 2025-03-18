@@ -29,11 +29,11 @@ def test_parse(filename: str, expected):
         params = extractor(image, parser.generator)
         assert params
 
-    generator, samplers, metadata = parser.parse(params)
+    prompt_info = parser.parse(params)
 
-    assert generator == Generators.INVOKEAI
-    assert metadata == expected_metadata
-    assert samplers == [expected_sampler]
+    assert prompt_info.generator == Generators.INVOKEAI
+    assert prompt_info.metadata == expected_metadata
+    assert prompt_info.samplers == [expected_sampler]
 
 
 def test_split_prompt():
@@ -44,12 +44,12 @@ def test_split_prompt():
 
     assert output == {
         "negative_prompts": [
-            Prompt(1, "nprompt1a, nprompt1b"),
-            Prompt(2, "nprompt2a, nprompt2b"),
+            Prompt("nprompt1a, nprompt1b", prompt_id="1"),
+            Prompt("nprompt2a, nprompt2b", prompt_id="2"),
         ],
         "prompts": [
-            Prompt(1, "prompt1a, prompt1b"),
-            Prompt(2, "prompt2a, prompt2b"),
-            Prompt(3, "prompt3a"),
+            Prompt("prompt1a, prompt1b", prompt_id="1"),
+            Prompt("prompt2a, prompt2b", prompt_id="2"),
+            Prompt("prompt3a", prompt_id="3"),
         ],
     }

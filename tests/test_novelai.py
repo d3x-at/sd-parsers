@@ -20,10 +20,9 @@ testdata = [
                         "cfg_scale": 10.0,
                     },
                     model=Model(name="Stable Diffusion", hash="1D44365E"),
-                    prompts=[Prompt(1, "masterpiece, best quality,  cat, space, icon")],
+                    prompts=[Prompt("masterpiece, best quality,  cat, space, icon")],
                     negative_prompts=[
                         Prompt(
-                            1,
                             (
                                 "lowres, bad anatomy, bad hands, text, error, missing fingers, "
                                 "extra digit, fewer digits, cropped, worst quality, low quality, "
@@ -57,8 +56,8 @@ def test_parse(filename: str, expected):
         params = extractor(image, parser.generator)
         assert params
 
-    generator, samplers, metadata = parser.parse(params)
+    prompt_info = parser.parse(params)
 
-    assert generator == Generators.NOVELAI
-    assert samplers == expected_samplers
-    assert metadata == expected_metadata
+    assert prompt_info.generator == Generators.NOVELAI
+    assert prompt_info.samplers == expected_samplers
+    assert prompt_info.metadata == expected_metadata

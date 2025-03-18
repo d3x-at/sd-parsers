@@ -19,8 +19,8 @@ PARAM = pytest.param(
             ),
             prompts=[
                 Prompt(
-                    1,
-                    (
+                    prompt_id="1",
+                    value=(
                         "professional full body photo of young woman, "
                         "hyper long brunette hair, elegant hair, "
                         "wearing a bikini top and asymmetric short skirt, "
@@ -34,8 +34,8 @@ PARAM = pytest.param(
             ],
             negative_prompts=[
                 Prompt(
-                    1,
-                    "rendering, glowing eyes, skinny",
+                    prompt_id="1",
+                    value="rendering, glowing eyes, skinny",
                     metadata={"weight": 1.0},
                 )
             ],

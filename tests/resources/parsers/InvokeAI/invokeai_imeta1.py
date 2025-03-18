@@ -13,10 +13,9 @@ PARAM = pytest.param(
                 "steps": 35,
             },
             model=Model(name="juggernautXL", metadata={"base_model": "sdxl", "model_type": "main"}),
-            prompts=[Prompt(1, "digital artwork, oil painting. painterly brushstrokes, holidays,")],
+            prompts=[Prompt("digital artwork, oil painting. painterly brushstrokes, holidays,")],
             negative_prompts=[
                 Prompt(
-                    1,
                     (
                         "grainy+, photo, oversaturated, overexposed, blurry, "
                         "compressed jpg+, noisy++, unfocused , black and white"

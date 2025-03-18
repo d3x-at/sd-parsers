@@ -20,7 +20,7 @@ SAMPLERS = [
         model=Model(
             name="juggernautXL_v8Rundiffusion", hash="aeb7e9e689", model_id=None, metadata={}
         ),
-        prompts=[Prompt(value="a smiling goldfish", prompt_id=1, metadata={})],
+        prompts=[Prompt(value="a smiling goldfish", metadata={})],
         negative_prompts=[],
     )
 ]
@@ -64,8 +64,8 @@ def test_parse(filename: str, expected):
         params = extractor(image, parser.generator)
         assert params
 
-    generator, samplers, metadata = parser.parse(params)
+    prompt_info = parser.parse(params)
 
-    assert generator == Generators.FOOOCUS
-    assert samplers == expected_samplers
-    assert metadata == expected_metadata
+    assert prompt_info.generator == Generators.FOOOCUS
+    assert prompt_info.samplers == expected_samplers
+    assert prompt_info.metadata == expected_metadata

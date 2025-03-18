@@ -3,8 +3,8 @@ from sd_parsers.data import Prompt, Sampler
 
 PROMPTS = [
     Prompt(
-        1,
-        (
+        prompt_id="1",
+        value=(
             "professional full body photo of young woman, "
             "hyper long brunette hair, elegant hair, "
             "wearing a bikini top and asymmetric short skirt, "
@@ -16,7 +16,7 @@ PROMPTS = [
     )
 ]
 
-NEGATIVE_PROMPTS = [Prompt(1, "rendering, glowing eyes, skinny")]
+NEGATIVE_PROMPTS = [Prompt(prompt_id="1", value="rendering, glowing eyes, skinny")]
 
 PARAM = pytest.param(
     "invokeai_dream1.png",

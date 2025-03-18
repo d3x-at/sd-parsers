@@ -17,8 +17,8 @@ SAMPLERS = [
         name="UniPC",
         parameters={"steps": "15", "cfg_scale": "5", "seed": "235284042"},
         model=Model(name="realistic_realisticVisionV20_v20", hash="c0d1994c73"),
-        prompts=[Prompt(1, "photo of a duck")],
-        negative_prompts=[Prompt(1, "monochrome")],
+        prompts=[Prompt("photo of a duck")],
+        negative_prompts=[Prompt("monochrome")],
     )
 ]
 
@@ -53,11 +53,11 @@ def test_parse(filename: str, expected):
         params = extractor(image, parser.generator)
         assert params
 
-    generator, samplers, metadata = parser.parse(params)
+    prompt_info = parser.parse(params)
 
-    assert generator == Generators.AUTOMATIC1111
-    assert samplers == expected_samplers
-    assert metadata == expected_metadata
+    assert prompt_info.generator == Generators.AUTOMATIC1111
+    assert prompt_info.samplers == expected_samplers
+    assert prompt_info.metadata == expected_metadata
 
 
 def test_hashes():

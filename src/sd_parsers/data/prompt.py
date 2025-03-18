@@ -1,16 +1,16 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 @dataclass(frozen=True)
 class Prompt:
     """Represents an image generation prompt."""
 
-    prompt_id: str
-    """Prompt id"""
-
     value: str
     """The value of the prompt."""
+
+    prompt_id: Optional[str] = None
+    """Prompt id"""
 
     metadata: Dict[Any, Any] = field(default_factory=dict)
     """
@@ -23,4 +23,4 @@ class Prompt:
         return self.value
 
     def __hash__(self) -> int:
-        return hash(self.prompt_id)
+        return hash((self.value, self.prompt_id))
