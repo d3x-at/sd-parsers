@@ -103,8 +103,7 @@ class ParserManager:
                             if parameters is None:
                                 continue
 
-                            generator, samplers, metadata = parser.parse(parameters)
-                            return PromptInfo(generator, samplers, metadata, parameters)
+                            return parser.parse(parameters)
                         except ParserError as error:
                             if self._debug:
                                 logger.debug("error in parser[%s]: %s", type(parser), error)

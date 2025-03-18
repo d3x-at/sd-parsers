@@ -15,7 +15,6 @@ import ffmpeg
 import sys
 from pprint import pprint
 
-from sd_parsers.data import PromptInfo
 from sd_parsers.exceptions import ParserError
 from sd_parsers.parsers import ComfyUIParser
 
@@ -32,8 +31,7 @@ def parse_video(video_file: str):
         return None
 
     try:
-        generator, samplers, metadata = parser.parse(parameters)
-        return PromptInfo(generator, samplers, metadata, parameters)
+        return parser.parse(parameters)
     except ParserError as error:
         print("error in parser: ", error)
 

@@ -5,9 +5,8 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, TYPE_CHECKING
 
-from sd_parsers.data import Model, Sampler
+from sd_parsers.data import Model, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import ParseResult
 
 from ._variant_dream import _add_prompts, _get_sampler
 
@@ -15,7 +14,7 @@ if TYPE_CHECKING:
     from .parser import InvokeAIParser
 
 
-def _parse_sd_metadata(parser: InvokeAIParser, parameters: Dict[str, Any]) -> ParseResult:
+def _parse_sd_metadata(parser: InvokeAIParser, parameters: Dict[str, Any]) -> PromptInfo:
     """Read generation parameters for an image containing a `sd-metadata` field."""
 
     try:
@@ -54,7 +53,9 @@ def _parse_sd_metadata(parser: InvokeAIParser, parameters: Dict[str, Any]) -> Pa
     if model_name or model_hash:
         sampler["model"] = Model(name=model_name, hash=model_hash)
 
-    return parser.generator, [Sampler(**sampler)], {**metadata, **metadata_image}
+    return PromptInfo(
+        parser.generator, [Sampler(**sampler)], {**metadata, **metadata_image}, parameters
+    )
 
 
 __all__ = ["_parse_sd_metadata"]

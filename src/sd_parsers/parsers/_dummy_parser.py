@@ -2,9 +2,9 @@
 
 from typing import Any, Dict
 
-from sd_parsers.data import Generators, Model, Prompt, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ParseResult
+from sd_parsers.parser import Parser
 
 
 class DummyParser(Parser):
@@ -14,7 +14,7 @@ class DummyParser(Parser):
 
     generator = Generators.UNKNOWN
 
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any]) -> PromptInfo:
         """
         Process the generation parameters returned by `read_parameters()`.
 
@@ -26,20 +26,27 @@ class DummyParser(Parser):
         working_parameters = dict(parameters)
 
         try:
-            sampler = {
-                "name": working_parameters.pop("sampler name"),
-                "parameters": "a dict of sampler-specific parameters, i.e.: cfg scale, seed, steps, ...",
-                "model": Model("name of the used checkpoint", "hash value of the checkpoint"),
-                "prompts": [
-                    Prompt(1, "positive prompt"),
+            sampler_name = working_parameters.pop("sampler name")
+
+            sampler = Sampler(
+                name=sampler_name,
+                parameters={
+                    "info": "a dict of sampler-specific parameters, i.e.:",
+                    "cfg_scale": 1.2,
+                    "seed": 1234,
+                    "steps": 5,
+                },
+                model=Model("name of the used checkpoint", "hash value of the checkpoint"),
+                prompts=[
+                    Prompt("1", "positive prompt"),
                 ],
-                "negative_prompts": [
-                    Prompt(2, "negative prompt"),
-                    Prompt(3, "keep prompt ids unique"),
+                negative_prompts=[
+                    Prompt("2", "negative prompt"),
+                    Prompt("3", "keep prompt ids unique"),
                 ],
-            }
+            )
         except Exception as error:
             raise ParserError("something happened here") from error
 
         # return list of samplers and unused working parameters
-        return self.generator, [Sampler(**sampler)], working_parameters
+        return PromptInfo(self.generator, [sampler], working_parameters, parameters)

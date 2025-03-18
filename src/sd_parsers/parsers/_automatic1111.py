@@ -5,9 +5,9 @@ import re
 from contextlib import suppress
 from typing import Any, Dict
 
-from sd_parsers.data import Generators, Model, Prompt, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ParseResult, ReplacementRules, pop_keys
+from sd_parsers.parser import Parser, ReplacementRules, pop_keys
 
 SAMPLER_PARAMS = ["Sampler", "CFG scale", "Seed", "Steps", "ENSD", "Schedule type"]
 
@@ -19,7 +19,7 @@ class AUTOMATIC1111Parser(Parser):
 
     generator = Generators.AUTOMATIC1111
 
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any]) -> PromptInfo:
         try:
             lines = parameters["parameters"].split("\n")
         except (KeyError, ValueError, AttributeError) as error:
@@ -52,7 +52,7 @@ class AUTOMATIC1111Parser(Parser):
         if negative_prompt:
             sampler["negative_prompts"] = [Prompt(1, negative_prompt)]
 
-        return self.generator, [Sampler(**sampler)], metadata
+        return PromptInfo(self.generator, [Sampler(**sampler)], metadata, parameters)
 
 
 def _get_sampler_info(lines):

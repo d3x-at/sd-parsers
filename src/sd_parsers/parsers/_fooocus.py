@@ -3,9 +3,9 @@
 import json
 from typing import Any, Dict
 
-from sd_parsers.data import Generators, Model, Prompt, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ParseResult, ReplacementRules, pop_keys
+from sd_parsers.parser import Parser, ReplacementRules, pop_keys
 
 SAMPLER_PARAMS = ["guidance_scale", "scheduler", "seed", "sharpness", "steps"]
 
@@ -17,7 +17,7 @@ class FooocusParser(Parser):
 
     generator = Generators.FOOOCUS
 
-    def parse(self, _parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, _parameters: Dict[str, Any]) -> PromptInfo:
         try:
             parameters = json.loads(_parameters["parameters"])
         except (KeyError, TypeError, json.JSONDecodeError) as error:
@@ -48,4 +48,4 @@ class FooocusParser(Parser):
         except KeyError as error:
             raise ParserError("error reading parameter value") from error
 
-        return self.generator, [Sampler(**sampler)], parameters
+        return PromptInfo(self.generator, [Sampler(**sampler)], parameters, _parameters)

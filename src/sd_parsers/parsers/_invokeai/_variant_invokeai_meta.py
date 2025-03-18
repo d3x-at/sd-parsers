@@ -6,9 +6,8 @@ import json
 from contextlib import suppress
 from typing import Any, Dict, TYPE_CHECKING
 
-from sd_parsers.data import Model, Prompt, Sampler
+from sd_parsers.data import Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import ParseResult
 
 from ._variant_dream import _get_sampler
 
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
     from .parser import InvokeAIParser
 
 
-def _parse_invokeai_meta(parser: InvokeAIParser, parameters: Dict[str, Any]) -> ParseResult:
+def _parse_invokeai_meta(parser: InvokeAIParser, parameters: Dict[str, Any]) -> PromptInfo:
     """Read generation parameters from the newest InvokeAI metadata format."""
 
     try:
@@ -48,7 +47,7 @@ def _parse_invokeai_meta(parser: InvokeAIParser, parameters: Dict[str, Any]) -> 
             metadata=model_info,
         )
 
-    return parser.generator, [Sampler(**sampler)], metadata
+    return PromptInfo(parser.generator, [Sampler(**sampler)], metadata, parameters)
 
 
 __all__ = ["_parse_invokeai_meta"]

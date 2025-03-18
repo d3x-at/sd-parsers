@@ -6,8 +6,6 @@ from abc import ABC, abstractmethod
 from contextlib import suppress
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
-from sd_parsers.data.generators import Generators
-
 from . import data as _data
 
 DEBUG = False
@@ -22,20 +20,17 @@ Contains instruction to either rename a key (see `RenameField`),
 or to create a new key using the given formatting instruction (see `FormatField`).
 """
 
-ParseResult = Tuple[_data.Generators, List[_data.Sampler], Dict[Any, Any]]
-"""The result of Parser.parse() is a tuple of encountered samplers and remaining metadata."""
-
 
 class Parser(ABC):
     """Parser base class."""
 
-    generator = Generators.UNKNOWN
+    generator = _data.Generators.UNKNOWN
 
     def __init__(self, normalize_parameters: bool = True):
         self.do_normalization_pass = normalize_parameters
 
     @abstractmethod
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any]) -> _data.PromptInfo:
         """Extract image generation information from the image metadata."""
 
     def normalize_parameters(

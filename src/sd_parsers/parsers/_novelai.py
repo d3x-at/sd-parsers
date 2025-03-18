@@ -5,9 +5,9 @@ import re
 from contextlib import suppress
 from typing import Any, Dict
 
-from sd_parsers.data import Generators, Model, Prompt, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ParseResult, ReplacementRules, pop_keys
+from sd_parsers.parser import Parser, ReplacementRules, pop_keys
 
 SAMPLER_PARAMS = ["seed", "strength", "noise", "scale"]
 REPLACEMENT_RULES: ReplacementRules = [("scale", "cfg_scale")]
@@ -18,7 +18,7 @@ class NovelAIParser(Parser):
 
     generator = Generators.NOVELAI
 
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any]) -> PromptInfo:
         try:
             metadata = json.loads(parameters["Comment"])
             params = parameters["Description"]
@@ -47,4 +47,4 @@ class NovelAIParser(Parser):
             model_name, model_hash = match.groups()
             sampler["model"] = Model(name=model_name, hash=model_hash)
 
-        return self.generator, [Sampler(**sampler)], metadata
+        return PromptInfo(self.generator, [Sampler(**sampler)], metadata, parameters)

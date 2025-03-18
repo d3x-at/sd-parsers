@@ -7,9 +7,9 @@ from contextlib import suppress
 from typing import Any, Dict, Generator, List, Optional, Set, Tuple
 
 
-from sd_parsers.data import Generators, Model, Prompt, Sampler
+from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ParseResult, ReplacementRules, DEBUG
+from sd_parsers.parser import Parser, ReplacementRules, DEBUG
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class ComfyUIParser(Parser):
 
     generator = Generators.COMFYUI
 
-    def parse(self, parameters: Dict[str, Any]) -> ParseResult:
+    def parse(self, parameters: Dict[str, Any]) -> PromptInfo:
         try:
             prompt = parameters["prompt"]
             if not isinstance(prompt, dict):
@@ -40,7 +40,8 @@ class ComfyUIParser(Parser):
             raise ParserError("error reading parameters") from error
 
         samplers, metadata = ImageContext.extract(self, prompt, workflow)
-        return self.generator, samplers, metadata
+
+        return PromptInfo(self.generator, samplers, metadata, parameters)
 
 
 class ImageContext:

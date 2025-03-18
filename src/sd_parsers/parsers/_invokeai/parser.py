@@ -6,9 +6,9 @@ import logging
 from typing import Any, Callable, Dict, NamedTuple
 
 
-from sd_parsers.data.generators import Generators
+from sd_parsers.data import Generators, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ParseResult
+from sd_parsers.parser import Parser
 
 from ._variant_dream import _parse_dream
 from ._variant_invokeai_meta import _parse_invokeai_meta
@@ -21,7 +21,7 @@ class VariantParser(NamedTuple):
     """Holds a parsing function for a metadata format and
     information on how to prepare the data passed to it."""
 
-    parse: Callable[[InvokeAIParser, Any], ParseResult]
+    parse: Callable[[InvokeAIParser, Any], PromptInfo]
     read_parameters: Callable[[dict], dict]
 
 
@@ -48,7 +48,7 @@ class InvokeAIParser(Parser):
 
     generator = Generators.INVOKEAI
 
-    def parse(self, metadata: Dict[str, Any]) -> ParseResult:
+    def parse(self, metadata: Dict[str, Any]) -> PromptInfo:
         for variant in VARIANT_PARSERS:
             try:
                 parameters = variant.read_parameters(metadata)
