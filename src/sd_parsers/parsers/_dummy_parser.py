@@ -4,7 +4,8 @@ from typing import Any, Dict
 
 from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser
+
+from ._parser import Parser
 
 
 class DummyParser(Parser):

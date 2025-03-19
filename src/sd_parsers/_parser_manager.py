@@ -10,8 +10,7 @@ from PIL import Image
 
 from .data import PromptInfo
 from .exceptions import ParserError
-from .parser import Parser
-from .parsers import MANAGED_PARSERS
+from .parsers import Parser, MANAGED_PARSERS
 from .extractors import METADATA_EXTRACTORS, Eagerness
 
 if TYPE_CHECKING:
@@ -79,33 +78,36 @@ class ParserManager:
         - ValueError: If a StringIO instance is used for `image`.
         """
 
-        with _get_image(image) as image:
+        def parser_loop(image: Image.Image):
             if image.format is None:
                 if self._debug:
                     logger.debug("unknown image format")
-                return None
+                return
 
             try:
                 extractors = METADATA_EXTRACTORS[image.format]
             except KeyError:
                 if self._debug:
                     logger.debug("unsupported image format: %s", image.format)
-                return None
+                return
 
             for e in Eagerness:
                 if e.value > eagerness.value:
                     break
-
                 for get_metadata in extractors[e]:
                     for parser in self.managed_parsers:
-                        try:
-                            parameters = get_metadata(image, parser.generator)
-                            if parameters is None:
-                                continue
+                        yield get_metadata, parser
 
-                            return parser.parse(parameters)
-                        except ParserError as error:
-                            if self._debug:
-                                logger.debug("error in parser[%s]: %s", type(parser), error)
+        with _get_image(image) as image:
+            for get_metadata, parser in parser_loop(image):
+                try:
+                    parameters = get_metadata(image, parser.generator)
+                    if parameters is None:
+                        continue
+
+                    return parser.parse(parameters)
+                except ParserError as error:
+                    if self._debug:
+                        logger.debug("error in parser[%s]: %s", type(parser), error)
 
         return None

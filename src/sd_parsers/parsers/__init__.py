@@ -8,15 +8,18 @@ Metadata keys used as "trigger" for the different parsers are:
     * "invokeai_metadata" or "sd-metadata" or "Dream" -> invokeai
     * "Description" & "Software" & "Source" & "Comment" -> novelai
 """
+
 from ._automatic1111 import AUTOMATIC1111Parser
 from ._comfyui import ComfyUIParser
 from ._fooocus import FooocusParser
 from ._invokeai import InvokeAIParser
 from ._novelai import NovelAIParser
+from ._parser import Parser
 
 MANAGED_PARSERS = [FooocusParser, AUTOMATIC1111Parser, ComfyUIParser, InvokeAIParser, NovelAIParser]
 
 __all__ = [
+    "Parser",
     "AUTOMATIC1111Parser",
     "InvokeAIParser",
     "NovelAIParser",

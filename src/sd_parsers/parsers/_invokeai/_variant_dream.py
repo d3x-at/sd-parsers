@@ -8,7 +8,8 @@ from typing import Any, Dict, TYPE_CHECKING
 
 from sd_parsers.data import Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import pop_keys
+
+from .._parser import pop_keys
 
 if TYPE_CHECKING:
     from .parser import InvokeAIParser

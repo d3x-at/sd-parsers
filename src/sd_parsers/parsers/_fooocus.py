@@ -5,7 +5,8 @@ from typing import Any, Dict
 
 from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ReplacementRules, pop_keys
+
+from ._parser import Parser, ReplacementRules, pop_keys
 
 SAMPLER_PARAMS = ["guidance_scale", "scheduler", "seed", "sharpness", "steps"]
 

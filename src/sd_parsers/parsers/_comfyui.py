@@ -9,7 +9,8 @@ from typing import Any, Dict, Generator, List, Optional, Set, Tuple
 
 from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser, ReplacementRules, DEBUG
+
+from ._parser import Parser, ReplacementRules, DEBUG
 
 logger = logging.getLogger(__name__)
 

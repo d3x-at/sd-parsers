@@ -8,7 +8,8 @@ from typing import Any, Callable, Dict, NamedTuple
 
 from sd_parsers.data import Generators, PromptInfo
 from sd_parsers.exceptions import ParserError
-from sd_parsers.parser import Parser
+
+from .._parser import Parser
 
 from ._variant_dream import _parse_dream
 from ._variant_invokeai_meta import _parse_invokeai_meta

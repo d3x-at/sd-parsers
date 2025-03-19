@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from contextlib import suppress
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
-from . import data as _data
+from sd_parsers.data import Generators, PromptInfo
 
 DEBUG = False
 
@@ -24,13 +24,13 @@ or to create a new key using the given formatting instruction (see `FormatField`
 class Parser(ABC):
     """Parser base class."""
 
-    generator = _data.Generators.UNKNOWN
+    generator = Generators.UNKNOWN
 
     def __init__(self, normalize_parameters: bool = True):
         self.do_normalization_pass = normalize_parameters
 
     @abstractmethod
-    def parse(self, parameters: Dict[str, Any]) -> _data.PromptInfo:
+    def parse(self, parameters: Dict[str, Any]) -> PromptInfo:
         """Extract image generation information from the image metadata."""
 
     def normalize_parameters(
