@@ -67,12 +67,27 @@ def main():
 
 ```python
 from sd_parsers import ParserManager
-from sd_parsers.parsers import AUTOMATIC1111Parser
+from sd_parsers.data import PromptInfo, Sampler
+from sd_parsers.parsers import Parser, AUTOMATIC1111Parser
 
-# set the AUTOMATIC1111 parser as only parser module used by this ParserManager
+
+# basic implementation of a parser class
+# see parsers/_dummy_parser.py for a more detailed explanation
+class DummyParser(Parser):
+    def parse(self, parameters):
+        return PromptInfo(
+            generator=self.generator,
+            samplers=[Sampler(name="dummy_sampler", parameters={})],
+            metadata={"some other": "metadata"},
+            raw_parameters=parameters,
+        )
+
+
 # you can use multiple manager objects with different parsers
 # caution: the order of parser entries matters!
-parser_manager = ParserManager(managed_parsers=[AUTOMATIC1111Parser])
+# here, the DummyParser will ignore its input and always return a result,
+# resulting in the AUTOMATIC1111 parser to never be used
+parser_manager = ParserManager(managed_parsers=[DummyParser, AUTOMATIC1111Parser])
 ```
 
 #### Change default parser modules:
