@@ -14,12 +14,15 @@ from ._parser import Parser, ReplacementRules, DEBUG
 
 logger = logging.getLogger(__name__)
 
+SAMPLER_TYPES = ["WanVideoSampler"]
 SAMPLER_PARAMS = {"sampler_name", "steps", "cfg"}
+
 REPLACEMENT_RULES: ReplacementRules = [("cfg", "cfg_scale")]
 
 POSITIVE_PROMPT_KEYS = ["text", "positive"]
 NEGATIVE_PROMPT_KEYS = ["text", "negative"]
-IGNORE_LINK_TYPES_PROMPT = ["CLIP"]
+# IGNORE_LINK_TYPES_PROMPT = ["CLIP"]
+IGNORE_LINK_TYPES_PROMPT = []
 IGNORE_CLASS_TYPES = ["ConditioningCombine"]
 
 
@@ -100,7 +103,9 @@ class ImageContext:
         """Test if this node could contain sampler data"""
         try:
             inputs = dict(node["inputs"])
-            if not SAMPLER_PARAMS.issubset(inputs.keys()):
+            if node["class_type"] not in SAMPLER_TYPES and not SAMPLER_PARAMS.issubset(
+                inputs.keys()
+            ):
                 return None
         except (KeyError, TypeError):
             return None
@@ -110,7 +115,7 @@ class ImageContext:
         self.processed_nodes.add(node_id)
 
         # Sampler parameters
-        sampler_name = inputs.pop("sampler_name")
+        sampler_name = inputs.pop("sampler_name", "unknown")
         sampler_parameters = self.parser.normalize_parameters(
             self._get_input_values(inputs), REPLACEMENT_RULES
         )
@@ -128,20 +133,30 @@ class ImageContext:
             sampler["model"] = self._get_model(model_id)
 
         # Prompt
-        with suppress(KeyError, ValueError):
-            positive_prompt_id = str(inputs["positive"][0])
+        for key in ["positive", "text_embeds"]:
+            try:
+                positive_prompt_id = inputs[key][0]
+            except (KeyError, ValueError):
+                continue
+
             sampler["prompts"] = self._get_prompts(
                 positive_prompt_id,
                 POSITIVE_PROMPT_KEYS,
             )
+            break
 
         # Negative Prompt
-        with suppress(KeyError, ValueError):
-            negative_prompt_id = str(inputs["negative"][0])
+        for key in ["negative", "text_embeds"]:
+            try:
+                negative_prompt_id = inputs[key][0]
+            except (KeyError, ValueError):
+                continue
+
             sampler["negative_prompts"] = self._get_prompts(
                 negative_prompt_id,
                 NEGATIVE_PROMPT_KEYS,
             )
+            break
 
         return Sampler(**sampler)
 

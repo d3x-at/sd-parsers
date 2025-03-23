@@ -48,5 +48,4 @@ if __name__ == "__main__":
     if prompt_info is None:
         print("no metadata found")
     else:
-        # pprint(prompt_info)  # to check structured response
-        pprint(prompt_info.raw_parameters)
+        pprint(prompt_info)
