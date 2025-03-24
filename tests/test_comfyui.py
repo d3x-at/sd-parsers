@@ -23,7 +23,7 @@ def test_parse(filename: str, expected):
         expected_metadata,
     ) = expected
 
-    parser = ComfyUIParser()
+    parser = ComfyUIParser(debug=True)
     with Image.open(RESOURCE_PATH / "parsers/ComfyUI" / filename) as image:
         assert image.format
         extractor = METADATA_EXTRACTORS[image.format][Eagerness.FAST][0]

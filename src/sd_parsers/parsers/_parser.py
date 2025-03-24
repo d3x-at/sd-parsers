@@ -8,8 +8,6 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 from sd_parsers.data import Generators, PromptInfo
 
-DEBUG = False
-
 FormatField = Tuple[str, Tuple[List[str], str]]
 RenameField = Tuple[str, str]
 
@@ -26,8 +24,9 @@ class Parser(ABC):
 
     generator = Generators.UNKNOWN
 
-    def __init__(self, normalize_parameters: bool = True):
+    def __init__(self, normalize_parameters: bool = True, debug: bool = False):
         self.do_normalization_pass = normalize_parameters
+        self._debug = debug
 
     @abstractmethod
     def parse(self, parameters: Dict[str, Any]) -> PromptInfo:

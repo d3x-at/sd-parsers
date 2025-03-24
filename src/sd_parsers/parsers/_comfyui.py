@@ -10,7 +10,7 @@ from typing import Any, Dict, Generator, List, Optional, Set, Tuple
 from sd_parsers.data import Generators, Model, Prompt, Sampler, PromptInfo
 from sd_parsers.exceptions import ParserError
 
-from ._parser import Parser, ReplacementRules, DEBUG
+from ._parser import Parser, ReplacementRules
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,10 @@ class ImageContext:
     prompt: Dict[str, Any]
     links: Dict[str, Dict[str, Set[str]]]
     processed_nodes: Set[str]
+
+    @property
+    def _debug(self):
+        return self.parser._debug
 
     def __init__(self, parser: ComfyUIParser, prompt, workflow):
         self.parser = parser
@@ -129,8 +133,8 @@ class ImageContext:
         except (KeyError, TypeError):
             return None
 
-        if DEBUG:
-            logger.debug("found sampler #%d", node_id)
+        if self._debug:
+            logger.debug("found sampler #%s", node_id)
         self.processed_nodes.add(node_id)
 
         # Sampler parameters
@@ -176,7 +180,7 @@ class ImageContext:
 
     def _get_model(self, initial_node_id: str) -> Optional[Model]:
         """Get the first model reached from the given node_id"""
-        if DEBUG:
+        if self._debug:
             logger.debug("looking for model: #%s", initial_node_id)
 
         for node_id, node, trace in self._traverse(initial_node_id):
@@ -189,8 +193,8 @@ class ImageContext:
                 pass
             else:
                 self.processed_nodes.add(node_id)
-                if DEBUG:
-                    logger.debug("found model #%d: %s", node_id, ckpt_name)
+                if self._debug:
+                    logger.debug("found model #%s: %s", node_id, ckpt_name)
 
                 metadata = self._get_input_values(inputs)
                 metadata.update(self._get_trace_metadata(trace))
@@ -202,8 +206,8 @@ class ImageContext:
 
     def _get_prompts(self, initial_node_id: str, text_keys: List[str]) -> List[Prompt]:
         """Get all prompts reachable from a given node_id."""
-        if DEBUG:
-            logger.debug("looking for prompts: %d", initial_node_id)
+        if self._debug:
+            logger.debug("looking for prompts: %s", initial_node_id)
 
         prompts = []
 
@@ -216,8 +220,8 @@ class ImageContext:
                     continue
 
                 if isinstance(text, str):
-                    if DEBUG:
-                        logger.debug("found prompt %s#%d: %s", key, node_id, text)
+                    if self._debug:
+                        logger.debug("found prompt %s#%s: %s", key, node_id, text)
 
                     metadata = self._get_input_values(inputs)
                     metadata.update(self._get_trace_metadata(trace))
@@ -270,9 +274,9 @@ class ImageContext:
             with suppress(KeyError, RecursionError):
                 for link_id, link_types in self.links[node_id].items():
                     if link_id not in visited and link_types - ignore_links:
-                        if DEBUG:
+                        if self._debug:
                             logger.debug(
-                                "%d->%d, %s%s", node_id, link_id, "." * len(trace), link_types
+                                "%s->%s, %s%s", node_id, link_id, "." * len(trace), link_types
                             )
                         yield from traverse_inner(link_id, trace + [link_id])
 
