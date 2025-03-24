@@ -99,6 +99,25 @@ class ImageContext:
 
         return samplers, dict(metadata)
 
+    def _try_step_into(self, node_inputs: dict, node_names: List[str]):
+        """
+        see if one of the given inputs exists in the current node
+
+        and return the first found node's inputs dictionary
+
+        if none is found, return the original inputs
+        """
+        for name in node_names:
+            try:
+                target_id = node_inputs[name][0]
+                target_node = self.prompt[target_id]
+                inputs = dict(target_node["inputs"])
+                return inputs
+            except (TypeError, KeyError, ValueError):
+                continue
+
+        return node_inputs
+
     def _try_get_sampler(self, node_id: str, node):
         """Test if this node could contain sampler data"""
         try:
@@ -115,7 +134,9 @@ class ImageContext:
         self.processed_nodes.add(node_id)
 
         # Sampler parameters
-        sampler_name = inputs.pop("sampler_name", "unknown")
+        sampler_name = next(
+            (inputs.pop(key) for key in ["sampler_name", "scheduler"] if key in inputs), "unknown"
+        )
         sampler_parameters = self.parser.normalize_parameters(
             self._get_input_values(inputs), REPLACEMENT_RULES
         )
@@ -129,34 +150,27 @@ class ImageContext:
 
         # Model
         with suppress(KeyError, ValueError):
-            model_id = str(inputs["model"][0])
+            model_id = inputs["model"][0]
             sampler["model"] = self._get_model(model_id)
 
-        # Prompt
-        for key in ["positive", "text_embeds"]:
-            try:
-                positive_prompt_id = inputs[key][0]
-            except (KeyError, ValueError):
-                continue
+        # check for WanVideoSampler's TextEmbed node
+        prompt_inputs = self._try_step_into(inputs, ["text_embeds"])
 
+        # Prompt
+        with suppress(KeyError, ValueError):
+            positive_prompt_id = prompt_inputs["positive"][0]
             sampler["prompts"] = self._get_prompts(
                 positive_prompt_id,
                 POSITIVE_PROMPT_KEYS,
             )
-            break
 
         # Negative Prompt
-        for key in ["negative", "text_embeds"]:
-            try:
-                negative_prompt_id = inputs[key][0]
-            except (KeyError, ValueError):
-                continue
-
+        with suppress(KeyError, ValueError):
+            negative_prompt_id = prompt_inputs["negative"][0]
             sampler["negative_prompts"] = self._get_prompts(
                 negative_prompt_id,
                 NEGATIVE_PROMPT_KEYS,
             )
-            break
 
         return Sampler(**sampler)
 
@@ -168,8 +182,10 @@ class ImageContext:
         for node_id, node, trace in self._traverse(initial_node_id):
             try:
                 inputs = dict(node["inputs"])
-                ckpt_name = inputs.pop("ckpt_name")
-            except KeyError:
+                ckpt_name = next(
+                    (inputs.pop(key) for key in ["ckpt_name", "model"] if key in inputs)
+                )
+            except (KeyError, TypeError, StopIteration):
                 pass
             else:
                 self.processed_nodes.add(node_id)
