@@ -2,6 +2,8 @@ name: Test
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -10,13 +12,8 @@ jobs:
       fail-fast: true
       max-parallel: 3
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        os: [ubuntu-latest]
-        include:
-          - os: macos-latest
-            python-version: 3.12
-          - os: windows-latest
-            python-version: 3.12
 
     runs-on: ${{ matrix.os }}
 
