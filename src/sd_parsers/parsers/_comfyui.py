@@ -21,8 +21,7 @@ REPLACEMENT_RULES: ReplacementRules = [("cfg", "cfg_scale")]
 
 POSITIVE_PROMPT_KEYS = ["text", "positive"]
 NEGATIVE_PROMPT_KEYS = ["text", "negative"]
-# IGNORE_LINK_TYPES_PROMPT = ["CLIP"]
-IGNORE_LINK_TYPES_PROMPT = []
+IGNORE_LINK_TYPES_PROMPT = ["CLIP"]
 IGNORE_CLASS_TYPES = ["ConditioningCombine"]
 
 
@@ -43,14 +42,14 @@ class ComfyUIParser(Parser):
         except Exception as error:
             raise ParserError("error reading parameters") from error
 
-        samplers, metadata = ImageContext.extract(self, prompt, workflow)
+        samplers, metadata = _ImageContext.extract(self, prompt, workflow)
 
         return PromptInfo(self.generator, samplers, metadata, parameters)
 
 
-class ImageContext:
+class _ImageContext:
     parser: ComfyUIParser
-    prompt: Dict[str, Any]
+    prompt: Dict[str, Dict[str, Any]]
     links: Dict[str, Dict[str, Set[str]]]
     processed_nodes: Set[str]
 
@@ -58,7 +57,7 @@ class ImageContext:
     def _debug(self):
         return self.parser._debug
 
-    def __init__(self, parser: ComfyUIParser, prompt, workflow):
+    def __init__(self, parser: ComfyUIParser, prompt: Dict, workflow: Dict):
         self.parser = parser
         self.processed_nodes = set()
 
@@ -78,10 +77,10 @@ class ImageContext:
 
     @classmethod
     def extract(
-        cls, parser: ComfyUIParser, prompt: Any, links: Any
+        cls, parser: ComfyUIParser, prompt: Dict, workflow: Dict
     ) -> Tuple[List[Sampler], Dict[str, List[Dict[str, Any]]]]:
         """Extract samplers with their child parameters aswell as metadata"""
-        context = cls(parser, prompt, links)
+        context = cls(parser, prompt, workflow)
         samplers = []
         metadata = defaultdict(list)
 
@@ -122,7 +121,7 @@ class ImageContext:
 
         return node_inputs
 
-    def _try_get_sampler(self, node_id: str, node):
+    def _try_get_sampler(self, node_id: str, node: Dict[str, Any]):
         """Test if this node could contain sampler data"""
         try:
             inputs = dict(node["inputs"])
