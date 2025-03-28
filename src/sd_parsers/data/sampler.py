@@ -7,7 +7,7 @@ from .prompt import Prompt
 
 @dataclass(frozen=True)
 class Sampler:
-    """Represents a model used during image generation."""
+    """Represents a sampler used during image generation."""
 
     name: str
     """The name of the sampler"""
