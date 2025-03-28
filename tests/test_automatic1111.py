@@ -5,6 +5,7 @@ from sd_parsers.parsers import AUTOMATIC1111Parser, _automatic1111
 from sd_parsers.extractors import Eagerness, METADATA_EXTRACTORS
 
 from tests.tools import RESOURCE_PATH
+from tests.resources.parsers.AUTOMATIC1111 import automatic1111_stealth
 
 PARAMETERS = (
     "photo of a duck\nNegative prompt: monochrome\n"
@@ -25,31 +26,28 @@ SAMPLERS = [
 testdata = [
     pytest.param(
         "automatic1111_cropped.png",
-        (
-            SAMPLERS,
-            {"Size": "512x400"},
-        ),
+        Eagerness.FAST,
+        SAMPLERS,
+        {"Size": "512x400"},
         id="automatic1111_cropped.png",
     ),
     pytest.param(
         "automatic1111_cropped.jpg",
-        (
-            SAMPLERS,
-            {"Size": "512x400"},
-        ),
+        Eagerness.FAST,
+        SAMPLERS,
+        {"Size": "512x400"},
         id="automatic1111_cropped.jpg",
     ),
+    automatic1111_stealth.PARAM,
 ]
 
 
-@pytest.mark.parametrize("filename, expected", testdata)
-def test_parse(filename: str, expected):
-    expected_samplers, expected_metadata = expected
-
+@pytest.mark.parametrize("filename, eagerness, expected_samplers, expected_metadata", testdata)
+def test_parse(filename: str, eagerness: Eagerness, expected_samplers, expected_metadata):
     parser = AUTOMATIC1111Parser()
     with Image.open(RESOURCE_PATH / "parsers/AUTOMATIC1111" / filename) as image:
         assert image.format
-        extractor = METADATA_EXTRACTORS[image.format][Eagerness.FAST][0]
+        extractor = METADATA_EXTRACTORS[image.format][eagerness][0]
         params = extractor(image, parser.generator)
         assert params
 

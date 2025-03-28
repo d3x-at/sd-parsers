@@ -70,7 +70,7 @@ class ParserManager:
             eagerness: metadata searching effort
              - FAST: cut some corners to save some time
              - DEFAULT: try to ensure all metadata is read (default)
-             - EAGER: include additional methods to try and retrieve metadata (nothing here so far)
+             - EAGER: include additional methods to try and retrieve metadata (computationally expensive!)
 
         If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
         underlying `Image.open()` method:

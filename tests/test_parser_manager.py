@@ -5,6 +5,7 @@ import PIL
 import pytest
 from sd_parsers import ParserManager
 
+from sd_parsers.extractors import Eagerness
 from tests.tools import RESOURCE_PATH
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ def test_parse_images():
         folder_name = filename.parent.name
 
         logger.info("parsing %s", filename)
-        prompt_info = parser_manager.parse(filename)
+        prompt_info = parser_manager.parse(filename, eagerness=Eagerness.EAGER)
         assert prompt_info is not None
         assert prompt_info.generator == folder_name
         assert prompt_info.prompts

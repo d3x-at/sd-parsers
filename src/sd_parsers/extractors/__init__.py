@@ -1,5 +1,5 @@
 from enum import Enum as _Enum
-from . import png_image_info, png_image_text, jpeg_usercomment
+from . import png_image_info, png_image_text, jpeg_usercomment, stenographic_alpha
 
 import typing as _typing
 from sd_parsers.data.generators import Generators as _Generators
@@ -20,6 +20,7 @@ METADATA_EXTRACTORS: _typing.Dict[str, _typing.Dict[Eagerness, _typing.List[_Ext
     "PNG": {
         Eagerness.FAST: [png_image_info.png_image_info],
         Eagerness.DEFAULT: [png_image_text.png_image_text],
+        Eagerness.EAGER: [stenographic_alpha.stenographic_alpha],
     },
     "JPEG": {
         Eagerness.FAST: [jpeg_usercomment.usercomment],
