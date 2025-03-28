@@ -1,8 +1,8 @@
-from contextlib import suppress
 from PIL import Image
 from typing import Any, Dict, Optional
 
 from sd_parsers.data import Generators
+from sd_parsers.exceptions import MetadataError
 from ._get_exif_value import get_exif_value
 
 _image_id = None
@@ -19,8 +19,10 @@ def usercomment(image: Image.Image, generator: Generators) -> Optional[Dict[str,
         _image_id = image_id
         _usercomment = None
 
-        with suppress(KeyError, ValueError):
+        try:
             _usercomment = get_exif_value(image, "UserComment")
+        except (KeyError, ValueError) as error:
+            raise MetadataError("error reading UserComment") from error
 
     if _usercomment is None:
         return None

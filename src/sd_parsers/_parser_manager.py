@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, List, Optional, Type, Union
 from PIL import Image
 
 from .data import PromptInfo
-from .exceptions import ParserError
+from .exceptions import MetadataError, ParserError
 from .parsers import Parser, MANAGED_PARSERS
 from .extractors import METADATA_EXTRACTORS, Eagerness
 
@@ -48,12 +48,13 @@ class ParserManager:
         Optional Parameters:
             normalize_parameters: Try to unify the parameter keys of the parser outputs.
             managed_parsers: A list of parsers to be managed.
-
+            debug: Produce log messages when errors occur
         """
         self._debug = debug
 
         self.managed_parsers: List[Parser] = [
-            parser(normalize_parameters) for parser in managed_parsers or MANAGED_PARSERS
+            parser(normalize_parameters=normalize_parameters, debug=debug)
+            for parser in managed_parsers or MANAGED_PARSERS
         ]
 
     def parse(
@@ -78,7 +79,7 @@ class ParserManager:
         - ValueError: If a StringIO instance is used for `image`.
         """
 
-        def parser_loop(image: Image.Image):
+        def get_extractors(image: Image.Image):
             if image.format is None:
                 if self._debug:
                     logger.debug("unknown image format")
@@ -99,19 +100,25 @@ class ParserManager:
                     continue
 
                 for get_metadata in extractors[e]:
-                    for parser in self.managed_parsers:
-                        yield get_metadata, parser
+                    yield get_metadata
 
         with _get_image(image) as image:
-            for get_metadata, parser in parser_loop(image):
-                try:
-                    parameters = get_metadata(image, parser.generator)
+            for get_metadata in get_extractors(image):
+                for parser in self.managed_parsers:
+                    try:
+                        parameters = get_metadata(image, parser.generator)
+                    except MetadataError:
+                        if self._debug:
+                            logger.exception("error reading metadata")
+                        break
+
                     if parameters is None:
                         continue
 
-                    return parser.parse(parameters)
-                except ParserError as error:
-                    if self._debug:
-                        logger.debug("error in parser[%s]: %s", type(parser), error)
+                    try:
+                        return parser.parse(parameters)
+                    except ParserError as error:
+                        if self._debug:
+                            logger.error("error in parser[%s]: %s", type(parser), error)
 
         return None
