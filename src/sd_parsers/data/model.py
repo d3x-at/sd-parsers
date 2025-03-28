@@ -32,4 +32,4 @@ class Model:
         return self.name
 
     def __hash__(self) -> int:
-        return hash((self.model_id, self.name))
+        return hash((self.model_id, self.name, self.hash))
