@@ -36,6 +36,16 @@ def test_parse_empty_file():
         parser_manager.parse(RESOURCE_PATH / "bad_images" / "empty_file.png")
 
 
+def test_parse_images_without_metadata():
+    parser_manager = ParserManager()
+
+    res1 = parser_manager.parse(RESOURCE_PATH / "bad_images" / "empty_image.png")
+    assert res1 is None
+
+    res2 = parser_manager.parse(RESOURCE_PATH / "bad_images" / "empty_image.jpg")
+    assert res2 is None
+
+
 def test_parse_text_string():
     parser_manager = ParserManager()
     with pytest.raises(ValueError):
