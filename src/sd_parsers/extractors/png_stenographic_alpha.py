@@ -1,6 +1,5 @@
 import gzip
 import json
-import logging
 from contextlib import suppress
 from typing import Any, Dict, Optional
 
@@ -8,8 +7,6 @@ from PIL.Image import Image
 
 from sd_parsers.data.generators import Generators
 from sd_parsers.exceptions import MetadataError
-
-logger = logging.getLogger(__name__)
 
 STEALTH_HEADER = "stealth_pngcomp"
 
@@ -61,6 +58,23 @@ class LSBExtractor:
         else:
             return None
 
+    @classmethod
+    def extract_from(cls, image: Image):
+        extractor = cls(image)
+
+        read_magic = extractor.get_next_n_bytes(len(STEALTH_HEADER)).decode("utf-8")
+        if STEALTH_HEADER != read_magic:
+            raise ValueError(
+                f'Header "{read_magic}" does not match the expected value of "{STEALTH_HEADER}"'
+            )
+
+        read_len = extractor.read_32bit_integer() // 8  # type: ignore
+        raw_bytes = extractor.get_next_n_bytes(read_len)
+
+        decompressed_bytes = gzip.decompress(raw_bytes).decode("utf-8")
+
+        return decompressed_bytes
+
 
 _image_id = None
 _decompressed_bytes = None
@@ -68,7 +82,7 @@ _json_decoded = None
 
 
 def stenographic_alpha(image: Image, generator: Generators) -> Optional[Dict[str, Any]]:
-    """try to read stealth header from image"""
+    """try to read stealth metadata from image"""
     global _image_id, _decompressed_bytes, _json_decoded
 
     if image.mode != "RGBA":
@@ -83,18 +97,7 @@ def stenographic_alpha(image: Image, generator: Generators) -> Optional[Dict[str
         _json_decoded = None
 
         try:
-            extractor = LSBExtractor(image)
-
-            read_magic = extractor.get_next_n_bytes(len(STEALTH_HEADER)).decode("utf-8")
-            if STEALTH_HEADER != read_magic:
-                raise ValueError(
-                    f'Header "{read_magic}" does not match the expected value of "{STEALTH_HEADER}"'
-                )
-
-            read_len = extractor.read_32bit_integer() // 8  # type: ignore
-            raw_bytes = extractor.get_next_n_bytes(read_len)
-
-            _decompressed_bytes = gzip.decompress(raw_bytes).decode("utf-8")
+            _decompressed_bytes = LSBExtractor.extract_from(image)
 
             with suppress(TypeError, json.JSONDecodeError):
                 _json_decoded = json.loads(_decompressed_bytes)
