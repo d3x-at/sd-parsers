@@ -38,9 +38,10 @@ class ParserManager:
     def __init__(
         self,
         *,
-        normalize_parameters: bool = True,
-        managed_parsers: Optional[List[Type[Parser]]] = None,
         debug: bool = False,
+        eagerness: Eagerness = Eagerness.DEFAULT,
+        managed_parsers: Optional[List[Type[Parser]]] = None,
+        normalize_parameters: bool = True,
     ):
         """
         Initializes a ParserManager object.
@@ -49,7 +50,12 @@ class ParserManager:
             normalize_parameters: Try to unify the parameter keys of the parser outputs.
             managed_parsers: A list of parsers to be managed.
             debug: Produce log messages when errors occur
+            eagerness: metadata searching effort
+             - FAST: cut some corners to save some time
+             - DEFAULT: try to ensure all metadata is read (default)
+             - EAGER: include additional methods to try and retrieve metadata (computationally expensive!)
         """
+        self._eagerness = eagerness
         self._debug = debug
 
         self.managed_parsers: List[Parser] = [
@@ -60,16 +66,16 @@ class ParserManager:
     def parse(
         self,
         image: Union[str, bytes, Path, SupportsRead[bytes], Image.Image],
-        eagerness: Eagerness = Eagerness.DEFAULT,
+        eagerness: Optional[Eagerness] = None,
     ) -> Optional[PromptInfo]:
         """
         Try to extract image generation parameters from the given image.
 
         Parameters:
             image: a PIL Image, filename, pathlib.Path object or a file object.
-            eagerness: metadata searching effort
+            eagerness: metadata searching effort (overrides ParserManager default)
              - FAST: cut some corners to save some time
-             - DEFAULT: try to ensure all metadata is read (default)
+             - DEFAULT: try to ensure all metadata is read
              - EAGER: include additional methods to try and retrieve metadata (computationally expensive!)
 
         If not called with a PIL.Image for `image`, the following exceptions can be thrown by the
@@ -78,6 +84,9 @@ class ParserManager:
         - PIL.UnidentifiedImageError: If the image cannot be opened and identified.
         - ValueError: If a StringIO instance is used for `image`.
         """
+
+        # use specific eagerness when given, otherwise use ParserManager's default
+        eagerness = eagerness or self._eagerness
 
         def get_extractors(image: Image.Image):
             if image.format is None:
