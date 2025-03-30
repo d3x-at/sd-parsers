@@ -1,11 +1,11 @@
 import pytest
+from sd_parsers import extractors
 from sd_parsers.data import Model, Prompt, Sampler
-from sd_parsers.extractors import Eagerness
 
 
 PARAM = pytest.param(
     "automatic1111_stealth.png",
-    Eagerness.EAGER,
+    extractors.png_stenographic_alpha,
     [
         Sampler(
             name="Euler",
