@@ -63,13 +63,39 @@ def main():
 
 ### Parsing options:
 
+#### Configure metadata extraction:
+```python
+from sd_parsers import ParserManager, Eagerness
+
+parser_manager = ParserManager(eagerness=Eagerness.EAGER)
+```
+
+`Eagerness` sets the metadata searching effort
+
+The given eagerness level is the highest that will be considered. 
+
+i.e.: With `Eagerness.DEFAULT` set, the ParserManager will try `FAST`, followed by `DEFAULT`.
+
+For now, this only has an effect on PNG images:
+- **FAST**: cut some corners to save some time
+
+  This only looks at Image.info.
+
+- **DEFAULT**: try to ensure all metadata is read
+
+  This will look at Image.text, requiring to read the whole image.
+
+- **EAGER**: include additional methods to try and retrieve metadata
+
+  Includes the [stenographic alpha](src/sd_parsers/extractors/_png_stenographic_alpha.py) extractor, which will look for hidden metadata. (computationally expensive!)
+
+
 #### Only use specific (or custom) parser modules:
 
 ```python
 from sd_parsers import ParserManager
 from sd_parsers.data import PromptInfo, Sampler
 from sd_parsers.parsers import Parser, AUTOMATIC1111Parser
-
 
 # basic implementation of a parser class
 # see parsers/_dummy_parser.py for a more detailed explanation
@@ -81,7 +107,6 @@ class DummyParser(Parser):
             metadata={"some other": "metadata"},
             raw_parameters=parameters,
         )
-
 
 # you can use multiple manager objects with different parsers
 # caution: the order of parser entries matters!
@@ -106,19 +131,23 @@ MANAGED_PARSERS.extend([AUTOMATIC1111Parser])
 parser_manager = ParserManager()
 ```
 
-#### Configure metadata extractors:
+#### Add or change metadata extractors:
 
 ```python
-from sd_parsers import ParserManager
-from sd_parsers.extractors import METADATA_EXTRACTORS, Eagerness
+from PIL.Image import Image
+from sd_parsers import ParserManager, Eagerness
+from sd_parsers.data import Generators
+from sd_parsers.extractors import METADATA_EXTRACTORS
+
+# define a custom extractor
+def custom_extractor(i: Image, g: Generators):
+    return {"parameters": "custom extracted data\nSampler: UniPC, Steps: 15, CFG scale: 5"}
 
 # remove all preset PNG extractors for the first (FAST) stage
 METADATA_EXTRACTORS["PNG"][Eagerness.FAST].clear()
 
-# add a custom extractor
-METADATA_EXTRACTORS["PNG"][Eagerness.FAST].append(
-    lambda i, g: {"parameters": "custom extracted data\nSampler: UniPC, Steps: 15, CFG scale: 5"}
-)
+# add a custom extractor followed by the default FAST extractor
+METADATA_EXTRACTORS["PNG"][Eagerness.FAST].append(custom_extractor)
 
 parser_manager = ParserManager()
 ```
