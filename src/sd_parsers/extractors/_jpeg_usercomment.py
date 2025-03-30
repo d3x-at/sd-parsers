@@ -9,7 +9,7 @@ _image_id = None
 _usercomment = None
 
 
-def usercomment(image: Image.Image, generator: Generators) -> Optional[Dict[str, Any]]:
+def jpeg_usercomment(image: Image.Image, generator: Generators) -> Optional[Dict[str, Any]]:
     """use image.info"""
     global _image_id, _usercomment
 

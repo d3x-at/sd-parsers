@@ -81,7 +81,7 @@ _decompressed_bytes = None
 _json_decoded = None
 
 
-def stenographic_alpha(image: Image, generator: Generators) -> Optional[Dict[str, Any]]:
+def png_stenographic_alpha(image: Image, generator: Generators) -> Optional[Dict[str, Any]]:
     """try to read stealth metadata from image"""
     global _image_id, _decompressed_bytes, _json_decoded
 
