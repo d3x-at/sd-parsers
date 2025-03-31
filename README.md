@@ -3,11 +3,6 @@ Read structured metadata from images created with stable diffusion.
 
 ![Example Output](example_output.png)
 
-> [!Caution]
-> You are currently reading the documentation for the master branch!
-> 
-> Go [here](https://github.com/d3x-at/sd-parsers/tree/v0.5) for the documentation of the latest release.
-
 ## Features
 
 Prompts as well as some well-known generation parameters are provided as easily accessible properties (see [Output](#output)).
@@ -74,7 +69,7 @@ parser_manager = ParserManager(eagerness=Eagerness.EAGER)
 
 The given eagerness level is the highest that will be considered. 
 
-i.e.: With `Eagerness.DEFAULT` set, the ParserManager will try `FAST`, followed by `DEFAULT`.
+i.e.: With `Eagerness.DEFAULT` set, the ParserManager will try `FAST` followed by `DEFAULT`.
 
 For now, this only has an effect on PNG images:
 - **FAST**: cut some corners to save some time
@@ -83,7 +78,7 @@ For now, this only has an effect on PNG images:
 
 - **DEFAULT**: try to ensure all metadata is read
 
-  This will look at Image.text, requiring to read the whole image.
+  This will also look at Image.text, reading the whole image data to do so.
 
 - **EAGER**: include additional methods to try and retrieve metadata
 
