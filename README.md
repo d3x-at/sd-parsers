@@ -23,7 +23,7 @@ pip install sd-parsers
 
 ## Usage
 
-From command line: ```python3 -m sd_parsers <filenames>```.
+From command line: ```python3 -m sd_parsers <filenames>```
 
 
 ### Basic usage:
@@ -103,7 +103,7 @@ class DummyParser(Parser):
             raw_parameters=parameters,
         )
 
-# you can use multiple manager objects with different parsers
+# you can use multiple manager instances using different parsers
 # caution: the order of parser entries matters!
 # here, the DummyParser will ignore its input and always return a result,
 # resulting in the AUTOMATIC1111 parser to never be used
@@ -141,7 +141,7 @@ def custom_extractor(i: Image, g: Generators):
 # remove all preset PNG extractors for the first (FAST) stage
 METADATA_EXTRACTORS["PNG"][Eagerness.FAST].clear()
 
-# add a custom extractor followed by the default FAST extractor
+# add custom extractor
 METADATA_EXTRACTORS["PNG"][Eagerness.FAST].append(custom_extractor)
 
 parser_manager = ParserManager()
